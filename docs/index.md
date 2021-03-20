@@ -19,4 +19,4 @@ In it's current state ryvencore-qt (as well as ryvencore) is still experimental.
 
 ## Resources
 
-May I also point to the [website of the Ryven project](https://ryven.org) if you haven't been there already. And there's a small [YouTube channel](https://www.youtube.com/channel/UCfpqNAOXv35bj_j_E_OyR_A), tutorials and stuff are planned.
+May I also point to the [website of the Ryven project](https://ryven.org) if you haven't been there already. And there's a small [YouTube channel](https://www.youtube.com/channel/UCfpqNAOXv35bj_j_E_OyR_A).

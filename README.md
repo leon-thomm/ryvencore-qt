@@ -8,6 +8,12 @@ With ryvencore-qt you get a system for managing the abstract flows as well as th
 pip install ryvencore-qt
 ```
 
+### Dependencies
+
+ryvencore-qt uses [QtPy](https://github.com/spyder-ide/qtpy), which is a wrapper for Qt, so you can choose between Pyside2 and PyQt.
+
+There are no other dependencies besides Qt for the frontend!
+
 ### Features
 
 - **load & save**  
