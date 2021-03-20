@@ -2,13 +2,13 @@
 
 ## Installation
 
-`pip install ryvencore`
+`pip install ryvencore-qt`
 
 or from sources
 
 ```
-git clone https://github.com/leon-thomm/ryvencore
-cd ryvencore
+git clone https://github.com/leon-thomm/ryvencore-qt
+cd ryvencore-qt
 python setup.py install
 ```
 
@@ -19,34 +19,34 @@ Python 3.8+ recommended
 !!! info
     You can copy the full example code at the bottom of this page.
    
-Let's build our first editor. First thing is importing ryvencore
+Let's build our first editor. First thing is importing the library
 
 ``` python
-import ryvencore as rc
+import ryvencore-qt as rc
 ```
 
 ### Overall Structure
 
-Your main interface to the current project is the **Session**, which you usually want to create one instance of per application (but you can create more). The constructor already gives options for configurations, but we can leave everything as default for now.
+Your main interface to the current project is the **Session**, which basically represents a project. We can leave everything as default for now.
 
 ``` python
 my_session = rc.Session()
 ```
 
-Now we want to create a flow, which is part of a **Script**, besides the **script variables** and the **logs**. The scripts are managed by the session, so we just call
+Now let's create a flow, which is part of a **Script**. Scripts are managed by the session and contain the **flow**, **script variables** and the **logs**.
 
 ``` python
 script = my_session.create_script('hello world', flow_view_size=[800, 500])
 ```
 
-With the `flow_view_size` you can set the pixel size of the flow view that will be created and which you can access via `script.flow_view`. The flow itself is a `QGraphicsView` subclass, which is a GUI class of Qt, so you can directly embed it into your window.
+With the `flow_view_size` you can set the pixel size of the flow view that will be created. You can access the view via `my_session.flow_views(script)`. The flow itself is a `QGraphicsView` subclass, which is a GUI class of Qt.
 
 ### Setting Up a Window
 
-This is not a complete tutorial on getting started with Qt for Python, but setting up a basic GUI structure is quite simple.
+This is not a tutorial on getting started with Qt for Python, but setting up a basic GUI structure is quite simple.
 
 ``` python
-import ryvencore as rc
+import ryvencore-qt as rc
 import sys
 from PySide2.QtWidgets import QMainWindow, QApplication
 
@@ -64,7 +64,7 @@ if __name__ == "__main__":
     script = session.create_script('hello world', flow_view_size=[800, 500])
 
     # and setting the flow view as the window's central widget
-    mw.setCentralWidget(script.flow_view)
+    mw.setCentralWidget(session.flow_views(script))
     
     mw.show()
     sys.exit(app.exec_())

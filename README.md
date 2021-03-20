@@ -1,4 +1,4 @@
-rvencore-qt is a library for building flow-based visual scripting editors for Python with Qt. It comes from the Ryven project and will be the foundation for future Ryven versions amongst other editors. With ryvencore-qt you can create Ryven-like editors which you then can optimize for a specific domain. Technically, ryvencore-qt provides a Qt-based frontend for what is now referred to as *ryvencore*. However, ryvencore itself is currently still included in this repository until the API is solid enough to give it its own public repo. ryvencore might be the base for implementing other frontends in the future.
+**rvencore-qt** is a library for building flow-based visual scripting editors for Python with Qt. It comes from the [Ryven](https://github.com/leon-thomm/Ryven) project and will be the foundation for future Ryven versions, amongst other specialized editors. With ryvencore-qt you can create Ryven-like editors to optimize for a specific domain. Technically, ryvencore-qt provides a Qt-based frontend for what is now referred to as *ryvencore*. However, ryvencore itself is currently still included in this repository until the API is solid enough to give it its own public repo. ryvencore might be the base for implementing other frontends in the future.
 
 With ryvencore-qt you get a system for managing the abstract flows as well as the whole GUI for them, besides further optional convenience widgets.
 
@@ -13,7 +13,7 @@ pip install ryvencore-qt
 - **load & save**  
 All serialization and loading of projects. Data is stored using `json`, and for some parts `pickle`.
 - **simple nodes system**  
-All information of a node is part of its class. A minimal node definition can be as short as this
+All information of a node is part of its class. A minimal node definition can be as simple as this
     ```python
     import ryvencore_qt as rc
     
@@ -29,9 +29,10 @@ All information of a node is part of its class. A minimal node definition can be
             print(self.input(0))
     ```
     see also example below.
-- **dynamic nodes registration mechanism**
-- **function nodes/subgraphs**  
-You can define function scripts, which have their own flow plus input and output node, to define functions which you can then use as nodes just like this
+- **dynamic nodes registration mechanism**  
+You can register and unregister nodes at any time. Registered nodes can be placed in a flow.
+- **function nodes / subgraphs**  
+You can define *function scripts*, which have their own flow plus input and output node, to define functions which you can then use as nodes like this
     ![](/docs/function_node.png)
 - **right click operations system for nodes**  
 Which can be edited through the API at any time.
@@ -45,8 +46,8 @@ While data flows are probably the most common use case, exec flows (like UnrealE
 - **rendering flow images**
 - **variables system**  
 with registration mechanism to build nodes that automatically adapt to change of data
-- **built in logging**  
-- **threading ready**  
+- **logging support**  
+- **threading compatibility**  
 All internal communication between the abstract components and the GUI of the flows is implemented in a somewhat thread-save way, so with ryvencore-qt you can keep the abstract components in a separate thread. While this is currently very experimental, first successful tests have been made and I think it's of crucial importance as this opens the door to the world of realtime data processing.
 
 ### Usage
@@ -106,7 +107,8 @@ if __name__ == "__main__":
     mw = QMainWindow()
 
     # creating the session, registering, creating script
-    session = rc.Session(flow_theme_name='Samuel 1l')
+    session = rc.Session()
+    session.design.set_flow_theme(name='Samuel 1l')
     session.register_nodes([PrintNode, RandNode])
     script = session.create_script('hello world', flow_view_size=[800, 500])
 
@@ -122,7 +124,7 @@ For a more detailed overview visit the [docs page](https://leon-thomm.github.io/
 
 #### Qt Dependency
 
-I am currently investigating on options for a more scalable replacement for the Qt widgets which ryvencore's components use when running in gui mode. Following suggestions of others, I'm especially looking at brokerless message queues like ZeroMQ, NNG right now. This might ultimately enable scaling ryvencore into the web with a JS based frontend in the browser. That's clearly far far future, but very exciting and a point where contributions by users with more experience with this would be very welcome.
+I am currently investigating on options for a more scalable replacement for the Qt signals which ryvencore's components use for communication in gui mode. Following suggestions of others, I'm especially looking at brokerless message queues like ZeroMQ, NNG right now. This might ultimately enable scaling ryvencore into the web with a JS based frontend in the browser. That's clearly far far future, but very exciting and a point where contributions by users with more experience with this would be very welcome.
 
 <!--
 #### Code Generation
