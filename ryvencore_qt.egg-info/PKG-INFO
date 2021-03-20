@@ -1,0 +1,16 @@
+Metadata-Version: 1.2
+Name: ryvencore-qt
+Version: 0.0.0
+Summary: Python Library for building Visual Scripting Editors with Qt
+Home-page: UNKNOWN
+Author: Leon Thomm
+Author-email: l.thomm@mailbox.org
+License: LGPLv3
+Description: UNKNOWN
+Platform: UNKNOWN
+Classifier: Development Status :: 2 - Pre-Alpha
+Classifier: License :: OSI Approved :: GNU Lesser General Public License v3 or later (LGPLv3+)
+Classifier: Programming Language :: Python :: 3
+Classifier: Programming Language :: Python :: 3.8
+Classifier: Programming Language :: Python :: 3.9
+Requires-Python: >=3.8
