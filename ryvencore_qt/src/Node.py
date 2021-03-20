@@ -1,4 +1,4 @@
-from PySide2.QtCore import Signal
+from qtpy.QtCore import Signal
 
 from .ryvencore import *
 from .ryvencore import Node as RC_Node

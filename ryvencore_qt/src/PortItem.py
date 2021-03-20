@@ -1,7 +1,7 @@
-from PySide2.QtWidgets import QGraphicsGridLayout, QGraphicsWidget, \
+from qtpy.QtWidgets import QGraphicsGridLayout, QGraphicsWidget, \
     QGraphicsLayoutItem
-from PySide2.QtCore import Qt, QRectF, QPointF, QSizeF
-from PySide2.QtGui import QFontMetricsF, QFont
+from qtpy.QtCore import Qt, QRectF, QPointF, QSizeF
+from qtpy.QtGui import QFontMetricsF, QFont
 
 from .PortItemInputWidgets import RCIW_BUILTIN_SpinBox, RCIW_BUILTIN_LineEdit, RCIW_BUILTIN_LineEdit_small
 from .ryvencore.tools import deserialize

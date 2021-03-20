@@ -1,6 +1,6 @@
-from PySide2.QtWidgets import QWidget, QVBoxLayout, QLineEdit, QLabel, QScrollArea
-from PySide2.QtCore import Qt
-from PySide2.QtGui import QFont
+from qtpy.QtWidgets import QWidget, QVBoxLayout, QLineEdit, QLabel, QScrollArea
+from qtpy.QtCore import Qt
+from qtpy.QtGui import QFont
 
 from ..ryvencore.InfoMsgs import InfoMsgs
 from ..node_selection_widget.NodeWidget import NodeWidget

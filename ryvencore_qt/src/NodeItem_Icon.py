@@ -1,6 +1,6 @@
-from PySide2.QtCore import QSize, QRectF, QPointF, QSizeF
-from PySide2.QtGui import QPixmap, QImage, QPainter, QIcon, QPicture
-from PySide2.QtWidgets import QGraphicsPixmapItem, QGraphicsWidget, QGraphicsLayoutItem
+from qtpy.QtCore import QSize, QRectF, QPointF, QSizeF
+from qtpy.QtGui import QPixmap, QImage, QPainter, QIcon, QPicture
+from qtpy.QtWidgets import QGraphicsPixmapItem, QGraphicsWidget, QGraphicsLayoutItem
 
 from .tools import change_svg_color
 

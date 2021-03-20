@@ -1,4 +1,4 @@
-from PySide2.QtCore import QObject
+from qtpy.QtCore import QObject
 
 from .FlowView import FlowView
 

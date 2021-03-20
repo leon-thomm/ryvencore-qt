@@ -1,6 +1,6 @@
-from PySide2.QtCore import QObject, QPropertyAnimation, Property
-from PySide2.QtGui import QColor
-from PySide2.QtWidgets import QGraphicsItem
+from qtpy.QtCore import QObject, QPropertyAnimation, Property
+from qtpy.QtGui import QColor
+from qtpy.QtWidgets import QGraphicsItem
 
 
 class NodeItemAnimator(QObject):

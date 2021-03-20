@@ -1,6 +1,6 @@
-from PySide2.QtCore import QRectF, QPointF, QSizeF, Property
-from PySide2.QtGui import QFont, QFontMetricsF, QColor
-from PySide2.QtWidgets import QGraphicsWidget, QGraphicsLayoutItem, QGraphicsItem
+from qtpy.QtCore import QRectF, QPointF, QSizeF, Property
+from qtpy.QtGui import QFont, QFontMetricsF, QColor
+from qtpy.QtWidgets import QGraphicsWidget, QGraphicsLayoutItem, QGraphicsItem
 
 from .tools import get_longest_line
 

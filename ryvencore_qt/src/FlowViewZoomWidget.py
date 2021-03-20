@@ -1,4 +1,4 @@
-from PySide2.QtWidgets import QWidget, QPushButton, QHBoxLayout
+from qtpy.QtWidgets import QWidget, QPushButton, QHBoxLayout
 
 
 class FlowViewZoomWidget(QWidget):

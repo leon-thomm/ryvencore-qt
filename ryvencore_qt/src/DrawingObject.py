@@ -1,6 +1,6 @@
-from PySide2.QtWidgets import QGraphicsItem
-from PySide2.QtGui import QPen, QPainter, QColor, QPainterPath
-from PySide2.QtCore import Qt, QRectF, QPointF, QLineF
+from qtpy.QtWidgets import QGraphicsItem
+from qtpy.QtGui import QPen, QPainter, QColor, QPainterPath
+from qtpy.QtCore import Qt, QRectF, QPointF, QLineF
 
 from .tools import MovementEnum
 

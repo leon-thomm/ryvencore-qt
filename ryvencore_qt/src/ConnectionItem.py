@@ -1,8 +1,8 @@
 # import math
 
-from PySide2.QtCore import QRectF, QPointF
-from PySide2.QtGui import QPainter, QColor, QRadialGradient, QPainterPath, QPen, Qt
-from PySide2.QtWidgets import QGraphicsItem, QStyleOptionGraphicsItem
+from qtpy.QtCore import QRectF, QPointF
+from qtpy.QtGui import QPainter, QColor, QRadialGradient, QPainterPath, QPen, Qt
+from qtpy.QtWidgets import QGraphicsItem, QStyleOptionGraphicsItem
 
 from .tools import sqrt
 from .tools import pythagoras

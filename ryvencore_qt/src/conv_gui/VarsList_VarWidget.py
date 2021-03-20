@@ -1,6 +1,6 @@
-from PySide2.QtWidgets import QWidget, QHBoxLayout, QLabel, QMenu, QAction
-from PySide2.QtGui import QIcon, QDrag
-from PySide2.QtCore import QMimeData, Qt, QEvent, QByteArray
+from qtpy.QtWidgets import QWidget, QHBoxLayout, QLabel, QMenu, QAction
+from qtpy.QtGui import QIcon, QDrag
+from qtpy.QtCore import QMimeData, Qt, QEvent, QByteArray
 
 import json
 
