@@ -1,38 +1,60 @@
-rvencore is a framework for building flow-based visual scripting editors for Python. It comes from the Ryven project and will be the foundation for future Ryven versions amongst other editors. ryvencore lets you create Ryven-like editors which you then can optimize for specific domains. It provides a backend structure that enables a range of useful features and the GUI for the flows.
+rvencore-qt is a library for building flow-based visual scripting editors for Python with Qt. It comes from the Ryven project and will be the foundation for future Ryven versions amongst other editors. With ryvencore-qt you can create Ryven-like editors which you then can optimize for a specific domain. Technically, ryvencore-qt provides a Qt-based frontend for what is now referred to as *ryvencore*. However, ryvencore itself is currently still included in this repository until the API is solid enough to give it its own public repo. ryvencore might be the base for implementing other frontends in the future.
+
+With ryvencore-qt you get a system for managing the abstract flows as well as the whole GUI for them, besides further optional convenience widgets.
 
 ### Installation
 
 ```
-pip install ryvencore
+pip install ryvencore-qt
 ```
 
 ### Features
 
-- **load & save**
-- **variables system** with registration mechanism to build nodes that automatically adapt to change of data
-- **built in logging**
-- **simple nodes system** (see Usage below)
-- **dynamic nodes registration mechanism** to register and unregister nodes at runtime
-- **function nodes/subgraphs**
-- **right click operations system for nodes**
-- **you can add any Qt widgets to your nodes** (hence you could also embed your Python-Qt applications with GUI)
+- **load & save**  
+All serialization and loading of projects. Data is stored using `json`, and for some parts `pickle`.
+- **simple nodes system**  
+All information of a node is part of its class. A minimal node definition can be as short as this
+    ```python
+    import ryvencore_qt as rc
+    
+    class PrintNode(rc.Node):
+        title = 'Print'
+        description = 'prints your data'
+        init_inputs = [
+            rc.NodeInput('data')
+        ]
+        color = '#A9D5EF'
+    
+        def update_event(self, input_called=-1):
+            print(self.input(0))
+    ```
+    see also example below.
+- **dynamic nodes registration mechanism**
+- **function nodes/subgraphs**  
+You can define function scripts, which have their own flow plus input and output node, to define functions which you can then use as nodes just like this
+    ![](/docs/function_node.png)
+- **right click operations system for nodes**  
+Which can be edited through the API at any time.
+- **Qt widgets**  
+You can add custom QWidgets for your nodes, so you can also easily integrate your existing Python-Qt widgets.
 - **convenience GUI classes**
 - **many different modifiable themes**
-- **data *and* exec flow support**
-- **stylus support for adding handwritten notes**
+- **exec flow support**  
+While data flows are probably the most common use case, exec flows (like UnrealEngine BluePrints) are also supported.
+- **stylus support for adding handwritten notes**  
 - **rendering flow images**
-- **THREADING READY** [extremely experimental though]
-
-Threading ready means that all internal communication between the abstract components and the GUI of the flows is implemented in a somewhat thread save way, so, while still providing an intuitive API, ryvencore is compatible with applications that keep their abstract components in a separate thread. While this is currently a very experimental feature whose implementation will experience improvement in the future, all the foundation is there and successful tests have been made. A lot of work went into this and I think it's of crucial importance as this opens the door to the world of realtime data processing.
+- **variables system**  
+with registration mechanism to build nodes that automatically adapt to change of data
+- **built in logging**  
+- **threading ready**  
+All internal communication between the abstract components and the GUI of the flows is implemented in a somewhat thread-save way, so with ryvencore-qt you can keep the abstract components in a separate thread. While this is currently very experimental, first successful tests have been made and I think it's of crucial importance as this opens the door to the world of realtime data processing.
 
 ### Usage
-
-Following is a short example for a simple editor with a random number generator node and a print node. The example can also be found in the docs linked below.
 
 ``` python
 import sys
 from random import random
-import ryvencore as rc
+import ryvencore_qt as rc
 from PySide2.QtWidgets import QMainWindow, QApplication
 
 
@@ -41,13 +63,12 @@ class PrintNode(rc.Node):
     # all basic properties
     title = 'Print'
     description = 'prints your data'
-    # there is also description_html
     init_inputs = [
-        rc.NodeInput('data')
+        rc.NodeInputBP('data')
     ]
     init_outputs = []
     color = '#A9D5EF'
-    # see API doc for a full list of all properties
+    # see API doc for a full list of properties
 
     # we could also skip the constructor here
     def __init__(self, params):
@@ -63,7 +84,7 @@ class RandNode(rc.Node):
     title = 'Rand'
     description = 'generates random float'
     init_inputs = [
-        rc.NodeInput('data', widget='std line edit', widget_pos='besides')
+        rc.NodeInputBP('data', '', {'widget name': 'std line edit', 'widget pos': 'besides'})
     ]
     init_outputs = [
         rc.NodeOutput('data')
@@ -89,27 +110,28 @@ if __name__ == "__main__":
     session.register_nodes([PrintNode, RandNode])
     script = session.create_script('hello world', flow_view_size=[800, 500])
 
-    # and setting the flow widget as the windows central widget
-    mw.setCentralWidget(script.flow_view)
+    mw.setCentralWidget(session.flow_views(script))
 
     mw.show()
     sys.exit(app.exec_())
 ```
 
-I am excited about this, biggest room for improvement currently regards convenience GUI classes and touch support. For a more detailed overview visit the [docs page](https://leon-thomm.github.io/ryvencore/).
+For a more detailed overview visit the [docs page](https://leon-thomm.github.io/ryvencore/).
 
-### Future
+### Future Development
 
 #### Qt Dependency
 
-ryvencore could probably easily be modified to run without any GUI (it probably only needs a simple dummy `FlowView` class for `Script`). However, all the abstract internal components are QObjects to use Qt's signals and slots system, which is really nice when embedding a ryvencore editor into another Qt application. However, it means that the abstract components are not Qt independent. And it might make much more sense to soon introduce another system for simple communication that does not depend on Qt.
+I am currently investigating on options for a more scalable replacement for the Qt widgets which ryvencore's components use when running in gui mode. Following suggestions of others, I'm especially looking at brokerless message queues like ZeroMQ, NNG right now. This might ultimately enable scaling ryvencore into the web with a JS based frontend in the browser. That's clearly far far future, but very exciting and a point where contributions by users with more experience with this would be very welcome.
 
+<!--
 #### Code Generation
 
-I already made a working code generation prototype for Ryven 2. For Ryven 3 I made a new one, which currently has a (quite solvable) issue in the recursive module import when loading modules that are part of the current package (see this). For ryvencore, it might be possible to add the code generation algorithm for use under a few conditions regarding the file structure of the nodes that are used. In the end this, however, will probably also depend on how the *Qt Dependency* thing described above will evolve.
+I already made a working code generation prototype for Ryven 2. For Ryven 3 I made a new one, which currently has a (quite solvable) issue in the recursive module import when loading modules that are part of the current package...
+-->
 
 ### Contributing
 
-Contributions are very welcome. Due to my study, I myself will not have the time to work on this a lot during the next months. I did my best to create an internal structure that is a good foundation for further development.
+Due to my study, I myself will not be able to work on this a lot during the next months. I did my best to provide an internal structure that is a good foundation for further development. For discussing general ideas and suggestions, notice the *Discussions* section.
 
-For discussing general ideas, notice there is a *Discussions* area.
+Have a nice day!
