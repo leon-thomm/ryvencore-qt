@@ -1,4 +1,5 @@
 import sys
+import traceback
 
 
 class InfoMsgs:
@@ -6,15 +7,24 @@ class InfoMsgs:
     enabled."""
 
     enabled = False
+    enabled_errors = False
+    traceback_enabled = False
 
     @staticmethod
-    def enable():
+    def enable(traceback=False):
         InfoMsgs.enabled = True
+        InfoMsgs.traceback_enabled = traceback
+
+    @staticmethod
+    def enable_errors(traceback=True):
+        InfoMsgs.enabled_errors = True
+        InfoMsgs.traceback_enabled = traceback
 
     @staticmethod
     def disable():
         InfoMsgs.enabled = False
 
+    @staticmethod
     def write(*args):
         if not InfoMsgs.enabled:
             return
@@ -24,8 +34,9 @@ class InfoMsgs:
             s += ' '+str(arg)
         print('--> INFO: '+s)
 
+    @staticmethod
     def write_err(*args):
-        if not InfoMsgs.enabled:
+        if not (InfoMsgs.enabled or InfoMsgs.enabled_errors):
             return
 
         s = ''
@@ -33,6 +44,9 @@ class InfoMsgs:
             s += ' '+str(arg)
 
         sys.stderr.write(s)
+
+        if InfoMsgs.traceback_enabled:
+            sys.stderr.write(traceback.format_exc())
 
 
 

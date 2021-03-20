@@ -2,17 +2,16 @@ from PySide2.QtCore import QObject, Signal
 
 from .Connection import Connection
 from .Node import Node
-from .NodeObjPort import NodeObjPort
-from .RC import FlowAlg, PortObjPos
+from .NodePort import NodePort
+from .RC import FlowAlg, PortObjPos, CLASSES
 
 
 class Flow(QObject):
     """
-    Manages all abstract components (nodes, connections) and includes implementations for editing.
-    To enable threading, the communication between the Flow and the FlowView only
-    uses signals and slots.
-    Note that undo/redo operations are implemented in the FlowView, not the Flow.
+    Manages all abstract flow components (nodes, connections) and includes implementations for editing.
     """
+
+    # SIGNALS
 
     node_added = Signal(Node)
     node_removed = Signal(Node)
@@ -24,19 +23,16 @@ class Flow(QObject):
 
     algorithm_mode_changed = Signal(str)
 
+
     def __init__(self, session, script, parent=None):
         super().__init__(parent=parent)
 
         self.session = session
         self.script = script
         self.nodes: [Node] = []
-        self.nodes_initialized = {}
-        self._num_queued_building_nodes = 0
         self.connections: [Connection] = []
-        self._temp_config_data = None
-        self._build_connections_queue = None
-
         self.alg_mode = FlowAlg.DATA
+        self._tmp_data = None
 
 
     def load(self, config):
@@ -55,9 +51,7 @@ class Flow(QObject):
 
 
     def create_nodes_from_config(self, nodes_config: list):
-        """
-        Creates Nodes from nodes_config, previously returned by config_data
-        """
+        """Creates Nodes from nodes_config, previously returned by config_data"""
 
         nodes = []
 
@@ -101,12 +95,16 @@ class Flow(QObject):
 
         self.node_added.emit(node)
 
+        if self.session.no_gui:  # no node_placed()
+            node.load_user_config()
+            node.update()
+
 
     def node_placed(self, node: Node):
         """Triggered after the FlowWidget added the item to the scene;
         the node is finally initialized and updated here"""
 
-        node.load_config_data()
+        node.load_user_config()
         node.place_event()
         node.update()
 
@@ -153,7 +151,7 @@ class Flow(QObject):
         return connections
 
 
-    def check_connection_validity(self, p1: NodeObjPort, p2: NodeObjPort, emit=True) -> bool:
+    def check_connection_validity(self, p1: NodePort, p2: NodePort, emit=True) -> bool:
         """Checks whether a considered connect action is legal"""
 
         valid = True
@@ -171,7 +169,7 @@ class Flow(QObject):
         return valid
 
 
-    def connect_nodes(self, p1: NodeObjPort, p2: NodeObjPort):
+    def connect_nodes(self, p1: NodePort, p2: NodePort):
         """Connects nodes or disconnects them if they are already connected"""
 
         if not self.check_connection_validity(p1, p2, emit=False):
@@ -192,8 +190,8 @@ class Flow(QObject):
         #     for c in inp.connections:
         #         self.remove_connection(c)
 
-        c = self.session.DataConnClass((out, inp, self)) if out.type_ == 'data' else \
-            self.session.ExecConnClass((out, inp, self))
+        c = CLASSES['data conn']((out, inp, self)) if out.type_ == 'data' else \
+            CLASSES['exec conn']((out, inp, self))
         self.add_connection(c)
 
         return c
@@ -248,7 +246,7 @@ class Flow(QObject):
             self.generate_nodes_config(self.nodes), \
             self.generate_connections_config(self.nodes)
 
-        self._temp_config_data = cfg
+        self._tmp_data = cfg
         return cfg
 
 
@@ -256,7 +254,7 @@ class Flow(QObject):
         cfg = {}
         for n in nodes:
             cfg[n] = n.config_data()
-        self._temp_config_data = cfg
+        self._tmp_data = cfg
         # self.nodes_config_generated.emit(cfg)
         return cfg
 
@@ -289,6 +287,6 @@ class Flow(QObject):
 
                     cfg[c] = c_dict
 
-        self._temp_config_data = cfg
+        self._tmp_data = cfg
         # self.connections_config_generated.emit(cfg)
         return cfg

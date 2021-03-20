@@ -4,7 +4,7 @@ from PySide2.QtWidgets import QSpinBox, QLineEdit
 
 
 from .WidgetBaseClasses import IWB
-from .ryvencore.retain import M
+from .retain import M
 
 
 class RCIW_BUILTIN_SpinBox(QSpinBox, IWB):

@@ -2,7 +2,7 @@ from PySide2.QtCore import QRectF, QPointF, QSizeF, Property
 from PySide2.QtGui import QFont, QFontMetricsF, QColor
 from PySide2.QtWidgets import QGraphicsWidget, QGraphicsLayoutItem, QGraphicsItem
 
-from .ryvencore.tools import get_longest_line
+from .tools import get_longest_line
 
 
 class TitleLabel(QGraphicsWidget):

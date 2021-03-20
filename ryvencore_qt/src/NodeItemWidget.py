@@ -125,10 +125,10 @@ class NodeItemWidget(QGraphicsWidget):
         if self.node_item.collapsed:
             return
 
-        for inp in self.node.inputs:
-            self.add_input_to_layout(inp.item)
-        for out in self.node.outputs:
-            self.add_output_to_layout(out.item)
+        for inp_item in self.node_item.inputs:
+            self.add_input_to_layout(inp_item)
+        for out_item in self.node_item.outputs:
+            self.add_output_to_layout(out_item)
 
         if self.node_item.main_widget:
             self.add_main_widget_to_layout()

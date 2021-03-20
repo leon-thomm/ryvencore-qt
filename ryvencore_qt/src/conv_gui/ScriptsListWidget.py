@@ -14,7 +14,7 @@ class ScriptsListWidget(QWidget):
         super(ScriptsListWidget, self).__init__()
 
         self.session = session
-        self.session.new_script_created.connect(self.add_new_script)
+        self.session.script_flow_view_created.connect(self.add_new_script)
 
         self.list_widgets = []
         self.ignore_name_line_edit_signal = False  # because disabling causes firing twice otherwise

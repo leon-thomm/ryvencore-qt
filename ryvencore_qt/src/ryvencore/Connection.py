@@ -1,9 +1,9 @@
-from PySide2.QtCore import QObject
+from .Base import Base, Signal
 
 from .InfoMsgs import InfoMsgs
 
 
-class Connection(QObject):
+class Connection(Base):
     """
     The base class for both types of abstract connections. All data is transmitted through a connection from an output
     port to some connected input port. The classes ExecConnection and DataConnection are ready for reimplementation,
@@ -17,6 +17,7 @@ class Connection(QObject):
         self.out, self.inp, self.flow = params
 
     def activate(self):
+        """Causes forward propagation of information"""
         pass
 
 
@@ -25,21 +26,33 @@ class ExecConnection(Connection):
 
     def activate(self):
         """Causes an update in the input port"""
+        InfoMsgs.write('exec connection activated')
 
-        InfoMsgs.write('activating exec connection')
         self.inp.update()
 
 
 class DataConnection(Connection):
 
+    def __init__(self, params):
+        super().__init__(params)
+
+        self.data = None
+
     def get_val(self):
         """Gets the value of the output port"""
+        InfoMsgs.write('data connection getting value')
 
-        InfoMsgs.write('getting value from data connection')
-        return self.out.get_val()
+        # request data backwards
+        self.data = self.out.get_val()
+
+        return self.data
 
     def activate(self, data=None):
         """Passes data to the input port and causes update"""
+        InfoMsgs.write('data connection activated')
 
-        InfoMsgs.write('activating data connection')
+        # store data
+        self.data = data
+
+        # propagate data forward
         self.inp.update(data)

@@ -4,7 +4,8 @@ from PySide2.QtCore import Qt, QRectF, QPointF, QSizeF
 from PySide2.QtGui import QFontMetricsF, QFont
 
 from .PortItemInputWidgets import RCIW_BUILTIN_SpinBox, RCIW_BUILTIN_LineEdit, RCIW_BUILTIN_LineEdit_small
-from .ryvencore.tools import get_longest_line, shorten, deserialize
+from .ryvencore.tools import deserialize
+from .tools import get_longest_line, shorten
 
 from .FlowViewProxyWidget import FlowViewProxyWidget
 
@@ -26,7 +27,7 @@ class PortItem(QGraphicsWidget):
 
         self.pin = PortItemPin(self.port, self, self.node, self.node_item)
 
-        self.label = PortItemLabel(self.port, self.node)
+        self.label = PortItemLabel(self.port, self, self.node, self.node_item)
 
         self._layout = QGraphicsGridLayout()
         self._layout.setSpacing(0)
@@ -60,10 +61,13 @@ class InputPortItem(PortItem):
         self.widget = None
         self.proxy: FlowViewProxyWidget = None
 
-        if self.port.widget_config_data is not None:
+        if self.port.type_ == 'data':
+            self.port.val_updated.connect(self._port_val_updated)
+
+        if self.port.add_config and 'widget data' in self.port.add_config:
             self.create_widget()
             try:
-                c_d = self.port.widget_config_data
+                c_d = self.port.add_config['widget data']
                 if type(c_d) == dict:  # backwards compatibility
                     self.widget.set_data(c_d)
                 else:
@@ -86,16 +90,19 @@ class InputPortItem(PortItem):
         l.setAlignment(self.label, Qt.AlignVCenter | Qt.AlignLeft)
 
         if self.widget is not None:
-            if self.port.widget_pos == 'besides':
+            if self.port.add_config['widget pos'] == 'besides':
                 l.addItem(self.proxy, 0, 2)
-            elif self.port.widget_pos == 'below':
+            elif self.port.add_config['widget pos'] == 'below':
                 l.addItem(self.proxy, 1, 0, 1, 2)
             l.setAlignment(self.proxy, Qt.AlignCenter)
 
     def create_widget(self, configuration=None):
         if (self.port.type_ and self.port.type_ == 'data') or (configuration and configuration['type'] == 'data'):
 
-            wn = self.port.widget_name
+            if 'widget name' not in self.port.add_config:
+                return  # no input widget
+
+            wn = self.port.add_config['widget name']
 
             params = (self.port, self, self.node, self.node_item)
 
@@ -103,9 +110,7 @@ class InputPortItem(PortItem):
             _RCIW_BUILTIN_LineEdit = RCIW_BUILTIN_LineEdit if self.node.style == 'extended' else \
                 RCIW_BUILTIN_LineEdit_small
 
-            if wn is None:  # no input widget
-                return
-            elif wn == 'std line edit s':
+            if wn == 'std line edit s':
                 self.widget = _RCIW_BUILTIN_LineEdit(params, size='small')
             elif wn == 'std line edit m' or wn == 'std line edit':
                 self.widget = _RCIW_BUILTIN_LineEdit(params)
@@ -137,7 +142,7 @@ class InputPortItem(PortItem):
                 self.widget = self.get_input_widget_class(wn)(params)
 
 
-            self.proxy = FlowViewProxyWidget(self.flow_view, parent=self.node.item)
+            self.proxy = FlowViewProxyWidget(self.flow_view, parent=self.node_item)
             self.proxy.setWidget(self.widget)
 
     def get_input_widget_class(self, widget_name):
@@ -148,17 +153,17 @@ class InputPortItem(PortItem):
         """Disables the widget"""
         if self.widget:
             self.widget.setEnabled(False)
-        self.updated_val()
+        self._port_val_updated(self.port.val)
 
     def port_disconnected(self):
         """Enables the widget again"""
         if self.widget:
             self.widget.setEnabled(True)
 
-    def updated_val(self):
+    def _port_val_updated(self, val):
         """Called from output port"""
         if self.widget:
-            self.widget.val_update_event(self.port.val)
+            self.widget.val_update_event(val)
 
 
 class OutputPortItem(PortItem):
@@ -274,13 +279,14 @@ class PortItemPin(QGraphicsWidget):
 
 
 class PortItemLabel(QGraphicsWidget):
-    def __init__(self, port, node):
-        super(PortItemLabel, self).__init__(node.item)
+    def __init__(self, port, port_item, node, node_item):
+        super(PortItemLabel, self).__init__(node_item)
         self.setGraphicsItem(self)
 
         self.port = port
+        self.port_item = port_item
         self.node = node
-        self.node_item = node.item
+        self.node_item = node_item
 
         self.font = QFont("Source Code Pro", 10, QFont.Bold)
         font_metrics = QFontMetricsF(self.font)  # approximately! the designs can use different fonts

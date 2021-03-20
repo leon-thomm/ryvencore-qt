@@ -5,8 +5,8 @@ from setuptools import setup
 setup(
     name='ryvencore-qt',
     version='0.0.0',
-    license='MIT',
-    description='Qt based library for making flow-based visual programming editors',
+    license='LGPLv3',
+    description='Python Library for building Visual Scripting Editors with Qt',
     author='Leon Thomm',
     author_email='l.thomm@mailbox.org',
     packages=[
@@ -23,7 +23,11 @@ setup(
     ],
     include_package_data=True,
     classifiers=[
-        "Programming Language :: Python :: 3"
+        "Development Status :: 2 - Pre-Alpha",
+        "License :: OSI Approved :: GNU Lesser General Public License v3 or later (LGPLv3+)",
+        "Programming Language :: Python :: 3",
+        "Programming Language :: Python :: 3.8",
+        "Programming Language :: Python :: 3.9",
     ],
     python_requires='>=3.8',
     install_requires=['PySide2'],

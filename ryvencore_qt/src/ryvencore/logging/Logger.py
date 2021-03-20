@@ -1,9 +1,9 @@
-from PySide2.QtCore import QObject, Signal
+from ..Base import Base, Signal
 
 from .Log import Log
 
 
-class Logger(QObject):
+class Logger(Base):
     """Manages all logs that belong to the script."""
 
     new_log_created = Signal(Log)

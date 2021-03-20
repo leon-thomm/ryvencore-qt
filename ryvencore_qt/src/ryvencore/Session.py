@@ -1,18 +1,15 @@
-from PySide2.QtCore import QObject, Signal
-from PySide2.QtWidgets import QWidget
-from ..ConnectionItem import DataConnectionItem, ExecConnectionItem  # TODO [!DEPENDENCY!]
+from .Base import Base, Signal
 
-from .Connection import DataConnection, ExecConnection
 
 from .Script import Script
 from .FunctionScript import FunctionScript
-from .FunctionNodeTypes import FunctionInputNode, FunctionOutputNode
-from ..SessionThreadingBridge import SessionThreadingBridge  # TODO [!DEPENDENCY!]
 from .InfoMsgs import InfoMsgs
-from ..Design import Design  # TODO [!DEPENDENCY!]
+from .RC import CLASSES
+from .Node import Node
+from .Connection import DataConnection, ExecConnection
 
 
-class Session(QObject):
+class Session(Base):
     """The Session is the top level interface to an editor, it represents a project and manages all project-wide
     components, i.e. Scripts, FunctionScripts and Node blueprints."""
 
@@ -20,59 +17,29 @@ class Session(QObject):
     script_renamed = Signal(Script)
     script_deleted = Signal(Script)
 
-
     def __init__(
             self,
-            threaded: bool = False,
-            gui_parent: QWidget = None,
-            flow_theme_name=None,
-            performance_mode=None,
-            data_conn_class=None,
-            data_conn_item_class=None,
-            exec_conn_class=None,
-            exec_conn_item_class=None,
-            parent: QObject = None
+            no_gui=False,
     ):
-        super().__init__(parent=parent)
+        super().__init__()
 
-        Design._register_fonts()
+        if not CLASSES['data conn']:
+            CLASSES['data conn'] = DataConnection
+        if not CLASSES['exec conn']:
+            CLASSES['exec conn'] = ExecConnection
+        if not CLASSES['node base']:
+            CLASSES['node base'] = Node
 
-        # BASE CLASSES
-        self.DataConnClass = DataConnection
-        self.DataConnItemClass = DataConnectionItem
-        self.ExecConnClass = ExecConnection
-        self.ExecConnItemClass = ExecConnectionItem
-
-        if data_conn_class:
-            self.DataConnClass = data_conn_class
-        if data_conn_item_class:
-            self.DataConnItemClass = data_conn_item_class
-        if exec_conn_class:
-            self.ExecConnClass = exec_conn_class
-        if exec_conn_item_class:
-            self.ExecConnItemClass = exec_conn_item_class
-
+        # initialize node classes for FunctionScripts with correct Node base
+        FunctionScript.build_node_classes()
 
         # ATTRIBUTES
         self.scripts: [Script] = []
         self.function_scripts: [FunctionScript] = []
         self.nodes = []  # list of node CLASSES
-        self.invisible_nodes = [FunctionInputNode, FunctionOutputNode]  # might change that system in the future
+        self.invisible_nodes = [FunctionScript.FunctionInputNode, FunctionScript.FunctionOutputNode]  # might change that system in the future
+        self.no_gui = no_gui
 
-        #   threading
-        self.threaded = threaded
-        self.threading_bridge = None
-        self.gui_parent = gui_parent
-        if self.threaded:
-            self.threading_bridge = SessionThreadingBridge()
-            self.threading_bridge.moveToThread(gui_parent.thread())
-
-        #   design
-        self.design = Design()
-        if flow_theme_name:
-            self.design.set_flow_theme(name=flow_theme_name)
-        if performance_mode:
-            self.design.set_performance_mode(performance_mode)
 
     def register_nodes(self, node_classes: list):
         """Registers a list of Nodes which you then can access in all scripts"""
@@ -97,27 +64,44 @@ class Session(QObject):
         self.nodes.remove(node_class)
 
 
-    def create_script(self, title: str, flow_view_size: list = None, create_default_logs=True) -> Script:
-        """Creates and returns a new script"""
+    def create_script(self, title: str = None, create_default_logs=True,
+                      config: dict = None) -> Script:
 
-        script = Script(session=self, title=title, flow_view_size=flow_view_size, create_default_logs=create_default_logs)
+        """Creates and returns a new script.
+        If a config is provided the title parameter will be ignored."""
+
+        script = Script(
+            session=self, title=title, create_default_logs=create_default_logs,
+            config_data=config
+        )
 
         self.scripts.append(script)
+        script.load_flow()
         self.new_script_created.emit(script)
 
         return script
 
 
-    def create_func_script(self, title: str, flow_view_size: list = None, create_default_logs=True) -> Script:
-        """Creates and returns a new FUNCTION script"""
+    def create_func_script(self, title: str = None, create_default_logs=True,
+                           config: dict = None) -> Script:
+
+        """Creates and returns a new function script.
+        If a config is provided the title parameter will be ignored and the script will not be initialized,
+        which you need to do manually after you made sure that the config doesnt contain other function nodes
+        that have not been loaded yet."""
 
         func_script = FunctionScript(
-            session=self, title=title, flow_view_size=flow_view_size, create_default_logs=create_default_logs
+            session=self, title=title, create_default_logs=create_default_logs,
+            config_data=config
         )
-        func_script.initialize()
 
         self.function_scripts.append(func_script)
-        self.new_script_created.emit(func_script)
+
+        # if config is provided, the script's flow contains content that might include
+        # functions nodes that are not loaded yet, so initialization is triggered manually from outside then
+        if not config:
+            func_script.load_flow()
+            self.new_script_created.emit(func_script)
 
         return func_script
 
@@ -127,23 +111,23 @@ class Session(QObject):
         return self.function_scripts + self.scripts
 
 
-    def _load_script(self, config: dict):
-        """Loads a script from a project dict; emits new_script_created"""
-
-        script = Script(session=self, config_data=config)
-        self.scripts.append(script)
-        self.new_script_created.emit(script)
-        return script
-
-    def _load_func_script(self, config: dict):
-        """Loads a function script from a project dict without initializing it"""
-
-        fscript = FunctionScript(session=self, config_data=config)
-        self.function_scripts.append(fscript)
-
-        # NOTE: no script_created emit here because the fscript hasn't finished initializing yet
-
-        return fscript
+    # def _load_script(self, config: dict):
+    #     """Loads a script from a project dict; emits new_script_created"""
+    #
+    #     script = Script(session=self, config_data=config)
+    #     self.scripts.append(script)
+    #     self.new_script_created.emit(script)
+    #     return script
+    #
+    # def _load_func_script(self, config: dict):
+    #     """Loads a function script from a project dict without initializing it"""
+    #
+    #     fscript = FunctionScript(session=self, config_data=config)
+    #     self.function_scripts.append(fscript)
+    #
+    #     # NOTE: no script_created emit here because the fscript hasn't finished initializing yet
+    #
+    #     return fscript
 
 
     def rename_script(self, script: Script, title: str):
@@ -182,26 +166,28 @@ class Session(QObject):
         return InfoMsgs
 
 
-    def load(self, project: dict) -> bool:
-        """Loads a project and raises an error if required nodes are missing"""
-        if 'scripts' not in project and 'function scripts' not in project:
-            return False
+    def load(self, project: dict) -> ([Script], [Script]):
+        """Loads a project and raises an exception if required nodes are missing"""
 
+        if 'scripts' not in project and 'function scripts' not in project:
+            raise Exception('not a valid project dict')
+
+        new_func_scripts = []
         if 'function scripts' in project:
-            new_func_scripts = []
             for fsc in project['function scripts']:
-                new_func_scripts.append(self._load_func_script(config=fsc))
+                new_func_scripts.append(self.create_func_script(config=fsc))
 
             # now all func nodes have been registered, so we can initialize the scripts
 
             for fs in new_func_scripts:
-                fs.initialize()
+                fs.load_flow()
                 self.new_script_created.emit(fs)
 
+        new_scripts = []
         for sc in project['scripts']:
-            self._load_script(config=sc)
+            new_scripts.append(self.create_script(config=sc))
 
-        return True
+        return new_func_scripts, new_scripts
 
 
     def serialize(self) -> dict:
@@ -232,13 +218,6 @@ class Session(QObject):
         return nodes
 
 
-    def save_as_project(self, fpath: str):
-        """Convenience method for directly saving the the all content as project to a file"""
-        pass
-
-
-    def set_stylesheet(self, s: str):
-        """Sets the session's stylesheet which can be accessed by NodeItems.
-        You usually want this to be the same as your window's stylesheet."""
-
-        self.design.global_stylesheet = s
+    # def save_as_project(self, fpath: str):
+    #     """Convenience method for directly saving the the all content as project to a file"""
+    #     pass

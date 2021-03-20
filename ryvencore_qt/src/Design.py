@@ -22,6 +22,7 @@ class Design(QObject):
 
         self.flow_themes = []
         self.flow_theme: FlowTheme = None
+        self.default_flow_size = None
         self.performance_mode: str = None
         self.node_item_shadows_enabled: bool = None
         self.animations_enabled: bool = None
@@ -31,9 +32,11 @@ class Design(QObject):
         self.register_flow_themes()
         self._default_flow_theme = self.flow_themes[-1]
         self.set_performance_mode('pretty')
+        self.set_animations_enabled(True)
+        self.default_flow_size = [1000, 700]
         self.set_flow_theme(self._default_flow_theme)
 
-    def _register_fonts():
+    def register_fonts():
         QFontDatabase.addApplicationFont(
             Location.PACKAGE_PATH + '/resources/fonts/poppins/Poppins-Medium.ttf'
         )
@@ -79,6 +82,9 @@ class Design(QObject):
 
         if 'init performance mode' in IMPORT_DATA:
             self.set_performance_mode(IMPORT_DATA['init performance mode'])
+
+        if 'default flow size' in IMPORT_DATA:
+            self.default_flow_size = IMPORT_DATA['default flow size']
 
     def available_flow_themes(self) -> dict:
         return {theme.name: theme for theme in self.flow_themes}

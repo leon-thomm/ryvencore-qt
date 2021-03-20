@@ -3,7 +3,7 @@ from PySide2.QtGui import Qt
 from PySide2.QtWidgets import QGraphicsWidget, QGraphicsLayoutItem
 
 from ryvencore_qt.src.GlobalAttributes import Location
-from .ryvencore.tools import change_svg_color
+from .tools import change_svg_color
 
 
 class NodeItem_CollapseButton(QGraphicsWidget):

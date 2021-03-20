@@ -1,0 +1,7 @@
+.idea/
+__pycache__/
+venv/
+build/
+dist/
+ryvencore_qt.egg-info/
+site/

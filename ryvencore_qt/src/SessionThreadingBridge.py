@@ -10,6 +10,6 @@ class SessionThreadingBridge(QObject):
     """
 
     # @staticmethod
-    def script_request__create_flow_view(self, script, params):
+    def init_flow_view(self, caller, params):
         view = FlowView(*params)
-        script.tmp_data = view
+        caller.tmp_data = view

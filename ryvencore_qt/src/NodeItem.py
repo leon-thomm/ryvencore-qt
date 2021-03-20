@@ -2,12 +2,13 @@ from PySide2.QtWidgets import QGraphicsItem, QMenu, QGraphicsDropShadowEffect
 from PySide2.QtCore import Qt, QRectF, QObject, QPointF
 from PySide2.QtGui import QColor
 
-from .ryvencore.NodeObjPort import NodeObjInput, NodeObjOutput
+from .ryvencore.NodePort import NodeInput, NodeOutput
 from .NodeItemAction import NodeItemAction
 from .NodeItemAnimator import NodeItemAnimator
 from .NodeItemWidget import NodeItemWidget
 from .PortItem import InputPortItem, OutputPortItem
-from .ryvencore.tools import MovementEnum, serialize, deserialize
+from .ryvencore.tools import serialize, deserialize
+from .tools import MovementEnum
 
 
 class NodeItem(QGraphicsItem, QObject):
@@ -41,7 +42,6 @@ class NodeItem(QGraphicsItem, QObject):
         # self.temp_state_data = None
         self.init_config = config
 
-
         # CONNECT TO NODE
         self.node.updated.connect(self.update)
         self.node.update_shape_triggered.connect(self.update_shape)
@@ -52,14 +52,11 @@ class NodeItem(QGraphicsItem, QObject):
         self.node.input_removed.connect(self.remove_input)
         self.node.output_removed.connect(self.remove_output)
 
-
         # FLAGS
         self.setFlags(QGraphicsItem.ItemIsSelectable | QGraphicsItem.ItemIsMovable |
                       QGraphicsItem.ItemSendsScenePositionChanges)
         self.setAcceptHoverEvents(True)
         self.setCacheMode(QGraphicsItem.DeviceCoordinateCache)
-
-
 
         # UI
         self.shadow_effect = None
@@ -74,13 +71,11 @@ class NodeItem(QGraphicsItem, QObject):
         if self.node.description_html:
             self.setToolTip(self.node.description_html)
         elif self.node.description != '':
-            self.setToolTip('<html><head/><body><p>'+self.node.description+'</p></body></html>')
+            self.setToolTip('<html><head/><body><p>' + self.node.description + '</p></body></html>')
         self.setCursor(Qt.SizeAllCursor)
 
         # DESIGN THEME
         self.session_design.flow_theme_changed.connect(self.update_design)
-
-
 
     def initialize(self):
         """All ports and the main widget get finally created here."""
@@ -104,7 +99,6 @@ class NodeItem(QGraphicsItem, QObject):
         for o in self.node.outputs:
             self.add_new_output(o, -1)
 
-
         self.initializing = False
 
         # No self.update_shape() here because for some reason, the bounding rect hasn't been initialized yet, so
@@ -115,35 +109,39 @@ class NodeItem(QGraphicsItem, QObject):
 
         self.update()  # ... not sure if I need that
 
-
-
     # --------------------------------------------------------------------------------------
     # UI STUFF ----------------------------------------
-
 
     def node_updated(self):
         if self.session_design.animations_enabled:
             self.animator.start()
 
-
-    def add_new_input(self, inp: NodeObjInput, pos: int):
+    def add_new_input(self, inp: NodeInput, pos: int):
 
         # create item
-        inp.item = InputPortItem(inp.node, self, inp)
+        # inp.item = InputPortItem(inp.node, self, inp)
+        item = InputPortItem(inp.node, self, inp)
 
         if pos == -1:
-            self.inputs.append(inp.item)
-            self.widget.add_input_to_layout(inp.item)
+            self.inputs.append(item)
+            self.widget.add_input_to_layout(item)
         else:
-            self.inputs.insert(pos, inp.item)
-            self.widget.insert_input_into_layout(pos, inp.item)
+            self.inputs.insert(pos, item)
+            self.widget.insert_input_into_layout(pos, item)
 
         if not self.initializing:
             self.update_shape()
             self.update()
 
-    def remove_input(self, inp: NodeObjInput):
-        item = inp.item
+    def remove_input(self, inp: NodeInput):
+        item = None
+        for inp_item in self.inputs:
+            if inp_item.port == inp:
+                item = inp_item
+                break
+
+        # index = self.node.inputs.index(inp)
+        # item = self.inputs[index]
 
         # for some reason, I have to remove all widget items manually from the scene too. setting the items to
         # ownedByLayout(True) does not work, I don't know why.
@@ -159,24 +157,32 @@ class NodeItem(QGraphicsItem, QObject):
             self.update_shape()
             self.update()
 
-    def add_new_output(self, out: NodeObjOutput, pos: int):
+    def add_new_output(self, out: NodeOutput, pos: int):
 
         # create item
-        out.item = OutputPortItem(out.node, self, out)
+        # out.item = OutputPortItem(out.node, self, out)
+        item = OutputPortItem(out.node, self, out)
 
         if pos == -1:
-            self.outputs.append(out.item)
-            self.widget.add_output_to_layout(out.item)
+            self.outputs.append(item)
+            self.widget.add_output_to_layout(item)
         else:
-            self.outputs.insert(pos, out.item)
-            self.widget.insert_output_into_layout(pos, out.item)
+            self.outputs.insert(pos, item)
+            self.widget.insert_output_into_layout(pos, item)
 
         if not self.initializing:
             self.update_shape()
             self.update()
 
-    def remove_output(self, out: NodeObjOutput):
-        item = out.item
+    def remove_output(self, out: NodeOutput):
+        item = None
+        for out_item in self.outputs:
+            if out_item.port == out:
+                item = out_item
+                break
+
+        # index = self.node.outputs.index(out)
+        # item = self.outputs[index]
 
         # see remove_input() for info!
         self.scene().removeItem(item.pin)
@@ -188,7 +194,6 @@ class NodeItem(QGraphicsItem, QObject):
         if not self.initializing:
             self.update_shape()
             self.update()
-
 
     def update_shape(self):
         self.widget.update_shape()
@@ -218,8 +223,8 @@ class NodeItem(QGraphicsItem, QObject):
         rect = QRectF()
         w = self.widget.layout().geometry().width()
         h = self.widget.layout().geometry().height()
-        rect.setLeft(-w/2)
-        rect.setTop(-h/2)
+        rect.setLeft(-w / 2)
+        rect.setTop(-h / 2)
         rect.setWidth(w)
         rect.setHeight(h)
         return rect
@@ -227,16 +232,16 @@ class NodeItem(QGraphicsItem, QObject):
     def get_left_body_header_vertex_scene_pos(self):
         return self.mapToScene(
             QPointF(
-                -self.boundingRect().width()/2,
-                -self.boundingRect().height()/2 + self.widget.header_widget.rect().height()
+                -self.boundingRect().width() / 2,
+                -self.boundingRect().height() / 2 + self.widget.header_widget.rect().height()
             )
         )
 
     def get_right_body_header_vertex_scene_pos(self):
         return self.mapToScene(
             QPointF(
-                +self.boundingRect().width()/2,
-                -self.boundingRect().height()/2 + self.widget.header_widget.rect().height()
+                +self.boundingRect().width() / 2,
+                -self.boundingRect().height() / 2 + self.widget.header_widget.rect().height()
             )
         )
 
@@ -248,7 +253,6 @@ class NodeItem(QGraphicsItem, QObject):
         self.widget.show_unused_ports()
         self.update_shape()
 
-
     def expand(self):
         self.collapsed = False
         self.widget.expand()
@@ -259,9 +263,7 @@ class NodeItem(QGraphicsItem, QObject):
         self.widget.collapse()
         self.update_shape()
 
-
     #   PAINTING
-
 
     def paint(self, painter, option, widget=None):
         """All painting is done by NodeItemPainter"""
@@ -270,7 +272,6 @@ class NodeItem(QGraphicsItem, QObject):
         # has to be called once. See here:
         # https://forum.qt.io/topic/117179/force-qgraphicsitem-to-update-immediately-wait-for-update-event/4
         if not self.painted_once:
-
             # ok, quick notice. Since I am using a NodeItemWidget, calling self.update_design() here (again)
             # leads to a QT crash without error, which is really strange. Calling update_design multiple times
             # principally isn't a problem, but, for some reason, here it leads to a crash in QT. It's not necessary
@@ -290,10 +291,9 @@ class NodeItem(QGraphicsItem, QObject):
             h=self.boundingRect().height(),
             bounding_rect=self.boundingRect(),
             title_rect=self.widget.header_widget.boundingRect()
-                       if self.widget.header_widget
-                       else self.widget.title_label.boundingRect()
+            if self.widget.header_widget
+            else self.widget.title_label.boundingRect()
         )
-
 
         # useful for widget development:
 
@@ -317,12 +317,9 @@ class NodeItem(QGraphicsItem, QObject):
         # )
         # painter.drawRect(body_rect)
 
-
         self.painted_once = True
 
-
     # MOUSE INTERACTION
-
 
     def get_context_menu(self):
         menu = QMenu(self.flow_view)
@@ -414,9 +411,7 @@ class NodeItem(QGraphicsItem, QObject):
         self.movement_state = None
         return QGraphicsItem.mouseReleaseEvent(self, event)
 
-
     # ACTIONS
-
 
     def get_actions(self, actions_dict, menu):
         actions = []
@@ -430,13 +425,9 @@ class NodeItem(QGraphicsItem, QObject):
                     data = v_dict['data']
                 except KeyError:
                     pass
-                action = NodeItemAction(text=k, method=method, menu=menu, data=data)
-                if self.flow_view.session.threaded:
-                    action.triggered_with_data__thread.connect(self.flow_view.thread_interface.trigger_node_action)
-                    action.triggered_without_data__thread.connect(self.flow_view.thread_interface.trigger_node_action)
-                else:
-                    action.triggered_with_data.connect(method)  # see NodeItemAction for explanation
-                    action.triggered_without_data.connect(method)  # see NodeItemAction for explanation
+                action = NodeItemAction(node=self.node, text=k, method=method, menu=menu, data=data)
+                action.triggered_with_data.connect(self.flow_view.thread_interface.trigger_node_action)
+                action.triggered_without_data.connect(self.flow_view.thread_interface.trigger_node_action)
 
                 actions.append(action)
             except KeyError:
@@ -448,9 +439,7 @@ class NodeItem(QGraphicsItem, QObject):
 
         return actions
 
-
     # CONFIG
-
 
     def complete_config(self, node_config):
         # add input widgets config
@@ -461,9 +450,9 @@ class NodeItem(QGraphicsItem, QObject):
             if inp_item.port.type_ == 'data':
                 if inp_item.widget:
                     input_cfg['has widget'] = True
-                    input_cfg['widget name'] = inp_item.port.widget_name
+                    input_cfg['widget name'] = inp_item.port.add_config['widget name']
                     input_cfg['widget data'] = serialize(inp_item.widget.get_data())
-                    input_cfg['widget position'] = inp_item.port.widget_pos
+                    input_cfg['widget pos'] = inp_item.port.add_config['widget pos']
                 else:
                     input_cfg['has widget'] = False
                 node_config['inputs'][i] = input_cfg

@@ -1,14 +1,13 @@
-from PySide2.QtCore import QObject, Signal
+from .Base import Base, Signal
 
-from .NodeObjPort import NodeObjInput, NodeObjOutput
 from .NodePort import NodeInput, NodeOutput
+from .NodePortBP import NodeInputBP, NodeOutputBP
 from .logging.Log import Log
-from .retain import M
 from .InfoMsgs import InfoMsgs
 from .tools import serialize, deserialize
 
 
-class Node(QObject):
+class Node(Base):
     """Base class for all node blueprints. Such a blueprint is defined by its class, which is registered
     in the session, and actual node objects are instances of it. The static properties are stored using
     static attributes, which works really well in Python.
@@ -16,34 +15,18 @@ class Node(QObject):
 
     # SIGNALS
     updated = Signal()
-    update_shape_triggered = Signal()
-    hide_unused_ports_triggered = Signal()
-    show_unused_ports_triggered = Signal()
-    input_added = Signal(NodeObjInput, int)
-    output_added = Signal(NodeObjOutput, int)
-    input_removed = Signal(NodeObjInput)
-    output_removed = Signal(NodeObjOutput)
+    input_added = Signal(NodeInput, int)
+    output_added = Signal(NodeOutput, int)
+    input_removed = Signal(NodeInput)
+    output_removed = Signal(NodeOutput)
 
     # STATIC FIELDS
     title = ''
-    # display_title = ''  TODO: Node display_title
     type_ = ''
-    init_inputs: [NodeInput] = []
-    init_outputs: [NodeOutput] = []
+    init_inputs: [NodeInputBP] = []
+    init_outputs: [NodeOutputBP] = []
     identifier: str = None  # set by Session if None
     description: str = ''
-    description_html: str = None
-    main_widget_class: list = None
-    main_widget_pos: str = 'below ports'
-    input_widget_classes: dict = {}
-    style: str = 'extended'
-    color: str = '#c69a15'
-    icon: str = None
-
-    class SIGNALS(QObject):
-        """A class for defining QT signals to communicate with GUI components safely in threaded environments.
-        I wanted to do it this way to enable Qt independent source code generation in the future."""
-        pass
 
     def __init__(self, params):
         super().__init__()
@@ -51,40 +34,35 @@ class Node(QObject):
         self.flow, design, config = params
         self.script = self.flow.script
         self.session = self.script.session
-        self.inputs: [NodeInput] = []
-        self.outputs: [NodeOutput] = []
-        self.default_actions = self.init_default_actions()
-        self.special_actions = {}
+        self.inputs: [NodeInputBP] = []
+        self.outputs: [NodeOutputBP] = []
         self.logs = []
-        self.signals = self.SIGNALS()
-        # self.display_title = self.title
 
         self.init_config = config
         self.initialized = False
 
-        self.item = None  # set by the flow view
-
     def finish_initialization(self):
-        """Loads the initial config if it was provided, set up all inputs and outputs, enables the logs and calls
-        self._initialized() for subclasses"""
+        """
+        Loads all default properties from initial config if it was provided;
+        sets up inputs and outputs, enables the logs, loads custom (std) config
+        and calls self._initialized()
+        """
 
         if self.init_config:
             self.setup_ports(self.init_config['inputs'], self.init_config['outputs'])
 
-            self.special_actions = self.set_special_actions_data(self.init_config['special actions'])
+            self.load_custom_config(self.init_config)
 
         else:
             self.setup_ports()
 
         self.enable_logs()
-
         self._initialized()
-
         self.initialized = True
 
         # self.update()
 
-    def load_config_data(self):
+    def load_user_config(self):
         """Loads the component-specific config data that was returned by get_data() previously; prints an exception
         if it fails but doesn't crash, as this always happens when developing nodes"""
 
@@ -95,14 +73,10 @@ class Node(QObject):
                 else:
                     self.set_data(deserialize(self.init_config['state data']))
             except Exception as e:
-                print('Exception while setting data in', self.title, 'Node:', e,
-                      ' (was this intended?)')
+                InfoMsgs.write_err(
+                    'Exception while setting data in', self.title, 'Node:', e,
+                    ' (was this intended?)')
 
-    def init_default_actions(self) -> dict:
-        return {
-            'update shape': {'method': self.update_shape},
-            'hide unused ports': {'method': self.hide_unused_ports}
-        }
 
     def setup_ports(self, inputs_config=None, outputs_config=None):
 
@@ -111,8 +85,9 @@ class Node(QObject):
                 inp = self.init_inputs[i]
                 self.create_input(
                     inp.type_, inp.label,
-                    widget_name=self.init_inputs[i].widget_name,
-                    widget_pos =self.init_inputs[i].widget_pos
+                    add_config=self.init_inputs[i].add_config
+                    # widget_name=self.init_inputs[i].widget_name,
+                    # widget_pos =self.init_inputs[i].widget_pos
                 )
 
             for o in range(len(self.init_outputs)):
@@ -121,22 +96,18 @@ class Node(QObject):
 
         else:  # when loading saved Nodes, the init_inputs and init_outputs are irrelevant
             for inp in inputs_config:
-                has_widget = inp['has widget'] if inp['type'] == 'data' else False
+                # has_widget = inp['has widget'] if inp['type'] == 'data' else False
 
                 self.create_input(
                     type_=inp['type'], label=inp['label'],
-                    widget_name=inp['widget name'] if has_widget else None,
-                    widget_pos =inp['widget position'] if has_widget else None,
-                    config=inp['widget data'] if has_widget else None
+                    add_config=inp,
+                    # widget_name=inp['widget name'] if has_widget else None,
+                    # widget_pos =inp['widget position'] if has_widget else None,
+                    # config=inp['widget data'] if has_widget else None
                 )
 
             for out in outputs_config:
                 self.create_output(out['type'], out['label'])
-
-    def main_widget(self):
-        return self.item.main_widget
-
-
 
 
     #                        __                             _    __     __
@@ -157,8 +128,9 @@ class Node(QObject):
             self.update_event(input_called)
             self.updated.emit()
         except Exception as e:
-            InfoMsgs.write_err('EXCEPTION IN', self.title, 'NI:', e)
+            InfoMsgs.write_err('EXCEPTION IN', self.title, 'Node:', e)
 
+    # OVERRIDE
     def update_event(self, input_called=-1):
         """Gets called when an input received a signal or some node requested data of an output in exec mode"""
 
@@ -172,11 +144,6 @@ class Node(QObject):
         InfoMsgs.write('input called in', self.title, 'Node:', index)
         return self.inputs[index].get_val()
 
-    def input_widget(self, index: int):
-        """Returns a reference to the widget of the corresponding input"""
-
-        return self.inputs[index].item.widget
-
     def exec_output(self, index: int):
         """Executes an exec output, causing activation of all connections"""
 
@@ -187,15 +154,54 @@ class Node(QObject):
 
         self.outputs[index].set_val(val)
 
+    # OVERRIDE
     def place_event(self):
-        """Called once the GUI item for the node has been created and placed in the scene and therefore all
-        widgets have been created"""
+        """
+        called once all GUI for the node has been created;
+        any initial communication to widgets is supposed to happen here;
+        this method is not called when running without gui
+        """
 
         pass
 
+    # OVERRIDE
     def remove_event(self):
-        """Called when the node is removed from the flow, useful for stopping threads and timers, etc."""
+        """Called when the node is removed from the flow; useful for stopping threads and timers etc."""
 
+        pass
+
+    # OVERRIDE
+    def _initialized(self):
+        """Called once all the node's components (including inputs, outputs) have been initialized"""
+
+        pass
+
+    # OVERRIDE
+    def custom_config_data(self) -> dict:
+        """Convenience method for saving some std config for all nodes in an editor.
+        get_data()/set_data() then stays clean for all specific node subclasses"""
+
+        return {}
+
+    # OVERRIDE
+    def load_custom_config(self, data: dict):
+        """For loading the data returned by custom_config_data()"""
+        pass
+
+    # OVERRIDE
+    def get_data(self) -> dict:
+        """
+        Used to store node-specific custom data that needs to be reloaded when loading a project or pasting copied
+        components. All values will be serialized by pickle and base64. The corresponding method for the opposite
+        operation is set_data().
+        """
+        return {}
+
+    # OVERRIDE
+    def set_data(self, data: dict):
+        """
+        Used for reloading node-specific custom data which has been previously returned by get_data()
+        """
         pass
 
     #                                 _
@@ -204,12 +210,6 @@ class Node(QObject):
     #            / /_/ /  / /_/ /  / /
     #            \__,_/  / .___/  /_/
     #                   /_/
-
-
-    def _initialized(self):
-        """Called after the node has been initialized and the GUI item has been created."""
-
-        pass
 
 
     # LOGGING
@@ -224,7 +224,7 @@ class Node(QObject):
         return new_log
 
     def disable_logs(self):
-        """Disables custom Logs"""
+        """Disables custom logs"""
 
         for log in self.logs:
             log.disable()
@@ -241,50 +241,22 @@ class Node(QObject):
         self.script.logger.log_message(msg, target)
 
 
-    # SHAPE
-
-
-    def update_shape(self):
-        """Causes recompilation of the whole shape of the GUI item."""
-
-        # self.item.update_shape()
-        self.update_shape_triggered.emit()
-
-    def hide_unused_ports(self):
-        """Causes the GUI item to hide all unconnected ports"""
-
-        del self.default_actions['hide unused ports']
-        self.default_actions['show unused ports'] = {'method': self.show_unused_ports}
-        self.hide_unused_ports_triggered.emit()
-
-    def show_unused_ports(self):
-        """Causes the GUI item to show all unconnected ports that have been hidden previously"""
-
-        del self.default_actions['show unused ports']
-        self.default_actions['hide unused ports'] = {'method': self.hide_unused_ports}
-        self.show_unused_ports_triggered.emit()
-
-
     # PORTS
 
 
-    def create_input(self, type_: str = 'data', label: str = '', widget_name=None,
-                     widget_pos='besides', pos=-1, config=None):
-        """
-        Creates and adds a new input, possible positions for widgets are 'besides' and 'below
-        """
+    def create_input(self, type_: str = 'data', label: str = '',
+                     add_config={}, pos=-1):
+        """Creates and adds a new input, possible positions for widgets are 'besides' and 'below """
         InfoMsgs.write('create_new_input called')
 
-        # backwards compatibility
-        widget_pos = widget_pos if widget_pos != 'under' else 'below'
-
-        inp = NodeObjInput(
+        inp = NodeInput(
             node=self,
             type_=type_,
             label_str=label,
-            widget_name=widget_name,
-            widget_pos=widget_pos,
-            config_data=config
+            add_config=add_config,
+            # widget_name=widget_name,
+            # widget_pos=widget_pos,
+            # config_data=config
         )
 
         if pos < -1:
@@ -297,14 +269,16 @@ class Node(QObject):
         # self.item.add_new_input(inp, pos)
         self.input_added.emit(inp, pos)
 
-
     def delete_input(self, i):
+
+        # def remove_input(self, index: int):
+
         """Disconnects and removes input"""
 
-        inp: NodeObjInput = None
+        inp: NodeInput = None
         if type(i) == int:
             inp = self.inputs[i]
-        elif type(i) == NodeObjInput:
+        elif type(i) == NodeInput:
             inp = i
 
         # break all connections
@@ -319,7 +293,7 @@ class Node(QObject):
     def create_output(self, type_: str = 'data', label: str = '', pos=-1):
         """Creates and adds a new output"""
 
-        out = NodeObjOutput(
+        out = NodeOutput(
               node=self,
               type_=type_,
               label_str=label
@@ -342,10 +316,10 @@ class Node(QObject):
     def delete_output(self, o):
         """Disconnects and removes output"""
 
-        out: NodeObjOutput = None
+        out: NodeOutput = None
         if type(o) == int:
             out = self.outputs[o]
-        elif type(o) == NodeObjOutput:
+        elif type(o) == NodeOutput:
             out = o
 
         # break all connections
@@ -355,29 +329,6 @@ class Node(QObject):
         self.outputs.remove(out)
         # self.item.remove_output(out)
         self.output_removed.emit(out)
-
-
-    # GET, SET DATA
-
-
-    def get_data(self) -> dict:
-        """
-        Used to store node-specific custom data that needs to be reloaded when loading a project or pasting copied
-        components. All values will be serialized by pickle and base64. The corresponding method for the opposite
-        operation is set_data().
-        """
-        return {}
-
-    def set_data(self, data: dict):
-        """
-        Used for reloading node-specific custom data which has been previously returned by get_data()
-        """
-        pass
-
-    def session_stylesheet(self) -> str:
-        """Returns the registered stylesheet of the session"""
-
-        return self.session.design.global_stylesheet
 
 
     # VARIABLES
@@ -412,63 +363,12 @@ class Node(QObject):
 
 
 
-
-
-
-    def set_special_actions_data(self, actions_data):
-        actions = {}
-        for key in actions_data:
-            if type(actions_data[key]) != dict:
-                if key == 'method':
-                    try:
-                        actions['method'] = M(getattr(self, actions_data[key]))
-                    except AttributeError:  # outdated method referenced
-                        pass
-                elif key == 'data':
-                    actions['data'] = actions_data[key]
-            else:
-                actions[key] = self.set_special_actions_data(actions_data[key])
-        return actions
-
-
-    def get_special_actions_data(self, actions):
-        cleaned_actions = actions.copy()
-        for key in cleaned_actions:
-            v = cleaned_actions[key]
-            if type(v) == M:  # callable(v):
-                cleaned_actions[key] = v.method_name
-            elif callable(v):
-                cleaned_actions[key] = v.__name__
-            elif type(v) == dict:
-                cleaned_actions[key] = self.get_special_actions_data(v)
-            else:
-                cleaned_actions[key] = v
-        return cleaned_actions
-
-    def get_extended_default_actions(self):
-        actions_dict = self.default_actions.copy()
-        for index in range(len(self.inputs)):
-            inp = self.inputs[index]
-            if inp.type_ == 'exec':
-                actions_dict['exec input '+str(index)] = {'method': self.action_exec_input,
-                                                          'data': {'input index': index}}
-        return actions_dict
-
-    def action_exec_input(self, data):
-        self.update(data['input index'])
-
-    # def action_remove(self):
-    #     self.flow.remove_node_item(self.item)
-
     def prepare_removal(self):
-        """Called from Flow when the NI gets removed from the scene
-        to stop all running threads and disable personal logs."""
+        """Called from Flow when the node gets removed"""
 
-        if self.main_widget():
-            self.main_widget().remove_event()
         self.remove_event()
-
         self.disable_logs()
+
 
     def is_active(self):
         for i in self.inputs:
@@ -479,11 +379,6 @@ class Node(QObject):
                 return True
         return False
 
-    def has_main_widget(self):
-        """Might be used later in CodePreview_Widget to enable not only showing the NI's class but also it's
-        main_widget's class."""
-        return self.main_widget() is not None
-
 
     def config_data(self, include_data_inp_values=False) -> dict:
         """Returns all metadata of the NI including position, package etc. in a JSON-able dict format.
@@ -492,9 +387,9 @@ class Node(QObject):
 
         # general attributes
         node_dict = {
-            'identifier': self.identifier,  # self.__class__.__name__,
+            'identifier': self.identifier,
             'state data': serialize(self.get_data()),
-            'special actions': self.get_special_actions_data(self.special_actions)
+            **self.custom_config_data()
         }
 
         # inputs

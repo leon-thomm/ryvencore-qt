@@ -22,7 +22,7 @@ from .DrawingObject import DrawingObject
 from .ryvencore.Node import Node
 from .ryvencore.Connection import Connection
 from .NodeItem import NodeItem
-from .ryvencore.NodeObjPort import NodeObjPort
+from .ryvencore.NodePort import NodePort
 
 
 class FlowUndoCommand(QUndoCommand, QObject):
@@ -244,7 +244,7 @@ class RemoveComponents_Command(FlowUndoCommand):
 
 class ConnectPorts_Command(FlowUndoCommand):
 
-    connect_request = Signal(NodeObjPort, NodeObjPort)
+    connect_request = Signal(NodePort, NodePort)
     add_connection_request = Signal(Connection)
     remove_connection_request = Signal(Connection)
 

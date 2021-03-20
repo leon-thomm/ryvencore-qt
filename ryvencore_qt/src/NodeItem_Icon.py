@@ -2,6 +2,8 @@ from PySide2.QtCore import QSize, QRectF, QPointF, QSizeF
 from PySide2.QtGui import QPixmap, QImage, QPainter, QIcon, QPicture
 from PySide2.QtWidgets import QGraphicsPixmapItem, QGraphicsWidget, QGraphicsLayoutItem
 
+from .tools import change_svg_color
+
 
 class NodeItem_Icon(QGraphicsWidget):
     def __init__(self, node, node_item):
@@ -16,6 +18,7 @@ class NodeItem_Icon(QGraphicsWidget):
 
         image = QImage(node.icon)
         self.pixmap = QPixmap.fromImage(image)
+        # self.pixmap = change_svg_color(node.icon, node.color)
 
 
     def boundingRect(self):
@@ -38,6 +41,7 @@ class NodeItem_Icon(QGraphicsWidget):
         # painter.setRenderHint(QPainter.Antialiasing, True)
         # painter.setRenderHint(QPainter.HighQualityAntialiasing, True)
         # painter.setRenderHint(QPainter.SmoothPixmapTransform, True)
+
 
         painter.drawPixmap(
             0, 0,

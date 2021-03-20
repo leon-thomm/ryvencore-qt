@@ -1,11 +1,11 @@
-from PySide2.QtCore import Signal, QObject
+from ..Base import Base, Signal
 
 from .Variable import Variable
 
 from ..InfoMsgs import InfoMsgs
 
 
-class VarsManager(QObject):
+class VarsManager(Base):
     """Manages script variables and triggers receivers when values of variables change"""
 
     new_var_created = Signal(Variable)

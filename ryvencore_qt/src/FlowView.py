@@ -13,7 +13,7 @@ from .FlowViewStylusModesWidget import FlowViewStylusModesWidget
 from .FlowSessionThreadInterface import FlowSessionThreadInterface
 from .FlowViewZoomWidget import FlowViewZoomWidget
 from .ryvencore.Node import Node
-from .ryvencore.NodeObjPort import NodeObjPort
+from .ryvencore.NodePort import NodePort
 from .node_selection_widget.PlaceNodeWidget import PlaceNodeWidget
 from .NodeItem import NodeItem
 from .PortItem import PortItemPin, PortItem
@@ -21,8 +21,8 @@ from .ryvencore.Connection import Connection, DataConnection
 from .ConnectionItem import default_cubic_connection_path, ConnectionItem
 from .DrawingObject import DrawingObject
 from .ryvencore.InfoMsgs import InfoMsgs
-from .ryvencore.RC import PortObjPos
-from .ryvencore.RC import FlowVPUpdateMode as VPUpdateMode
+from .ryvencore.RC import PortObjPos, CLASSES
+# from .ryvencore.RC import FlowVPUpdateMode as VPUpdateMode
 
 
 class FlowView(QGraphicsView):
@@ -34,8 +34,8 @@ class FlowView(QGraphicsView):
     create_node_request = Signal(object, dict)
     remove_node_request = Signal(Node)
 
-    check_connection_validity_request = Signal(NodeObjPort, NodeObjPort)
-    connect_request = Signal(NodeObjPort, NodeObjPort)
+    check_connection_validity_request = Signal(NodePort, NodePort)
+    connect_request = Signal(NodePort, NodePort)
 
     get_nodes_config_request = Signal(list)
     get_connections_config_request = Signal(list)
@@ -68,7 +68,8 @@ class FlowView(QGraphicsView):
         self.connection_items__cache: dict = {}
 
         # PRIVATE FIELDS
-        self._temp_config_data = None
+        self._tmp_data = None
+        # self._temp_config_data = None
         self._selected_pin: PortItemPin = None
         self._dragging_connection = False
         self._temp_connection_ports = None
@@ -105,12 +106,12 @@ class FlowView(QGraphicsView):
         # self.flow.connections_config_generated.connect(self._abstract_connections_config_generated)
 
         # SESSION THREAD
-        if self.session.threaded:
-            self.thread_interface = FlowSessionThreadInterface()
-            self.thread_interface.moveToThread(self.session.thread())
+        # if self.session.threaded:
+        self.thread_interface = FlowSessionThreadInterface()
+        self.thread_interface.moveToThread(self.session.thread())
 
-        # SETTINGS
-        self.vp_update_mode: VPUpdateMode = VPUpdateMode.SYNC
+        # # SETTINGS
+        # self.vp_update_mode: VPUpdateMode = VPUpdateMode.SYNC
 
         # CREATE UI
         scene = QGraphicsScene(self)
@@ -180,14 +181,14 @@ class FlowView(QGraphicsView):
 
         # CONFIG
         if config is not None:
-            # viewport update mode
-            vpum = config['viewport update mode']
-            if vpum == 'sync':  # vpum == VPUpdateMode.SYNC
-                # self.vp_update_mode = VPUpdateMode.SYNC
-                self.set_viewport_update_mode('sync')
-            elif vpum == 'async':  # vpum == VPUpdateMode.ASYNC
-                # self.vp_update_mode = VPUpdateMode.ASYNC
-                self.set_viewport_update_mode('async')
+            # # viewport update mode
+            # vpum = config['viewport update mode']
+            # if vpum == 'sync':  # vpum == VPUpdateMode.SYNC
+            #     # self.vp_update_mode = VPUpdateMode.SYNC
+            #     self.set_viewport_update_mode('sync')
+            # elif vpum == 'async':  # vpum == VPUpdateMode.ASYNC
+            #     # self.vp_update_mode = VPUpdateMode.ASYNC
+            #     self.set_viewport_update_mode('async')
 
             if 'drawings' in config:  # not all (old) project files have drawings arr
                 self.place_drawings_from_config(config['drawings'])
@@ -196,6 +197,12 @@ class FlowView(QGraphicsView):
                 self.setSceneRect(0, 0, config['view size'][0], config['view size'][1])
 
             self._undo_stack.clear()
+
+        # CATCH UP ON FLOW
+        for node in self.flow.nodes:
+            self.add_node(node)
+        for c in self.flow.connections:
+            self.add_connection(c)
 
 
     def show_framerate(self, show: bool = True, m_sec_interval: int = 1000):
@@ -808,7 +815,7 @@ class FlowView(QGraphicsView):
         self.scene().removeItem(item)
 
     # CONNECTIONS
-    def connect_node_ports__cmd(self, p1: NodeObjPort, p2: NodeObjPort):
+    def connect_node_ports__cmd(self, p1: NodePort, p2: NodePort):
         self._temp_connection_ports = (p1, p2)
         self.check_connection_validity_request.emit(p1, p2)
 
@@ -847,9 +854,9 @@ class FlowView(QGraphicsView):
 
         else:
             if isinstance(c, DataConnection):
-                item = self.session.DataConnItemClass(c, self.session.design)
+                item = CLASSES['data conn item'](c, self.session.design)
             else:
-                item = self.session.ExecConnItemClass(c, self.session.design)
+                item = CLASSES['exec conn item'](c, self.session.design)
 
 
 
@@ -870,7 +877,7 @@ class FlowView(QGraphicsView):
         self.connection_items__cache[item.connection] = item
         self.scene().removeItem(item)
 
-    def auto_connect(self, p: NodeObjPort, n: Node):
+    def auto_connect(self, p: NodePort, n: Node):
         if p.io_pos == PortObjPos.OUTPUT:
             for inp in n.inputs:
                 if p.type_ == inp.type_:
@@ -883,6 +890,11 @@ class FlowView(QGraphicsView):
                     # connect exactly once
                     self.connect_node_ports__cmd(p, out)
                     return
+
+    def update_conn_item(self, c: Connection):
+        if c in self.connection_items:
+            self.connection_items[c].changed = True
+            self.connection_items[c].update()
 
     # DRAWINGS
     def create_drawing(self, config=None) -> DrawingObject:
@@ -1097,49 +1109,42 @@ class FlowView(QGraphicsView):
             Paste_Command(self, data, offset_for_middle_pos)
         )
 
-    # VIEWPORT UPDATE MODE
-    def viewport_update_mode(self) -> str:
-        """Returns the current viewport update mode as string (sync or async) of the flow"""
-        return VPUpdateMode.stringify(self.vp_update_mode)
-
-    def set_viewport_update_mode(self, mode: str):
-        """
-        Sets the viewport update mode of the flow
-        :mode: 'sync' or 'async'
-        """
-        if mode == 'sync':
-            self.vp_update_mode = VPUpdateMode.SYNC
-        elif mode == 'async':
-            self.vp_update_mode = VPUpdateMode.ASYNC
-
-        self.viewport_update_mode_changed.emit(self.viewport_update_mode())
+    # # VIEWPORT UPDATE MODE
+    # def viewport_update_mode(self) -> str:
+    #     """Returns the current viewport update mode as string (sync or async) of the flow"""
+    #     return VPUpdateMode.stringify(self.vp_update_mode)
+    #
+    # def set_viewport_update_mode(self, mode: str):
+    #     """
+    #     Sets the viewport update mode of the flow
+    #     :mode: 'sync' or 'async'
+    #     """
+    #     if mode == 'sync':
+    #         self.vp_update_mode = VPUpdateMode.SYNC
+    #     elif mode == 'async':
+    #         self.vp_update_mode = VPUpdateMode.ASYNC
+    #
+    #     self.viewport_update_mode_changed.emit(self.viewport_update_mode())
 
     # CONFIG
-    def generate_config_data(self, abstract_flow_data):
+    def generate_config_data(self, script_data):
 
-        # # wait for abstract flow
-        # self.flow._temp_config_data = None
-        # self.get_flow_config_data_request.emit()
-        # while self.flow._temp_config_data is None:
-        #     time.sleep(0.001)
-        # flow_config, nodes_cfg, connections_cfg = self.flow._temp_config_data
+        flow_config, nodes_data, connections_data = script_data['flow']
 
-        flow_config, nodes_cfg, connections_cfg = abstract_flow_data
-
-        final_flow_config = {
+        script_data['flow'] = {
             **flow_config,
-            'nodes': self.complete_nodes_config_data(nodes_cfg),
-            'connections': self.complete_connections_config_data(connections_cfg),
+            'nodes': self.complete_nodes_config_data(nodes_data),
+            'connections': self.complete_connections_config_data(connections_data),
         }
-        self_config = {
-            'viewport update mode': VPUpdateMode.stringify(self.vp_update_mode),
+
+        script_data['flow view'] = {
             'drawings': self._get_drawings_config_data(self.drawings),
             'view size': [self.sceneRect().size().width(), self.sceneRect().size().height()]
         }
 
-        # self.config_generated.emit(data)
-        self._temp_config_data = (final_flow_config, self_config)
-        return final_flow_config, self_config
+        self._tmp_data = script_data
+
+        return script_data
 
     def complete_nodes_config_data(self, nodes_config_dict):
         """
@@ -1153,8 +1158,6 @@ class FlowView(QGraphicsView):
             item = self.node_items[n]
             nodes_config_list.append(item.complete_config(cfg))
 
-
-        self._temp_config_data = nodes_config_list
         return nodes_config_list
 
     def complete_connections_config_data(self, conn_config_dict):
@@ -1162,34 +1165,33 @@ class FlowView(QGraphicsView):
         Adds the item config to the config of the connections
         """
 
-        # TODO: add custom config when implementing custom connection items later
+        # TODO: add custom config for connection items
 
         conns_config_list = []
         for c in list(conn_config_dict.keys()):
             conns_config_list.append(conn_config_dict[c])
 
-        self._temp_config_data = conns_config_list
         return conns_config_list
 
     def _get_nodes_config_data(self, nodes):
 
         # wait for abstract flow
-        self.flow._temp_config_data = None
+        self.flow._tmp_data = None
         self.get_nodes_config_request.emit(nodes)
-        while self.flow._temp_config_data is None:
+        while self.flow._tmp_data is None:
             time.sleep(0.001)
 
-        return self.complete_nodes_config_data(self.flow._temp_config_data)
+        return self.complete_nodes_config_data(self.flow._tmp_data)
 
     def _get_connections_config_data(self, nodes):
 
         # wait for abstract flow
-        self.flow._temp_config_data = None
+        self.flow._tmp_data = None
         self.get_connections_config_request.emit(nodes)
-        while self.flow._temp_config_data is None:
+        while self.flow._tmp_data is None:
             time.sleep(0.001)
 
-        return self.complete_connections_config_data(self.flow._temp_config_data)
+        return self.complete_connections_config_data(self.flow._tmp_data)
 
     def _get_drawings_config_data(self, drawings):
         drawings_list = []

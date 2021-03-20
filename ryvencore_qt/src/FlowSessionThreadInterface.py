@@ -8,7 +8,7 @@ class FlowSessionThreadInterface(QObject):
 
 
     def trigger_node_action(self, method, data=None):
-        if data:
+        if data is not None:
             method(data)
         else:
             method()

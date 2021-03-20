@@ -4,8 +4,15 @@ import os
 from .src.GlobalAttributes import Location
 Location.PACKAGE_PATH = os.path.normpath(os.path.dirname(__file__))
 
+# set ryvencore gui mode
+os.environ['RC_MODE'] = 'gui'
 
-from .src.ryvencore import *
+# backend imports
+from .src.ryvencore import InfoMsgs, NodeInputBP, NodeOutputBP, DataConnection, ExecConnection, Logger, Log
+
+# front end ...
+from .src.Node import Node
+from .src.Session import Session
 
 
 from .src.WidgetBaseClasses import MWB, IWB
@@ -23,6 +30,4 @@ class GUI:
 
     # input widgets
     from .src.PortItemInputWidgets import RCIW_BUILTIN_LineEdit
-    from .src.PortItemInputWidgets import RCIW_BUILTIN_LineEdit_small
     from .src.PortItemInputWidgets import RCIW_BUILTIN_SpinBox
-

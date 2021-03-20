@@ -1,7 +1,7 @@
-from PySide2.QtCore import QObject, Signal
+from ..Base import Base, Signal
 
 
-class Log(QObject):
+class Log(Base):
 
     enabled = Signal()
     disabled = Signal()

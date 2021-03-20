@@ -4,7 +4,8 @@ from PySide2.QtCore import QRectF, QPointF
 from PySide2.QtGui import QPainter, QColor, QRadialGradient, QPainterPath, QPen, Qt
 from PySide2.QtWidgets import QGraphicsItem, QStyleOptionGraphicsItem
 
-from .ryvencore.tools import pythagoras, sqrt
+from .tools import sqrt
+from .tools import pythagoras
 
 
 class ConnectionItem(QGraphicsItem):
@@ -16,8 +17,18 @@ class ConnectionItem(QGraphicsItem):
         super().__init__()
 
         self.connection = connection
-        self.out = self.connection.out
-        self.inp = self.connection.inp
+
+        out = self.connection.out
+        inp = self.connection.inp
+        out_node = out.node
+        inp_node = inp.node
+        self.out_item = out_node.port_item(out)
+        self.inp_item = inp_node.port_item(inp)
+
+        # self.out = self.connection.out
+        # self.out_item = self.connection.out.node.port_item()
+        # self.inp = self.connection.inp
+
         # self.type_ = type_
         self.session_design = session_design
         self.changed = False
@@ -30,7 +41,7 @@ class ConnectionItem(QGraphicsItem):
         op = self.out_pos()
         ip = self.inp_pos()
         rect = QRectF(
-            0 if op.x() < ip.x() else (ip.x() -op.x()),
+            0 if op.x() < ip.x() else (ip.x()-op.x()),
             0 if op.y() < ip.y() else (ip.y()-op.y()),
             abs(ip.x()-op.x()),
             abs(ip.y()-op.y())
@@ -43,17 +54,18 @@ class ConnectionItem(QGraphicsItem):
 
         self.setPos(self.out_pos())
         self.changed = True
+        self.update()
     
     
     def out_pos(self) -> QPointF:
         """The current global scene position of the pin of the output port"""
 
-        return self.out.item.pin.get_scene_center_pos()
+        return self.out_item.pin.get_scene_center_pos()
     
     def inp_pos(self) -> QPointF:
         """The current global scene position of the pin of the input port"""
 
-        return self.inp.item.pin.get_scene_center_pos()
+        return self.inp_item.pin.get_scene_center_pos()
 
     @staticmethod
     def dist(p1: QPointF, p2: QPointF) -> float:
@@ -86,7 +98,7 @@ class ExecConnectionItem(ConnectionItem):
         c = pen.color()
 
         # highlight hovered connections
-        if self.out.item.pin.hovered or self.inp.item.pin.hovered:
+        if self.out_item.pin.hovered or self.inp_item.pin.hovered:
             c = QColor('#c5c5c5')
             pen.setWidth(theme.exec_conn_width*2)
 
@@ -149,7 +161,7 @@ class DataConnectionItem(ConnectionItem):
         c = pen.color()
 
         # highlight hovered connections
-        if self.out.item.pin.hovered or self.inp.item.pin.hovered:
+        if self.out_item.pin.hovered or self.inp_item.pin.hovered:
             c = QColor('#c5c5c5')
             pen.setWidth(theme.exec_conn_width*2)
 
