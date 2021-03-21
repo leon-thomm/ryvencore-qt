@@ -1,6 +1,6 @@
-from PySide2.QtWidgets import QGraphicsItem, QMenu, QGraphicsDropShadowEffect
-from PySide2.QtCore import Qt, QRectF, QObject, QPointF
-from PySide2.QtGui import QColor
+from qtpy.QtWidgets import QGraphicsItem, QMenu, QGraphicsDropShadowEffect
+from qtpy.QtCore import Qt, QRectF, QObject, QPointF
+from qtpy.QtGui import QColor
 
 from .ryvencore.NodePort import NodeInput, NodeOutput
 from .NodeItemAction import NodeItemAction

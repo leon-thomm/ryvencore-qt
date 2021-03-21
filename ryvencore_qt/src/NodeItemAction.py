@@ -1,5 +1,5 @@
-from PySide2.QtCore import Signal
-from PySide2.QtWidgets import QAction
+from qtpy.QtCore import Signal
+from qtpy.QtWidgets import QAction
 
 
 class NodeItemAction(QAction):

@@ -1,5 +1,5 @@
-from PySide2.QtGui import QFont
-from PySide2.QtWidgets import QWidget, QHBoxLayout, QVBoxLayout, QLabel, QPushButton, QPlainTextEdit
+from qtpy.QtGui import QFont
+from qtpy.QtWidgets import QWidget, QHBoxLayout, QVBoxLayout, QLabel, QPushButton, QPlainTextEdit
 
 from ..ryvencore.logging.Log import Log
 

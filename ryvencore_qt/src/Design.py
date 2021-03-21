@@ -1,7 +1,7 @@
 import json
 
-from PySide2.QtCore import QObject, Signal
-from PySide2.QtGui import QFontDatabase
+from qtpy.QtCore import QObject, Signal
+from qtpy.QtGui import QFontDatabase
 
 from .FlowTheme import FlowTheme_Toy, FlowTheme_DarkTron, FlowTheme_Ghost, FlowTheme_Blender, \
     FlowTheme_Simple, FlowTheme_Ueli, FlowTheme_Samuel1, FlowTheme, FlowTheme_Samuel1_Light, \
@@ -36,6 +36,7 @@ class Design(QObject):
         self.default_flow_size = [1000, 700]
         self.set_flow_theme(self._default_flow_theme)
 
+    @staticmethod
     def register_fonts():
         QFontDatabase.addApplicationFont(
             Location.PACKAGE_PATH + '/resources/fonts/poppins/Poppins-Medium.ttf'

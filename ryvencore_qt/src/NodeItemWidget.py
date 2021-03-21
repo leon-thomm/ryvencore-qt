@@ -1,5 +1,5 @@
-from PySide2.QtCore import QPointF, QRectF, Qt
-from PySide2.QtWidgets import QGraphicsWidget, QGraphicsLinearLayout, QSizePolicy
+from qtpy.QtCore import QPointF, QRectF, Qt
+from qtpy.QtWidgets import QGraphicsWidget, QGraphicsLinearLayout, QSizePolicy
 
 from .NodeItem_CollapseButton import NodeItem_CollapseButton
 from .FlowViewProxyWidget import FlowViewProxyWidget

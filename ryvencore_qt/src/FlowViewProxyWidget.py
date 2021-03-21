@@ -1,4 +1,4 @@
-from PySide2.QtWidgets import QGraphicsProxyWidget
+from qtpy.QtWidgets import QGraphicsProxyWidget
 
 
 class FlowViewProxyWidget(QGraphicsProxyWidget):

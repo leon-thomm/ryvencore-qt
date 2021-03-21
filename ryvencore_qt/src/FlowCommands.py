@@ -15,8 +15,8 @@ These implementations might have quite some potential for improvement.
 """
 
 
-from PySide2.QtCore import Signal, QObject, QPointF
-from PySide2.QtWidgets import QUndoCommand
+from qtpy.QtCore import Signal, QObject, QPointF
+from qtpy.QtWidgets import QUndoCommand
 
 from .DrawingObject import DrawingObject
 from .ryvencore.Node import Node

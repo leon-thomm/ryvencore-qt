@@ -36,7 +36,7 @@ def build_base_class(mode: str):
 
         # GUI -> use Qt classes
 
-        from PySide2.QtCore import QObject, Signal as QtSignal
+        from qtpy.QtCore import QObject, Signal as QtSignal
 
         class GUIBase(QObject):
             pass

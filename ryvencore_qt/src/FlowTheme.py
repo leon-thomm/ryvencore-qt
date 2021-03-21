@@ -1,6 +1,6 @@
-from PySide2.QtCore import Qt, QPointF, QRectF
-from PySide2.QtGui import QColor, QPainter, QBrush, QRadialGradient, QLinearGradient, QPen, QPainterPath, QFont
-from PySide2.QtWidgets import QStyle, QStyleOption
+from qtpy.QtCore import Qt, QPointF, QRectF
+from qtpy.QtGui import QColor, QPainter, QBrush, QRadialGradient, QLinearGradient, QPen, QPainterPath, QFont
+from qtpy.QtWidgets import QStyle, QStyleOption
 
 from .tools import pythagoras
 

@@ -1,6 +1,6 @@
-from PySide2.QtWidgets import QWidget, QPushButton, QHBoxLayout, QSlider, QColorDialog
-from PySide2.QtCore import Qt
-from PySide2.QtGui import QColor
+from qtpy.QtWidgets import QWidget, QPushButton, QHBoxLayout, QSlider, QColorDialog
+from qtpy.QtCore import Qt
+from qtpy.QtGui import QColor
 
 
 class FlowViewStylusModesWidget(QWidget):

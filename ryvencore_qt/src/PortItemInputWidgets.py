@@ -1,6 +1,6 @@
-from PySide2.QtCore import Signal
-from PySide2.QtGui import QFontMetrics
-from PySide2.QtWidgets import QSpinBox, QLineEdit
+from qtpy.QtCore import Signal
+from qtpy.QtGui import QFontMetrics
+from qtpy.QtWidgets import QSpinBox, QLineEdit
 
 
 from .WidgetBaseClasses import IWB

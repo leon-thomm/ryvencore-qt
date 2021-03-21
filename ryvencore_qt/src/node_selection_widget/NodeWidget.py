@@ -1,6 +1,6 @@
-from PySide2.QtWidgets import QWidget, QLabel, QGridLayout, QHBoxLayout, QSpacerItem, QSizePolicy, QStyleOption, QStyle
-from PySide2.QtGui import QFont, QPainter
-from PySide2.QtCore import Signal
+from qtpy.QtWidgets import QWidget, QLabel, QGridLayout, QHBoxLayout, QSpacerItem, QSizePolicy, QStyleOption, QStyle
+from qtpy.QtGui import QFont, QPainter
+from qtpy.QtCore import Signal
 
 
 class NodeWidget(QWidget):

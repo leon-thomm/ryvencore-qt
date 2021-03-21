@@ -85,49 +85,70 @@ def translate_project__repair(obj):
 
 
 def change_svg_color(filepath: str, color_hex: str):
-    """
-    Changes the color of an SVG image and returns a QPixmap
-
-    https://stackoverflow.com/questions/15123544/change-the-color-of-an-svg-in-qt
-    """
-
-    from PySide2.QtGui import Qt, QPainter
-    from PySide2.QtXml import QDomDocument, QDomElement
-    from PySide2.QtSvg import QSvgRenderer
-    from PySide2.QtGui import QPixmap
 
 
-    def change_svg_color__set_attr_recur(elem: QDomElement, strtagname: str, strattr: str, strattrval: str):
+    from qtpy.QtSvg import QSvgRenderer
+    from qtpy.QtGui import QPixmap, QPainter, Qt
 
-        # if it has the tag name then overwrite desired attribute
-        if elem.tagName() == strtagname:
-            elem.setAttribute(strattr, strattrval)
+    with open(filepath) as f:
+        data = f.read()
+    data = data.replace('fill:#000000', 'fill:'+color_hex)
+    with open(filepath, 'w') as f:
+        f.write(data)
 
-        # loop all children
-        for i in range(elem.childNodes().count()):
-            if not elem.childNodes().at(i).isElement():
-                continue
-
-            change_svg_color__set_attr_recur(elem.childNodes().at(i).toElement(), strtagname, strattr, strattrval)
-
-
-    # open svg resource load contents to qbytearray
-    f = open(filepath)
-    data = f.read()
-    f.close()
-    # load svg contents to xml document and edit contents
-    doc = QDomDocument()
-    doc.setContent(data)
-    # recursively change color
-    change_svg_color__set_attr_recur(doc.documentElement(), 'path', 'fill', color_hex)
-    # create svg renderer with edited contents
-    svg_renderer = QSvgRenderer(doc.toByteArray())
-    # create pixmap target (could be a QImage)
+    svg_renderer = QSvgRenderer(filepath)
     pix = QPixmap(svg_renderer.defaultSize())
     pix.fill(Qt.transparent)
-    # create painter to act over pixmap
     pix_painter = QPainter(pix)
-    # use renderer to render over painter which paints on pixmap
     svg_renderer.render(pix_painter)
 
     return pix
+
+
+
+    # """
+    # Changes the color of an SVG image and returns a QPixmap
+    #
+    # https://stackoverflow.com/questions/15123544/change-the-color-of-an-svg-in-qt
+    # """
+    #
+    # from qtpy.QtGui import Qt, QPainter
+    # from qtpy.QtXml import QDomDocument, QDomElement
+    # from qtpy.QtSvg import QSvgRenderer
+    # from qtpy.QtGui import QPixmap
+    #
+    #
+    # def change_svg_color__set_attr_recur(elem: QDomElement, strtagname: str, strattr: str, strattrval: str):
+    #
+    #     # if it has the tag name then overwrite desired attribute
+    #     if elem.tagName() == strtagname:
+    #         elem.setAttribute(strattr, strattrval)
+    #
+    #     # loop all children
+    #     for i in range(elem.childNodes().count()):
+    #         if not elem.childNodes().at(i).isElement():
+    #             continue
+    #
+    #         change_svg_color__set_attr_recur(elem.childNodes().at(i).toElement(), strtagname, strattr, strattrval)
+    #
+    #
+    # # open svg resource load contents to qbytearray
+    # f = open(filepath)
+    # data = f.read()
+    # f.close()
+    # # load svg contents to xml document and edit contents
+    # doc = QDomDocument()
+    # doc.setContent(data)
+    # # recursively change color
+    # change_svg_color__set_attr_recur(doc.documentElement(), 'path', 'fill', color_hex)
+    # # create svg renderer with edited contents
+    # svg_renderer = QSvgRenderer(doc.toByteArray())
+    # # create pixmap target (could be a QImage)
+    # pix = QPixmap(svg_renderer.defaultSize())
+    # pix.fill(Qt.transparent)
+    # # create painter to act over pixmap
+    # pix_painter = QPainter(pix)
+    # # use renderer to render over painter which paints on pixmap
+    # svg_renderer.render(pix_painter)
+    #
+    # return pix

@@ -1,7 +1,7 @@
 import time
 
-from PySide2.QtWidgets import QWidget, QApplication
-from PySide2.QtCore import QObject, Signal, Qt
+from qtpy.QtWidgets import QWidget, QApplication
+from qtpy.QtCore import QObject, Signal, Qt
 
 from .ryvencore import Session as RC_Session, Script
 from .ryvencore.RC import CLASSES

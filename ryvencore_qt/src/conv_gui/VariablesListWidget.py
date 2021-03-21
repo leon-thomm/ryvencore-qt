@@ -1,5 +1,5 @@
-from PySide2.QtWidgets import QVBoxLayout, QWidget, QLineEdit
-from PySide2.QtCore import Qt
+from qtpy.QtWidgets import QVBoxLayout, QWidget, QLineEdit
+from qtpy.QtCore import Qt
 
 from .VarsList_VarWidget import VarsList_VarWidget
 

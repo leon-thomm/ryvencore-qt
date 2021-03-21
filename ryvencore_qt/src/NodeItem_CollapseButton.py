@@ -1,6 +1,6 @@
-from PySide2.QtCore import QSize, QRectF, QPointF, QSizeF
-from PySide2.QtGui import Qt
-from PySide2.QtWidgets import QGraphicsWidget, QGraphicsLayoutItem
+from qtpy.QtCore import QSize, QRectF, QPointF, QSizeF
+from qtpy.QtGui import Qt
+from qtpy.QtWidgets import QGraphicsWidget, QGraphicsLayoutItem
 
 from ryvencore_qt.src.GlobalAttributes import Location
 from .tools import change_svg_color

@@ -1,4 +1,4 @@
-from PySide2.QtCore import QObject, Signal
+from qtpy.QtCore import QObject, Signal
 
 from .Connection import Connection
 from .Node import Node

@@ -1,9 +1,9 @@
 import time
 import json
 
-from PySide2.QtCore import Qt, QPointF, QPoint, QRectF, QSizeF, Signal, QTimer
-from PySide2.QtGui import QPainter, QPen, QColor, QKeySequence, QTabletEvent, QImage, QGuiApplication, QFont
-from PySide2.QtWidgets import QGraphicsView, QGraphicsScene, QShortcut, QMenu, QGraphicsItem, QUndoStack
+from qtpy.QtCore import Qt, QPointF, QPoint, QRectF, QSizeF, Signal, QTimer
+from qtpy.QtGui import QPainter, QPen, QColor, QKeySequence, QTabletEvent, QImage, QGuiApplication, QFont
+from qtpy.QtWidgets import QGraphicsView, QGraphicsScene, QShortcut, QMenu, QGraphicsItem, QUndoStack
 
 from .ryvencore.Flow import Flow
 from .FlowCommands import MoveComponents_Command, PlaceNode_Command, \

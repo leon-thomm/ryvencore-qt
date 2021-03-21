@@ -1,5 +1,5 @@
-from PySide2.QtWidgets import QLineEdit
-from PySide2.QtCore import Signal
+from qtpy.QtWidgets import QLineEdit
+from qtpy.QtCore import Signal
 
 
 class ListWidget_NameLineEdit(QLineEdit):
