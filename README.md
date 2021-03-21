@@ -27,7 +27,7 @@ All information of a node is part of its class. A minimal node definition can be
         title = 'Print'
         description = 'prints your data'
         init_inputs = [
-            rc.NodeInput('data')
+            rc.NodeInputBP('data')
         ]
         color = '#A9D5EF'
     
@@ -45,7 +45,7 @@ Which can be edited through the API at any time.
 - **Qt widgets**  
 You can add custom QWidgets for your nodes, so you can also easily integrate your existing Python-Qt widgets.
 - **convenience GUI classes**
-- **many different modifiable themes**
+- **many different *modifiable* themes**
 - **exec flow support**  
 While data flows are probably the most common use case, exec flows (like UnrealEngine BluePrints) are also supported.
 - **stylus support for adding handwritten notes**  
@@ -94,7 +94,7 @@ class RandNode(rc.Node):
         rc.NodeInputBP('data', '', {'widget name': 'std line edit', 'widget pos': 'besides'})
     ]
     init_outputs = [
-        rc.NodeOutput('data')
+        rc.NodeOutputBP('data')
     ]
     color = '#fcba03'
 
@@ -118,7 +118,7 @@ if __name__ == "__main__":
     session.register_nodes([PrintNode, RandNode])
     script = session.create_script('hello world', flow_view_size=[800, 500])
 
-    mw.setCentralWidget(session.flow_views(script))
+    mw.setCentralWidget(session.flow_views[script])
 
     mw.show()
     sys.exit(app.exec_())
