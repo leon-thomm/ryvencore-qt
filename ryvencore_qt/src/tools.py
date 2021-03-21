@@ -90,10 +90,9 @@ def change_svg_color(filepath: str, color_hex: str):
     from qtpy.QtSvg import QSvgRenderer
     from qtpy.QtGui import QPixmap, QPainter, Qt
 
-
     with open(filepath) as f:
         data = f.read()
-    data.replace('fill:#000000', 'fill:'+color_hex)
+    data = data.replace('fill:#000000', 'fill:'+color_hex)
     with open(filepath, 'w') as f:
         f.write(data)
 
