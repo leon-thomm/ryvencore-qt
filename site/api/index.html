@@ -1,0 +1,1692 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+      
+      <link rel="shortcut icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.1.2, mkdocs-material-6.2.8">
+    
+    
+      
+        <title>API Reference - ryvencore-qt</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.cb6bc1d0.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.39b8e14a.min.css">
+        
+      
+    
+    
+    
+      
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,400i,700%7CRoboto+Mono&display=fallback">
+        <style>body,input{font-family:"Roboto",-apple-system,BlinkMacSystemFont,Helvetica,Arial,sans-serif}code,kbd,pre{font-family:"Roboto Mono",SFMono-Regular,Consolas,Menlo,monospace}</style>
+      
+    
+    
+    
+      <link rel="stylesheet" href="../extra_style_sheet.css">
+    
+    
+      
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="" data-md-color-primary="none" data-md-color-accent="none">
+      
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#api-reference" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header-nav md-grid" aria-label="Header">
+    <a href=".." title="ryvencore-qt" class="md-header-nav__button md-logo" aria-label="ryvencore-qt">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 003-3 3 3 0 00-3-3 3 3 0 00-3 3 3 3 0 003 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54z"/></svg>
+
+    </a>
+    <label class="md-header-nav__button md-icon" for="__drawer">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3V6m0 5h18v2H3v-2m0 5h18v2H3v-2z"/></svg>
+    </label>
+    <div class="md-header-nav__title" data-md-component="header-title">
+      <div class="md-header-nav__ellipsis">
+        <div class="md-header-nav__topic">
+          <span class="md-ellipsis">
+            ryvencore-qt
+          </span>
+        </div>
+        <div class="md-header-nav__topic">
+          <span class="md-ellipsis">
+            
+              API Reference
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      <label class="md-header-nav__button md-icon" for="__search">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0116 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 019.5 16 6.5 6.5 0 013 9.5 6.5 6.5 0 019.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5z"/></svg>
+      </label>
+      
+<div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" data-md-state="active" required>
+      <label class="md-search__icon md-icon" for="__search">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0116 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 019.5 16 6.5 6.5 0 013 9.5 6.5 6.5 0 019.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5z"/></svg>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12z"/></svg>
+      </label>
+      <button type="reset" class="md-search__icon md-icon" aria-label="Clear" data-md-component="search-reset" tabindex="-1">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z"/></svg>
+      </button>
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+  </nav>
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="ryvencore-qt" class="md-nav__button md-logo" aria-label="ryvencore-qt">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 003-3 3 3 0 00-3-3 3 3 0 00-3 3 3 3 0 003 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54z"/></svg>
+
+    </a>
+    ryvencore-qt
+  </label>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        Welcome
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../getting_started/" class="md-nav__link">
+        Getting Started
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../features/" class="md-nav__link">
+        Features
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../gui/" class="md-nav__link">
+        GUI
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+    
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" data-md-toggle="toc" type="checkbox" id="__toc">
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          API Reference
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        API Reference
+      </a>
+      
+        
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#class-session" class="md-nav__link">
+    [class] Session
+  </a>
+  
+    <nav class="md-nav" aria-label="[class] Session">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#signals" class="md-nav__link">
+    Signals
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#attributes" class="md-nav__link">
+    Attributes
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#methods" class="md-nav__link">
+    Methods
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#class-infomsgs" class="md-nav__link">
+    [class] InfoMsgs
+  </a>
+  
+    <nav class="md-nav" aria-label="[class] InfoMsgs">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#methods_1" class="md-nav__link">
+    Methods
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#class-script" class="md-nav__link">
+    [class] Script
+  </a>
+  
+    <nav class="md-nav" aria-label="[class] Script">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#attributes_1" class="md-nav__link">
+    Attributes
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#class-logger" class="md-nav__link">
+    [class] Logger
+  </a>
+  
+    <nav class="md-nav" aria-label="[class] Logger">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#signals_1" class="md-nav__link">
+    Signals
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#attributes_2" class="md-nav__link">
+    Attributes
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#methods_2" class="md-nav__link">
+    Methods
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#class-log" class="md-nav__link">
+    [class] Log
+  </a>
+  
+    <nav class="md-nav" aria-label="[class] Log">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#signals_2" class="md-nav__link">
+    Signals
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#attributes_3" class="md-nav__link">
+    Attributes
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#methods_3" class="md-nav__link">
+    Methods
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#class-varsmanager" class="md-nav__link">
+    [class] VarsManager
+  </a>
+  
+    <nav class="md-nav" aria-label="[class] VarsManager">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#signals_3" class="md-nav__link">
+    Signals
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#methods_4" class="md-nav__link">
+    Methods
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#class-flow" class="md-nav__link">
+    [class] Flow
+  </a>
+  
+    <nav class="md-nav" aria-label="[class] Flow">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#signals_4" class="md-nav__link">
+    Signals
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#methods_5" class="md-nav__link">
+    Methods
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#class-flowview" class="md-nav__link">
+    [class] FlowView
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#class-node" class="md-nav__link">
+    [class] Node
+  </a>
+  
+    <nav class="md-nav" aria-label="[class] Node">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#static-attributes" class="md-nav__link">
+    Static Attributes
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#methods_6" class="md-nav__link">
+    Methods
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#class-session" class="md-nav__link">
+    [class] Session
+  </a>
+  
+    <nav class="md-nav" aria-label="[class] Session">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#signals" class="md-nav__link">
+    Signals
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#attributes" class="md-nav__link">
+    Attributes
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#methods" class="md-nav__link">
+    Methods
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#class-infomsgs" class="md-nav__link">
+    [class] InfoMsgs
+  </a>
+  
+    <nav class="md-nav" aria-label="[class] InfoMsgs">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#methods_1" class="md-nav__link">
+    Methods
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#class-script" class="md-nav__link">
+    [class] Script
+  </a>
+  
+    <nav class="md-nav" aria-label="[class] Script">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#attributes_1" class="md-nav__link">
+    Attributes
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#class-logger" class="md-nav__link">
+    [class] Logger
+  </a>
+  
+    <nav class="md-nav" aria-label="[class] Logger">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#signals_1" class="md-nav__link">
+    Signals
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#attributes_2" class="md-nav__link">
+    Attributes
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#methods_2" class="md-nav__link">
+    Methods
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#class-log" class="md-nav__link">
+    [class] Log
+  </a>
+  
+    <nav class="md-nav" aria-label="[class] Log">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#signals_2" class="md-nav__link">
+    Signals
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#attributes_3" class="md-nav__link">
+    Attributes
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#methods_3" class="md-nav__link">
+    Methods
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#class-varsmanager" class="md-nav__link">
+    [class] VarsManager
+  </a>
+  
+    <nav class="md-nav" aria-label="[class] VarsManager">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#signals_3" class="md-nav__link">
+    Signals
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#methods_4" class="md-nav__link">
+    Methods
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#class-flow" class="md-nav__link">
+    [class] Flow
+  </a>
+  
+    <nav class="md-nav" aria-label="[class] Flow">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#signals_4" class="md-nav__link">
+    Signals
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#methods_5" class="md-nav__link">
+    Methods
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#class-flowview" class="md-nav__link">
+    [class] FlowView
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#class-node" class="md-nav__link">
+    [class] Node
+  </a>
+  
+    <nav class="md-nav" aria-label="[class] Node">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#static-attributes" class="md-nav__link">
+    Static Attributes
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#methods_6" class="md-nav__link">
+    Methods
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          <div class="md-content">
+            <article class="md-content__inner md-typeset">
+              
+                
+                
+                <h1 id="api-reference">API Reference</h1>
+<h2 id="class-session">[class] <code>Session</code></h2>
+<p>A session is the top-most interface to your components. Usually you will want to create one session per application instance, but you could create multiple ones to have different independent environments in one application.</p>
+<h3 id="signals">Signals</h3>
+<p>The following signals are useful if you use custom widgets for listing the scripts. You can connect these signals to the corresponding GUI classes to make your GUI adapt. These signals equally apply on function-scripts.</p>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Parameters</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>new_script_created</code></td>
+<td><code>Script</code></td>
+<td>Emitted when a new script is created.</td>
+</tr>
+<tr>
+<td><code>script_renamed</code></td>
+<td><code>Script</code></td>
+<td>Emitted when a script has been renamed.</td>
+</tr>
+<tr>
+<td><code>script_deleted</code></td>
+<td><code>Script</code></td>
+<td>Emitted when a script has been deleted.</td>
+</tr>
+</tbody>
+</table>
+<h3 id="attributes">Attributes</h3>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>nodes</code></td>
+<td>A list of all registered nodes.</td>
+</tr>
+<tr>
+<td><code>design</code></td>
+<td>The session's <code>Design</code> reference.</td>
+</tr>
+</tbody>
+</table>
+<h3 id="methods">Methods</h3>
+<h4><code>Session(threaded: bool = False, gui_parent: QWidget = None, flow_theme_name=None, performance_mode=None, data_conn_class=None, data_conn_item_class=None, exec_conn_class=None, exec_conn_item_class=None, parent: QObject = None)</code></h4>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>threaded: bool = False</code></td>
+<td>True for threaded applications.</td>
+</tr>
+<tr>
+<td><code>gui_parent: QObject = None</code></td>
+<td>The parent (i.e. MainWindow) for the GUI, only important for threaded applications</td>
+</tr>
+<tr>
+<td><code>flow_theme_name</code></td>
+<td>The name of the flow theme used</td>
+</tr>
+<tr>
+<td><code>performance_mode</code></td>
+<td><code>'pretty'</code> or <code>'fast'</code></td>
+</tr>
+<tr>
+<td><code>data_conn_class=None</code></td>
+<td>A ref to your custom implementation of <code>DataConnection</code> if you want to provide one.</td>
+</tr>
+<tr>
+<td><code>data_conn_item_class=None</code></td>
+<td>A ref to your custom implementation of <code>DataConnectionItem</code> if you want to provide one.</td>
+</tr>
+<tr>
+<td><code>exec_conn_class=None</code></td>
+<td>A ref to your custom implementation of <code>ExecConnection</code> if you want to provide one.</td>
+</tr>
+<tr>
+<td><code>exec_conn_item_class=None</code></td>
+<td>A ref to your custom implementation of <code>ExecConnectionItem</code> if you want to provide one.</td>
+</tr>
+<tr>
+<td><code>parent: QObject = None</code></td>
+<td>The session's parent object.</td>
+</tr>
+</tbody>
+</table>
+<p>This list (and especially the order) might get changed in the future multiple times, so make sure you always use the parameter names. Also, while I think subclassing the connection classes is a great feature, the default class's implementations are young and might receive changes in the future.</p>
+<h4><code>register_node(node)</code></h4>
+<p>Registers a Node which then can be accessed in all scripts,</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>You can register nodes at any time!</p>
+</div>
+<h4><code>register_nodes(node_classes: list)</code></h4>
+<p>Convenience class for registering a list of nodes at once.</p>
+<h4><code>unregister_node(node_class)</code></h4>
+<p>Unregisters a node which will then be removed from the internal list. Existing instances won't be affected.</p>
+<h4><code>create_script(title: str, flow_view_size: list = None, create_default_logs=True) -&gt; Script</code></h4>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>title</code></td>
+<td>The title of the new script. Script titles have to be unique.</td>
+</tr>
+<tr>
+<td><code>flow_view_size</code></td>
+<td>the pixel size of the flow in format <code>[x, y]</code>.</td>
+</tr>
+<tr>
+<td><code>create_default_logs</code></td>
+<td>Indicates whether the script's default logs (<em>Global</em> and <em>Errors</em>) should get created. You can also do this later manually via <code>Script.logger.create_default_logs()</code>.</td>
+</tr>
+</tbody>
+</table>
+<p>Creates and returns a script which triggers the <code>Session.new_script_created()</code> signal. By the time the script is returned, all abstract as well as the GUI components have been created.</p>
+<h4><code>create_func_script(title: str, flow_view_size: list = None, create_default_logs=True) -&gt; Script</code></h4>
+<p>Same thing as <code>Session.create_script()</code> for <code>FunctionScript</code>s.</p>
+<h4><code>all_scripts() -&gt; list</code></h4>
+<p>Returns a list containing all scripts and function scripts.</p>
+<h4><code>check_new_script_title_validity(title: str) -&gt; bool</code></h4>
+<p>Checks whether a considered title for a new script (i.e. unique) is valid or not.</p>
+<h4><code>rename_script(script: Script, title: str)</code></h4>
+<p>Renames an existing script which triggers the <code>Session.script_renamed</code> signal.</p>
+<h4><code>delete_script(script: Script)</code></h4>
+<p>Deletes a script and triggers the <code>Session.script_deleted</code> signal.</p>
+<h4><code>load(project: dict) -&gt; bool</code></h4>
+<p>Loads a project, which means creating all scripts saved in the provided project dict and building all their contents including the flows.</p>
+<h4><code>serialize() -&gt; dict</code></h4>
+<p>Returns the project as dict to be saved and loaded again using load().</p>
+<h4><code>info_messenger()</code></h4>
+<p>Returns a reference to the <code>InfoMsgs</code> class for printing only if info messages are enabled.</p>
+<h4><code>all_nodes() -&gt; list</code></h4>
+<p>Returns a list of all Node <strong>instances</strong> (objects) from all flows of the session's scripts.</p>
+<h4><code>set_stylesheet(s: str)</code></h4>
+<p>Sets the session's global stylesheet which can be accessed by nodes and their widgets.</p>
+<h2 id="class-infomsgs">[class] <code>InfoMsgs</code></h2>
+<p>The <code>InfoMsgs</code> class just provides a convenient way to print, such that the additional info is disabled by default but can be enabled for troubleshooting.</p>
+<h3 id="methods_1">Methods</h3>
+<h4><code>enable()</code></h4>
+<p>Enables the printing.</p>
+<h4><code>disable()</code></h4>
+<p>Disables the printing.</p>
+<h4><code>write(*args)</code></h4>
+<p>Writes a list of arguments stringified using <code>str()</code> in the same format <code>print()</code> does.</p>
+<h4><code>write_err(*args)</code></h4>
+<p>Same as <code>write(*args)</code> but for highlighted errors.</p>
+<h2 id="class-script">[class] <code>Script</code></h2>
+<h3 id="attributes_1">Attributes</h3>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>session</code></td>
+<td>a ref to the session</td>
+</tr>
+<tr>
+<td><code>flow</code></td>
+<td>the script's flow</td>
+</tr>
+<tr>
+<td><code>flow view</code></td>
+<td>the script's flow view, which is the GUI representative of the flow</td>
+</tr>
+<tr>
+<td><code>logger</code></td>
+<td>the script's logger</td>
+</tr>
+<tr>
+<td><code>vars_manager</code></td>
+<td>the script's vars manager for managing the script variables</td>
+</tr>
+<tr>
+<td><code>title</code></td>
+<td>the script's current tile</td>
+</tr>
+</tbody>
+</table>
+<p>The <code>FunctionScript</code> class used for function scripts extends the <code>Script</code>'s functionality by a few things such as input node and output node that get added automatically to the flow.</p>
+<h2 id="class-logger">[class] <code>Logger</code></h2>
+<p>The logger manages all the logs of a script.</p>
+<h3 id="signals_1">Signals</h3>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Parameters</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>new_log_created</code></td>
+<td><code>Log</code></td>
+<td>Emitted when a new Log has been created, either manually through <code>new_log()</code> or automatically (default logs).</td>
+</tr>
+</tbody>
+</table>
+<h3 id="attributes_2">Attributes</h3>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>script: Script</code></td>
+<td>A ref to the script.</td>
+</tr>
+<tr>
+<td><code>logs: list</code></td>
+<td>A list of all the logs registered in the script.</td>
+</tr>
+</tbody>
+</table>
+<h3 id="methods_2">Methods</h3>
+<h4><code>create_default_logs()</code></h4>
+<p>Creates the default script's logs <em>Global</em> and <em>Errors</em>. This is done automatically if you didn't disable default logs when creating the the script.</p>
+<h4><code>log_message(msg: str, target: str = '')</code></h4>
+<p>Logs a message to all logs with name <code>target</code>. If you want to print to a specific log individual log (not one of the default logs), you should use the <code>Log.write()</code> method.</p>
+<h4><code>new_log(title: str) -&gt; Log</code></h4>
+<p>Creates an individual new log which you can use for anything. Emits the <code>new_log_created</code> signal.</p>
+<h2 id="class-log">[class] <code>Log</code></h2>
+<h3 id="signals_2">Signals</h3>
+<p>The following signals are useful if you implement your own log GUI. Connect them to your widget so it catches those events.</p>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Parameters</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>enabled</code></td>
+<td><code>-</code></td>
+<td>Emitted when the log has been enabled. For instance when a Node which requested the log was removed from the flow and has been restored through an undo command, the logs get 'reenabled'.</td>
+</tr>
+<tr>
+<td><code>disabled</code></td>
+<td><code>-</code></td>
+<td>Emitted when the log has been disabled. For instance when a Node which requested the log has been removed from the flow.</td>
+</tr>
+<tr>
+<td><code>wrote</code></td>
+<td><code>str</code></td>
+<td>Emitted when something wrote a message to the log.</td>
+</tr>
+<tr>
+<td><code>cleared</code></td>
+<td><code>-</code></td>
+<td>Emitted when the log has been cleared.</td>
+</tr>
+</tbody>
+</table>
+<h3 id="attributes_3">Attributes</h3>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>title: str</code></td>
+<td>The log's title string.</td>
+</tr>
+<tr>
+<td><code>lines: [str]</code></td>
+<td>A list of all logged strings (doesn't get cleared when the log gets cleared).</td>
+</tr>
+<tr>
+<td><code>current_lines: [str]</code></td>
+<td>All <em>current</em> <code>lines</code>, i.e. the ones that haven't been cleared.</td>
+</tr>
+</tbody>
+</table>
+<h3 id="methods_3">Methods</h3>
+<h4><code>write(*args)</code></h4>
+<p>Writes a list of arguments to the log like <code>print()</code> does, stringifying everything using <code>str()</code>.</p>
+<h4><code>clear()</code></h4>
+<p>Clears the log and emits <code>cleared</code>. This doesn't clear the <code>lines</code> attribute!</p>
+<h4><code>disable()</code></h4>
+<p>Disables the log and emits <code>disabled</code>. A disabled log does not <code>write</code> anymore.</p>
+<h4><code>enable()</code></h4>
+<p>Enables the log and emits <code>enabled</code>.</p>
+<h4><code>save_to_file(filepath: str, all_lines=True)</code></h4>
+<p>Saves <code>lines</code> to a file. If <code>all_lines</code> is <code>False</code> it only saves <code>current_lines</code>.</p>
+<h2 id="class-varsmanager">[class] <code>VarsManager</code></h2>
+<h3 id="signals_3">Signals</h3>
+<p>The following signals are useful if you implement your own script vars list GUI.</p>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Parameters</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>new_var_created</code></td>
+<td><code>Variable</code></td>
+<td>Emitted when a new script variable has been created.</td>
+</tr>
+<tr>
+<td><code>var_deleted</code></td>
+<td><code>Variable</code></td>
+<td>Emitted when a script variable has been deleted.</td>
+</tr>
+<tr>
+<td><code>var_val_changed</code></td>
+<td><code>Variable, object</code></td>
+<td>Emitted when a script variable's value has been changed.</td>
+</tr>
+</tbody>
+</table>
+<h4>Attributes</h4>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>variables: [Variable]</code></td>
+<td>A list of all the managed script vars.</td>
+</tr>
+</tbody>
+</table>
+<h3 id="methods_4">Methods</h3>
+<h4><code>check_new_var_name_validity(name: str) -&gt; bool</code></h4>
+<p>Checks whether <code>name</code> is a valid name for a new script variable.</p>
+<h4><code>create_new_var(name: str, val=None) -&gt; Variable</code></h4>
+<p>Creates and returns a new script variable with given name and initial value. Emits the <code>new_var_created</code> signal.</p>
+<h4><code>get_var(name) -&gt; Variable</code></h4>
+<p>Returns script variable with given name or <code>None</code> if it couldn't be found.</p>
+<h4><code>get_var_val(name)</code></h4>
+<p>Returns the value of a script variable with given name or <code>None</code> if it couldn't be found.</p>
+<h4><code>set_var(name, val) -&gt; bool</code></h4>
+<p>Sets the value of an existing script variable. Returns <code>False</code> if the var couldn't be found.</p>
+<h4><code>delete_variable(var: Variable)</code></h4>
+<p>Deletes a script variable and emits <code>var_deleted</code>.</p>
+<h4><code>register_receiver(receiver, var_name: str, method)</code></h4>
+<p>Registers a var receiver. A registered receiver (method) gets triggered every time the value of a variable with the given name changes (also when it gets created).</p>
+<h4><code>unregister_receiver(receiver, var_name: str) -&gt; bool</code></h4>
+<p>Unregisters a var receiver.</p>
+<h2 id="class-flow">[class] <code>Flow</code></h2>
+<p>The <code>Flow</code> class represents the abstract flow (no GUI) and stores all the node objects and connections. You can access a script's flow via <code>Script.flow</code>.</p>
+<h3 id="signals_4">Signals</h3>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Parameters</th>
+<th>Emitted when...</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>node_added</code></td>
+<td><code>Node</code></td>
+<td>a node has been added (also happens when a reoved node is restored through an undo).</td>
+</tr>
+<tr>
+<td><code>node_removed</code></td>
+<td><code>Node</code></td>
+<td>a node has been removed.</td>
+</tr>
+<tr>
+<td><code>connection_added</code></td>
+<td><code>Connection</code></td>
+<td>a connection has been added.</td>
+</tr>
+<tr>
+<td><code>connection_removed</code></td>
+<td><code>Connection</code></td>
+<td>a connection has been removed.</td>
+</tr>
+<tr>
+<td><code>algorithm_mode_changed</code></td>
+<td><code>str</code></td>
+<td>the flow's algorithm mode changed, see <code>set_algorithm_mode()</code>.</td>
+</tr>
+</tbody>
+</table>
+<h4>Attributes</h4>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>nodes: [Node]</code></td>
+<td>A list of all currently present nodes.</td>
+</tr>
+<tr>
+<td><code>connections: [Connection]</code></td>
+<td>A list of all current connections.</td>
+</tr>
+</tbody>
+</table>
+<h3 id="methods_5">Methods</h3>
+<h4><code>create_node(node_class, config=None)</code></h4>
+<p>Creates, adds and returns a new node object; emits node_added.</p>
+<h4><code>remove_node(node: Node)</code></h4>
+<p>Removes a node from internal list without deleting it; emits node_removed.</p>
+<h4><code>algorithm_mode() -&gt; str</code></h4>
+<p>Returns the flow's current algorithms mode (<code>data</code> for <em>data flow</em> or <code>exec</code> for <em>execution flow</em>). By default, flows run in data flow mode.</p>
+<h4><code>set_algorithm_mode(mode: str)</code></h4>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>mode</code></td>
+<td><code>'data'</code> or <code>'exec'</code></td>
+</tr>
+</tbody>
+</table>
+<h2 id="class-flowview">[class] FlowView</h2>
+<p>The <code>FlowView</code> is the GUI representative for the <code>Flow</code>, i.e. the widget, and is accessible via <code>Script.flow_view</code>.</p>
+<h4><code>get_viewport_img() -&gt; QImage</code></h4>
+<p>Returns a clear image of the viewport.</p>
+<h4><code>get_whole_scene_img() -&gt; QImage</code></h4>
+<p>Returns an image of the whole scene, scaled accordingly to current scale factor.</p>
+<div class="admonition bug">
+<p class="admonition-title">Bug</p>
+<p>Currently, this only works from the viewport's position down and right, so the user has to scroll to the top left corner in order to get the full scene.</p>
+</div>
+<h4><code>show_framerate(show: bool = True, m_sec_interval: int = 1000)</code></h4>
+<p><strong>WIP</strong></p>
+<h2 id="class-node">[class] <code>Node</code></h2>
+<p>Nodes are defined by subclasses of <code>Node</code>. The individual objects will be instances of the according class. The <code>Node</code> class contains the whole API for programming nodes.</p>
+<details class="example"><summary>Example</summary><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 1</span>
+<span class="normal"> 2</span>
+<span class="normal"> 3</span>
+<span class="normal"> 4</span>
+<span class="normal"> 5</span>
+<span class="normal"> 6</span>
+<span class="normal"> 7</span>
+<span class="normal"> 8</span>
+<span class="normal"> 9</span>
+<span class="normal">10</span>
+<span class="normal">11</span>
+<span class="normal">12</span>
+<span class="normal">13</span>
+<span class="normal">14</span>
+<span class="normal">15</span>
+<span class="normal">16</span>
+<span class="normal">17</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code><span class="k">class</span> <span class="nc">PrintNode</span><span class="p">(</span><span class="n">rc</span><span class="o">.</span><span class="n">Node</span><span class="p">):</span>
+
+    <span class="n">title</span> <span class="o">=</span> <span class="s1">&#39;Print&#39;</span>
+    <span class="n">description</span> <span class="o">=</span> <span class="s1">&#39;prints your data&#39;</span>
+    <span class="n">init_inputs</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="n">rc</span><span class="o">.</span><span class="n">NodeInput</span><span class="p">(</span><span class="s1">&#39;data&#39;</span><span class="p">)</span>
+    <span class="p">]</span>
+    <span class="n">init_outputs</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">color</span> <span class="o">=</span> <span class="s1">&#39;#A9D5EF&#39;</span>
+
+    <span class="c1"># we could also skip the constructor here</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">params</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">params</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">update_event</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">input_called</span><span class="o">=-</span><span class="mi">1</span><span class="p">):</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">input</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>  <span class="c1"># get data from the first input</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+</code></pre></div>
+</td></tr></table>
+</details>
+<h3 id="static-attributes">Static Attributes</h3>
+<p>Use the following static attributes to define the basic properties of your node.</p>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>title: str</code></td>
+<td>The Node's initial title. It doesn't have to be unique.</td>
+</tr>
+<tr>
+<td><code>type_: str</code></td>
+<td>Optional way to specify the node.</td>
+</tr>
+<tr>
+<td><code>init_inputs: [NodeInput]</code></td>
+<td>Initial inputs.</td>
+</tr>
+<tr>
+<td><code>init_outputs: [NodeOutput]</code></td>
+<td>Initial outputs.</td>
+</tr>
+<tr>
+<td><code>identifier: str</code></td>
+<td>A unique identifier string. If nothing is provided, the node's class name will be used.</td>
+</tr>
+<tr>
+<td><code>description: str</code></td>
+<td>A description shown as tool tip when hovering about the node.</td>
+</tr>
+<tr>
+<td><code>description_html: str</code></td>
+<td>A description in html format.</td>
+</tr>
+<tr>
+<td><code>main_widget_class: list</code></td>
+<td>A reference to the class of the <code>main_widget</code> if used.</td>
+</tr>
+<tr>
+<td><code>main_widget_pos: str</code></td>
+<td><code>'between ports'</code> or <code>'below ports'</code> if a <code>main_widget</code> is used.</td>
+</tr>
+<tr>
+<td><code>input_widget_classes: dict</code></td>
+<td>A dict for custom input widgets in format <code>{name: class}</code> which can then be used when defining initial data inputs or creating ones at runtime.</td>
+</tr>
+<tr>
+<td><code>style: str</code></td>
+<td><code>'extended'</code> (default) or <code>'small'</code>. Those are the two different design styles for nodes.</td>
+</tr>
+<tr>
+<td><code>color: str</code></td>
+<td>A color in hex format.</td>
+</tr>
+<tr>
+<td><code>icon: str</code></td>
+<td>The file path to an icon.</td>
+</tr>
+</tbody>
+</table>
+<h3 id="methods_6">Methods</h3>
+<h4>[override] <code>update_event(input_called=-1)</code></h4>
+<p>Triggered when the Node is activated, usually through <code>Node.update()</code>.</p>
+<details class="example"><summary>Example</summary><p>An <em>arr get</em> Node's update event could look like this:
+<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span>
+<span class="normal">4</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code><span class="k">def</span> <span class="nf">update_event</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">input_called</span><span class="o">=-</span><span class="mi">1</span><span class="p">):</span>
+    <span class="n">arr</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">input</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+    <span class="n">index</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">input</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">set_output_val</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">arr</span><span class="p">[</span><span class="n">index</span><span class="p">])</span>
+</code></pre></div>
+</td></tr></table></p>
+</details>
+<h4>[override] <code>get_data() -&gt; dict</code></h4>
+<p>In this method, you need to provide all your internal data that defines your Node's current state (if there are different states). The dict will be encoded using <code>pickle</code> and <code>base64</code> when copying nodes (via ctrl+c) or when saving the project. You do the reverse in <code>Node.set_data(data)</code> (see below). </p>
+<details class="example"><summary>Example</summary><p>Example for a <em>+</em> Node with a dynamic number of inputs, which can be changed by the user.
+<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code><span class="k">def</span> <span class="nf">get_data</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;num inputs&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_inputs</span><span class="p">}</span>
+    <span class="k">return</span> <span class="n">data</span>
+</code></pre></div>
+</td></tr></table></p>
+</details>
+<h4>[override] <code>set_data(data: dict)</code></h4>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>data</code></td>
+<td>Holds the exact value you returned in <code>Node.get_data()</code>.</td>
+</tr>
+</tbody>
+</table>
+<p>Here you do the reverse of what you did in <code>Node.get_data()</code>.</p>
+<div class="admonition important">
+<p class="admonition-title">Important</p>
+<p>Note that all ryvencore internal objects, such as the <code>special_actions</code> dict, <strong>as well as inputs and outputs</strong> get saved and restored automatically by ryvencore exactly as they were when the flow was saved. So, if you added some inputs for example, don't add them again manually in <code>set_data()</code> according to your attribute which indicates how many you added, this happens automatically. Just update your own internal variables.</p>
+</div>
+<details class="example"><summary>Example</summary><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
+<span class="normal">2</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code><span class="k">def</span> <span class="nf">set_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">num_inputs</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;num inputs&#39;</span><span class="p">]</span>
+</code></pre></div>
+</td></tr></table>
+</details>
+<h4>[override] <code>place_event()</code></h4>
+<p>Triggered when the Node has been added to the flow <strong>and all GUI has been initialized</strong>. Don't try to access GUI components in the constructor, they don't exist yet, use this method instead.</p>
+<h4>[override] <code>remove_event()</code></h4>
+<p>Triggered when the Node is removed from the flow. You can use this method do stop threads and timers etc. Note that this action might be undone by an undo operation by the user, in this case the exact Node object will just be placed again resulting in a <code>place_event()</code>.</p>
+<details class="example"><summary>Example</summary><p>Example from a <em>clock</em> Node running a timer.
+<table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
+<span class="normal">2</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code><span class="k">def</span> <span class="nf">remove_event</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">timer</span><span class="o">.</span><span class="n">stop</span><span class="p">()</span>
+</code></pre></div>
+</td></tr></table></p>
+</details>
+<h4><code>update(input_called=-1)</code></h4>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>input_called</code></td>
+<td>If the Node is active, living in an exec flow, i.e. if it has exec inputs, you might want to pass the input the update is supposed to refer to.</td>
+</tr>
+</tbody>
+</table>
+<p>Triggers an update event.</p>
+<h4><code>input(index: int)</code></h4>
+<p>Returns the data that is at the data input with given index. If the input is not connected, the input will return the widget's data (if it has a widget), otherwise it will return the data from the output of the connected Node. In all other cases, it returns <code>None</code>.</p>
+<h4><code>exec_output(index: int)</code></h4>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>index</code></td>
+<td>Index of the output. It has to be an exec output.</td>
+</tr>
+</tbody>
+</table>
+<p>Executes the output with given index.</p>
+<h4><code>set_output_val(index: int, val)</code></h4>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>index</code></td>
+<td>Index of the output. It has to be a data output.</td>
+</tr>
+<tr>
+<td><code>val</code></td>
+<td>The data that gets set at the output. This can be anything.</td>
+</tr>
+</tbody>
+</table>
+<p>In dataflows, this causes update events in all connected nodes. This way, change of data is forward propagated through all nodes that depend on it.</p>
+<h4><code>new_log(title: str) -&gt; Log</code></h4>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>title</code></td>
+<td>The log's display title.</td>
+</tr>
+</tbody>
+</table>
+<p>Creates and returns a new log, owned by the Node.</p>
+<h4><code>disable_logs()</code></h4>
+<p>Disables all logs owned by the Node. The convenience Log widget ryvencore provides then can be hidden. All logs owned by a Node automatically get disabled when the Node is removed.</p>
+<h4><code>enable_logs()</code></h4>
+<p>Enables all logs owned by the Node. The convenience Log widget ryvencore provides then shows the widget again, in case it has been hidden after it was disabled. All logs owned by a Node automatically get enabled again when a removed Node is restored through an undo operation.</p>
+<h4><code>log_message(msg: str, target: str)</code></h4>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>msg</code></td>
+<td>The message as string.</td>
+</tr>
+<tr>
+<td><code>target</code></td>
+<td><code>'Global'</code> or <code>'Errors'</code>. Refers to one of the script's default logs.</td>
+</tr>
+</tbody>
+</table>
+<h4><code>update_shape()</code></h4>
+<p>Causes recompilation of the whole shape of the GUI item of the node.</p>
+<h4><code>create_input(type_: str = 'data', label: str = '', widget_name=None, widget_pos='besides', pos=-1, ...)</code></h4>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>type_</code></td>
+<td><code>'data'</code> or <code>'exec'</code></td>
+</tr>
+<tr>
+<td><code>label</code></td>
+<td>The input's displayed label string.</td>
+</tr>
+<tr>
+<td><code>widget_name</code></td>
+<td>The name the input widget has been registered under. <code>None</code> means no widget gets used.</td>
+</tr>
+<tr>
+<td><code>widget_pos</code></td>
+<td><code>'besides'</code> or <code>'below'</code> the port.</td>
+</tr>
+<tr>
+<td><code>pos</code></td>
+<td>The index this input should be inserted at. <code>-1</code> means appending at the end.</td>
+</tr>
+</tbody>
+</table>
+<h4><code>delete_input(i)</code></h4>
+<p>Deletes the input at index <code>i</code>. All existing connections get removed automatically.</p>
+<h4><code>create_output(type_: str = 'data', label: str = '', pos=-1)</code></h4>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>type_</code></td>
+<td><code>'data'</code> or <code>'exec'</code></td>
+</tr>
+<tr>
+<td><code>label</code></td>
+<td>The output's displayed label string.</td>
+</tr>
+<tr>
+<td><code>pos</code></td>
+<td>The index this output should be inserted at. <code>-1</code> means appending at the end.</td>
+</tr>
+</tbody>
+</table>
+<h4><code>delete_output(o)</code></h4>
+<p>Deletes the output at index <code>o</code>. All existing connections get removed automatically.</p>
+<h4><code>session_stylesheet() -&gt; str</code></h4>
+<p>Returns the stylesheet registered via <code>Session.set_stylesheet()</code>. This can be useful for custom widgets.</p>
+<h4><code>get_var_val(name: str)</code></h4>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>name</code></td>
+<td>script variable's name</td>
+</tr>
+</tbody>
+</table>
+<p>Returns the current value of a script variable and <code>None</code> if it couldn't be found.</p>
+<h4><code>set_var_val(name: str, val)</code></h4>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>name</code></td>
+<td>script variable's name</td>
+</tr>
+<tr>
+<td><code>val</code></td>
+<td>the variable's value</td>
+</tr>
+</tbody>
+</table>
+<p>Sets the value of a script variable and causes all registered receivers to update (see below).</p>
+<h4><code>register_var_receiver(name: str, method)</code></h4>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>name</code></td>
+<td>script variable's name</td>
+</tr>
+<tr>
+<td><code>method</code></td>
+<td>a <em>reference</em> to the receiver method</td>
+</tr>
+</tbody>
+</table>
+<p>Registers a method as receiver for changes of script variable with given name.</p>
+<details class="example"><summary>Example</summary><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1</span>
+<span class="normal">2</span>
+<span class="normal">3</span>
+<span class="normal">4</span></pre></div></td><td class="code"><div class="highlight"><pre><span></span><code><span class="c1"># connect to variable changes</span>
+<span class="c1"># self.var_val_updated refers to the receiver method</span>
+<span class="bp">self</span><span class="o">.</span><span class="n">register_var_receiver</span><span class="p">(</span><span class="s1">&#39;x&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">var_val_updated</span><span class="p">)</span>
+<span class="bp">self</span><span class="o">.</span><span class="n">used_variable_names</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;x&#39;</span><span class="p">)</span>
+</code></pre></div>
+</td></tr></table>
+</details>
+<h4><code>unregister_var_receiver(name: str)</code></h4>
+<p>Unregisters a previously registered variable receiver.</p>
+<!-- [Edit this page on GitHub](https://github.com/leon-thomm/ryvencore){: .md-button } -->
+                
+              
+              
+                
+
+
+              
+            </article>
+          </div>
+        </div>
+      </main>
+      
+        
+<footer class="md-footer">
+  
+    <div class="md-footer-nav">
+      <nav class="md-footer-nav__inner md-grid" aria-label="Footer">
+        
+          <a href="../gui/" class="md-footer-nav__link md-footer-nav__link--prev" rel="prev">
+            <div class="md-footer-nav__button md-icon">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12z"/></svg>
+            </div>
+            <div class="md-footer-nav__title">
+              <div class="md-ellipsis">
+                <span class="md-footer-nav__direction">
+                  Previous
+                </span>
+                GUI
+              </div>
+            </div>
+          </a>
+        
+        
+      </nav>
+    </div>
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-footer-copyright">
+        
+        Made with
+        <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+          Material for MkDocs
+        </a>
+      </div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    
+      <script src="../assets/javascripts/vendor.18f0862e.min.js"></script>
+      <script src="../assets/javascripts/bundle.994580cf.min.js"></script><script id="__lang" type="application/json">{"clipboard.copy": "Copy to clipboard", "clipboard.copied": "Copied to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.placeholder": "Search", "search.result.placeholder": "Type to start searching", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.term.missing": "Missing"}</script>
+      
+      <script>
+        app = initialize({
+          base: "..",
+          features: ['navigation.instant', 'navigation.sections', 'navigation.expand'],
+          search: Object.assign({
+            worker: "../assets/javascripts/worker/search.9c0e82ba.min.js"
+          }, typeof search !== "undefined" && search)
+        })
+      </script>
+      
+    
+  </body>
+</html>
