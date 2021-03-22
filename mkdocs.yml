@@ -13,7 +13,6 @@ nav:
   - Getting Started: getting_started.md
   - Features: features.md
   - GUI: gui.md
-  - Threading: threading.md
   - API Reference: api.md
 
 markdown_extensions:

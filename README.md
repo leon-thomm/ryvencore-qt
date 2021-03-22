@@ -44,14 +44,14 @@ You can define *function scripts*, which have their own flow plus input and outp
 Which can be edited through the API at any time.
 - **Qt widgets**  
 You can add custom QWidgets for your nodes, so you can also easily integrate your existing Python-Qt widgets.
-- **convenience GUI classes**
+<!-- - **convenience GUI classes** -->
 - **many different *modifiable* themes**
 - **exec flow support**  
-While data flows are probably the most common use case, exec flows (like UnrealEngine BluePrints) are also supported.
+While data flows should be the most common use case, exec flows (like UnrealEngine BluePrints) are also supported.
 - **stylus support for adding handwritten notes**  
 - **rendering flow images**
 - **variables system**  
-with registration mechanism to build nodes that automatically adapt to change of data
+With an update mechanism to build nodes that automatically adapt to change of variables.
 - **logging support**  
 - **threading compatibility**  
 All internal communication between the abstract components and the GUI of the flows is implemented in a somewhat thread-save way, so with ryvencore-qt you can keep the abstract components in a separate thread. While this is currently very experimental, first successful tests have been made and I think it's of crucial importance as this opens the door to the world of realtime data processing.
@@ -124,7 +124,7 @@ if __name__ == "__main__":
     sys.exit(app.exec_())
 ```
 
-For a more detailed overview visit the [docs page](https://leon-thomm.github.io/ryvencore/).
+For a detailed overview visit the [docs page](https://leon-thomm.github.io/ryvencore/). For a precise definition of the flows and features, see [Features](https://leon-thomm.github.io/ryvencore-qt/features/).
 
 ### Future Development
 

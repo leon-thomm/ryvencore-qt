@@ -2,7 +2,7 @@
 
 ![](ryvencore_screenshot1.png)
 
-Looking for a quick start? Visit the [Getting Started](/getting_started/) section.
+Looking for a quick start? Visit the [Getting Started](../getting-started/) section.
 
 ## Project Idea
 
@@ -12,6 +12,8 @@ ryvencore-qt is an easy to use framework for creating based flow-based visual sc
     ryvencore-qt is not a professional piece of software and sometimes there are major changes. It is in very early stage, and be aware that future versions might not be fully backwards compatible. If you have suggestions for improvement of the software, feel free to open discussions.
 
 Besides essential GUI classes, ryvencore-qt also provides a few convenience GUI classes which only use ryvencore's public API, making it a little easier to get started.
+
+There is a precise definition of the fundamental characteristics of the flows in the [Features](features.md) section.
 
 ## Current State
 
