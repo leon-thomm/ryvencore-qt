@@ -18,8 +18,14 @@ There are no other dependencies besides Qt for the frontend!
 
 - **load & save**  
 All serialization and loading of projects. Data is stored using `json`, and for some parts `pickle`.
+    ```python
+    project: dict = my_session.serialize()
+    with open(filepath, 'w') as f:
+        f.write(json.dumps(project))
+    ```
 - **simple nodes system**  
 All information of a node is part of its class. A minimal node definition can be as simple as this
+
     ```python
     import ryvencore_qt as rc
     
@@ -37,22 +43,58 @@ All information of a node is part of its class. A minimal node definition can be
     see also example below.
 - **dynamic nodes registration mechanism**  
 You can register and unregister nodes at any time. Registered nodes can be placed in a flow.
+    ```python
+    my_session.register_nodes( list_of_node_classes )
+    ```
 - **function nodes / subgraphs**  
-You can define *function scripts*, which have their own flow plus input and output node, to define functions which you can then use as nodes like this
+You can define *function scripts*, which have their own flow plus input and output node, to define functions which you can then use as nodes, just like this
+
     ![](/docs/function_node.png)
 - **right click operations system for nodes**  
 Which can be edited through the API at any time.
+    ```python
+    self.special_actions[f'remove input {i}'] = {
+        'method': self.rem_input,
+        'data': i,
+    }
+
+    # with some method...
+    def rem_input(self, index):
+        self.delete_input(index)
+        self.my_log.write(f'input {index} removed')
+        del self.special_actions[f'remove input {len(self.inputs)}']
+    ```
 - **Qt widgets**  
 You can add custom QWidgets for your nodes, so you can also easily integrate your existing Python-Qt widgets.
+    ```python
+    class MyNode(rc.Node):
+        main_widget_class = MyNodeMainWidget
+        main_widget_pos = 'below ports'  # alternatively 'between ports'
+        # ...
+    ```
 <!-- - **convenience GUI classes** -->
-- **many different *modifiable* themes**
+- **many different *modifiable* themes**  
+See [Features](https://leon-thomm.github.io/ryvencore-qt/features/).
 - **exec flow support**  
 While data flows should be the most common use case, exec flows (like UnrealEngine BluePrints) are also supported.
 - **stylus support for adding handwritten notes**  
 - **rendering flow images**
+- **logging support**  
 - **variables system**  
 With an update mechanism to build nodes that automatically adapt to change of variables.
-- **logging support**  
+
+    ```python
+    class MyNode(rc.Node):
+        # ...
+        def __init__(self, params):
+            super().__init__(params)
+            self.my_log = self.new_log(title='nice log')
+            # assuming a 'messages' var had been created in the flow's script
+            self.register_var_receiver(name='messages', method=self.new_msg)
+        
+        def new_msg(self, msgs: list):
+            self.my_log.write(f'received msg: {msgs[-1]}')
+    ```
 - **threading compatibility**  
 All internal communication between the abstract components and the GUI of the flows is implemented in a somewhat thread-save way, so with ryvencore-qt you can keep the abstract components in a separate thread. While this is currently very experimental, first successful tests have been made and I think it's of crucial importance as this opens the door to the world of realtime data processing.
 
@@ -140,6 +182,6 @@ I already made a working code generation prototype for Ryven 2. For Ryven 3 I ma
 
 ### Contributing
 
-Due to my study, I myself will not be able to work on this a lot during the next months. I did my best to provide an internal structure that is a good foundation for further development. For discussing general ideas and suggestions, notice the *Discussions* section.
+Due to my study, I myself will not be able to work on this a lot during the next months. I did my best to provide an internal structure that is a good foundation for further development. For discussing general ideas and suggestions, notice the *Discussions* section. I'd be very happy to see people contribute.
 
 Have a nice day!

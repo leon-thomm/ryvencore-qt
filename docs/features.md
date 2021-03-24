@@ -269,14 +269,14 @@ if __name__ == '__main__':
     node1.update()
 ```
 
-Which of the API calls you use in ryvencore-qt are from ryvencore is indicated in the API reference. Of course, your nodes are not allowed to access ryvencore-qt API, as this API does not exist when running it on the backend, since there is no frontend then. To make your nodes compatible with this, you can use check the `Session.no_gui` attribute to determine whether the session is having a frontend or not.
+Which of the API calls you use in ryvencore-qt are from ryvencore is indicated in the API reference. Of course, your nodes are not allowed to access ryvencore-qt API, as this API does not exist when running it on the backend, since there is no frontend then. To make your nodes compatible with this, you can check the `Session.no_gui` attribute to determine whether the session is having a frontend or not.
 
 ``` python
 def update_event(self, input_called=-1):
 
     # doing some work
     
-    if self.session.gui:
+    if not self.session.no_gui:
         self.main_widget().update()
     
     # setting some outputs
