@@ -46,13 +46,13 @@ class Session(RC_Session):
         else:
             CLASSES['node base'] = Node
 
-        super().__init__()
+        super().__init__(gui=True)
 
         # general
         self.flow_views = {}  # {Script : FlowView}
 
         # nodes
-        Node._complete_default_node_classes()
+        Node.complete_default_node_classes()
 
         # threading
         self.threaded = threaded

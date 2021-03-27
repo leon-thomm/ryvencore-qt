@@ -89,7 +89,7 @@ class NodeItem(QGraphicsItem, QObject):
                     else:
                         self.main_widget.set_data(deserialize(self.init_config['main widget data']))
                 except Exception as e:
-                    print('Exception while setting data in', self.title, 'Node\'s main widget:', e,
+                    print('Exception while setting data in', self.node.title, 'Node\'s main widget:', e,
                           ' (was this intended?)')
 
         # catch up on ports

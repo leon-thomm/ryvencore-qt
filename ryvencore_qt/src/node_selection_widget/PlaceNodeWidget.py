@@ -56,7 +56,7 @@ class PlaceNodeWidget(QWidget):
 
         self.layout().addWidget(self.list_scroll_area)
 
-        self.setFixedHeight(400)
+        self.setFixedHeight(300)
 
 
         self.update_view('')
@@ -129,12 +129,12 @@ class PlaceNodeWidget(QWidget):
 
         # nodes
         if len(self.current_nodes) > 0:
-            nodes_label = QLabel('Hover for description')
-            nodes_label_font = QFont('Poppins')
-            nodes_label_font.setPixelSize(15)
-            nodes_label.setStyleSheet('color: #9bbf9dff; border: none;')
-            nodes_label.setFont(nodes_label_font)
-            self.list_layout.addWidget(nodes_label)
+            # nodes_label = QLabel('Hover for description')
+            # nodes_label_font = QFont('Poppins')
+            # nodes_label_font.setPixelSize(15)
+            # nodes_label.setStyleSheet('color: #9bbf9dff; border: none;')
+            # nodes_label.setFont(nodes_label_font)
+            # self.list_layout.addWidget(nodes_label)
 
             for n in self.current_nodes:
                 node_widget = self.create_list_item_widget(n)

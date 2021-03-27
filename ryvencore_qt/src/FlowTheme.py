@@ -4,12 +4,24 @@ from qtpy.QtWidgets import QStyle, QStyleOption
 
 from .tools import pythagoras
 
-
 class FlowTheme:
     
     # STATIC ATTRIBUTES
     name = ''
     type_ = 'dark'
+
+    node_selection_stylesheet__base = '''
+PlaceNodeWidget {
+    background: transparent;
+}
+QScrollArea {
+    border-radius: 8px;
+}
+NodeWidget {
+    
+}
+'''
+    node_selection_stylesheet = ''
     
     exec_conn_color = QColor('#ffffff')
     exec_conn_width = 1.5
@@ -58,6 +70,9 @@ class FlowTheme:
 
             elif k == 'flow background color':
                 self.flow_background_brush.setColor(self.hex_to_col(v))
+
+    def build_node_selection_stylesheet(self):
+        return self.node_selection_stylesheet__base + '\n' + self.node_selection_stylesheet
 
     def paint_NI_title_label(self, node, painter: QPainter, option: QStyleOption, hovering: bool, node_style: str, 
                              node_title: str, node_color: QColor, node_item_bounding_rect):
@@ -184,6 +199,8 @@ class FlowTheme_Toy(FlowTheme):
 
     name = 'Toy'
 
+    node_selection_stylesheet = ''
+
     exec_conn_color = QColor(188, 187, 242)
     exec_conn_width = 5
     exec_conn_pen_style = Qt.SolidLine
@@ -290,6 +307,8 @@ class FlowTheme_DarkTron(FlowTheme):
 
 
     name = 'Tron'
+
+    node_selection_stylesheet = ''
 
     exec_conn_color = QColor(0, 120, 180)
     exec_conn_width = 4
@@ -455,6 +474,8 @@ class FlowTheme_Ghost(FlowTheme):
 
     name = 'Ghost'
     type_ = 'dark'
+
+    node_selection_stylesheet = ''
 
     exec_conn_color = QColor(0, 17, 25)
     exec_conn_width = 2
@@ -623,6 +644,8 @@ class FlowTheme_Blender(FlowTheme):
 
     name = 'Blender'
 
+    node_selection_stylesheet = ''
+
     exec_conn_color = QColor(0, 17, 25)
     exec_conn_width = 2
     exec_conn_pen_style = Qt.SolidLine
@@ -744,6 +767,8 @@ class FlowTheme_Simple(FlowTheme):
 
     name = 'Simple'
     type_ = 'dark'
+
+    node_selection_stylesheet = ''
 
     exec_conn_color = QColor('#989c9f')
     exec_conn_width = 2
@@ -882,6 +907,8 @@ class FlowTheme_Ueli(FlowTheme):
 
     name = 'Ueli'
 
+    node_selection_stylesheet = ''
+
     exec_conn_color = QColor('#989c9f')
     exec_conn_width = 2
     exec_conn_pen_style = Qt.SolidLine
@@ -1018,6 +1045,8 @@ class FlowTheme_Samuel1(FlowTheme):
 
     name = 'Samuel 1d'
 
+    node_selection_stylesheet = ''
+
     exec_conn_color = QColor('#ffffff')
     exec_conn_width = 1.5
     exec_conn_pen_style = Qt.SolidLine
@@ -1137,6 +1166,15 @@ class FlowTheme_Samuel1_Light(FlowTheme_Samuel1):
     name = 'Samuel 1l'
     type_ = 'light'
 
+    node_selection_stylesheet = '''
+NodeSelectionWidget {
+    background-color: white;
+}
+NodeWidget {
+    background-color: white;
+}
+    '''
+
     exec_conn_color = QColor('#1f1f1f')
 
     data_conn_color = QColor('#1f1f1f')
@@ -1150,8 +1188,8 @@ class FlowTheme_Samuel1_Light(FlowTheme_Samuel1):
     node_title_color = QColor('#1f1f1f')
     port_pin_pen_color = QColor('#1f1f1f')
 
+    node_item_shadow_color = QColor('#cccccc')
 
-    node_item_shadow_color = QColor('#bbbbbb')
 
 
 class FlowTheme_Samuel2(FlowTheme):
@@ -1175,7 +1213,6 @@ class FlowTheme_Samuel2(FlowTheme):
     node_small_background_color = QColor('#363c41')
     node_title_color = QColor('#ffffff')
     port_pin_pen_color = QColor('#ffffff')
-
 
     EXPORT = [
         'node title color',

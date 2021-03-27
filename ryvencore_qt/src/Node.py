@@ -8,7 +8,6 @@ from .GlobalAttributes import Location
 class Node(RC_Node):
     """Base class nodes in ryvencore-qt"""
 
-    # display_title = ''  TODO: Node display_title
     description_html: str = None
     main_widget_class: list = None
     main_widget_pos: str = 'below ports'
@@ -21,22 +20,18 @@ class Node(RC_Node):
     hide_unused_ports_triggered = Signal()
     show_unused_ports_triggered = Signal()
 
-    # class SIGNALS(QObject):
-    #     """A class for defining QT signals to communicate with GUI components safely in threaded environments.
-    #     I wanted to do it this way to enable Qt independent source code generation in the future."""
-    #     pass
-
     def __init__(self, params):
         super().__init__(params)
 
         self.default_actions = self.init_default_actions()
         self.special_actions = {}
 
-        # self.signals = self.SIGNALS()
+        # self.display_title = self.title  TODO: Node display_title
+
         self.item = None  # set by the flow view
 
     @staticmethod
-    def _complete_default_node_classes():
+    def complete_default_node_classes():
         func_node_icon = Location.PACKAGE_PATH + '/resources/pics/function_picture.png'
         from .ryvencore.FunctionScript import FunctionScript
         FunctionScript.FunctionScriptNode.icon = func_node_icon
@@ -95,7 +90,7 @@ class Node(RC_Node):
         self.update(data['input index'])
 
     """
-    Some specifications of Node's default behavior:
+    Some specifications of ryvencore.Node's default behavior:
     """
 
     # @override
@@ -127,7 +122,7 @@ class Node(RC_Node):
 
 
     """
-    Additional stuff for GUI contents access:
+    Additional stuff for GUI access:
     """
 
 

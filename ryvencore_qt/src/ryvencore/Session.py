@@ -19,7 +19,7 @@ class Session(Base):
 
     def __init__(
             self,
-            no_gui=False,
+            gui=False,
     ):
         super().__init__()
 
@@ -38,7 +38,7 @@ class Session(Base):
         self.function_scripts: [FunctionScript] = []
         self.nodes = []  # list of node CLASSES
         self.invisible_nodes = [FunctionScript.FunctionInputNode, FunctionScript.FunctionOutputNode]  # might change that system in the future
-        self.no_gui = no_gui
+        self.gui = gui
 
 
     def register_nodes(self, node_classes: list):

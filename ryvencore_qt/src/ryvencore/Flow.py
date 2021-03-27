@@ -95,9 +95,10 @@ class Flow(QObject):
 
         self.node_added.emit(node)
 
-        if self.session.no_gui:  # no node_placed()
-            node.load_user_config()
-            node.update()
+        if not self.session.gui:
+            # node.load_user_config()
+            # node.update()
+            self.node_placed(node)
 
 
     def node_placed(self, node: Node):
@@ -106,7 +107,7 @@ class Flow(QObject):
 
         node.load_user_config()
         node.place_event()
-        node.update()
+        # node.update()
 
 
     def remove_node(self, node: Node):

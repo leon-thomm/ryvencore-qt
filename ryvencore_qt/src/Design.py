@@ -26,7 +26,7 @@ class Design(QObject):
         self.performance_mode: str = None
         self.node_item_shadows_enabled: bool = None
         self.animations_enabled: bool = None
-        self.node_selection_stylesheet = default_node_selection_stylesheet
+        self.node_selection_stylesheet: str = None
 
         # load standard default values
         self.register_flow_themes()
@@ -105,6 +105,8 @@ class Design(QObject):
         else:
             return
 
+        self.node_selection_stylesheet = self.flow_theme.build_node_selection_stylesheet()
+
         self.flow_theme_changed.emit(self.flow_theme.name)
 
 
@@ -127,81 +129,5 @@ class Design(QObject):
 
 
 
-default_node_selection_stylesheet = '''
-QWidget {
-	background-color: #2b2b2b;
-	border-radius: 3px;
-	border: 1px solid #404040;;
-	color: #dddddd;
-}
-
-QPushButton {
-	border-radius: 5px;
-	padding: 4px;
-	background-color: #333333;
-	min-width: 60px;
-}
-QPushButton:pressed {
-	background-color: #3B9CD9;
-}
-
-QGroupBox {
-	border: 1px solid #3B9CD9;;
-	padding-top: 10px;
-}
-
-QLineEdit {
-	padding: 3px;
-}
-
-QScrollArea {
-	border: none;
-}
-
-
-
-QScrollBar:horizontal {
-	border: none;
-	background: #3f3f46;
-	height: 12px;
-	margin: 0 22px 0 22px;
-	border-radius: 7px;
-}
-QScrollBar::handle:horizontal {
-	background: #BCBBF2;
-	min-height: 12px;
-	border-radius: 5px;
-}
-QScrollBar::add-line:horizontal {
-	background: none;
-}
-QScrollBar::sub-line:horizontal {
-	background: none;
-}
-QScrollBar::add-page:horizontal, QScrollBar::sub-page:horizontal {
-	background: none;
-}
-
-QScrollBar:vertical {
-	border: none;
-	background: #3f3f46;
-	width: 12px;
-	margin: 14px 0 14px 0;
-	border-radius: 5px;
-}
-QScrollBar::handle:vertical {
-	background: #BCBBF2;
-	min-height: 20px;
-	border-radius: 5px;
-}
-QScrollBar::add-line:vertical {
-	background: none;
-}
-QScrollBar::sub-line:vertical {
-	background: none;
-}
-QScrollBar::add-page:vertical, QScrollBar::sub-page:vertical {
-	background: none;
-	border: none;
-}
-'''
+# default_node_selection_stylesheet = '''
+# '''

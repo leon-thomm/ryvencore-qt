@@ -3,7 +3,7 @@ import json
 import os
 from math import sqrt
 
-from .ryvencore.tools import serialize
+from .ryvencore.tools import serialize, deserialize
 
 
 def pythagoras(a, b):
@@ -50,7 +50,8 @@ def translate_project(filepath: str):
     project_str = f.read()
     f.close()
 
-    project_str.replace('flow widget config', 'flow view')
+    project_str = project_str.replace('flow widget config', 'flow view')
+    project_str = project_str.replace('widget position', 'widget pos')
 
     project: dict = json.loads(project_str)
     project_repaired = translate_project__repair(project)
@@ -71,7 +72,7 @@ def translate_project__repair(obj):
             #     obj['flow view'] = obj['flow widget config']
             #     del obj['flow widget config']
 
-            elif v == 'under':
+            elif k == 'widget pos' and v == 'under':
                 obj[k] = 'below'
 
             else:

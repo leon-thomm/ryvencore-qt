@@ -141,6 +141,9 @@ class InputPortItem(PortItem):
             else:
                 self.widget = self.get_input_widget_class(wn)(params)
 
+            # catch up to possible missed connects
+            if len(self.port.connections) > 0:
+                self.port_connected()
 
             self.proxy = FlowViewProxyWidget(self.flow_view, parent=self.node_item)
             self.proxy.setWidget(self.widget)

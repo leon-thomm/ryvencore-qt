@@ -26,7 +26,7 @@ class FunctionScript(Script):
         self.returns: [dict] = []
         self.caller_stack = []  # : [FunctionScriptNode]; used by input, output and function nodes
 
-        if config_data and config_data['ID']:
+        if config_data and 'ID' in config_data:
             self.ID = max(config_data['ID'], self.ID_ctr)
         else:
             self.ID = self.ID_ctr

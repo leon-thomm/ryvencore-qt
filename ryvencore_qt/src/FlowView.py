@@ -240,7 +240,14 @@ class FlowView(QGraphicsView):
         redo_shortcut.activated.connect(self._redo_activated)
 
     def _theme_changed(self, t):
+        self._place_node_widget.setStyleSheet(self.session.design.node_selection_stylesheet)
+
         # TODO: repaint background. how?
+        # self.scene().update(self.sceneRect())
+        # and
+        # self.scene().update()
+        # both doesn't work, I don't know why
+
         self.viewport().update()
 
     def _scene_selection_changed(self):
@@ -457,24 +464,26 @@ class FlowView(QGraphicsView):
             if self._panning:
                 self._panning = False
             if self.stylus_mode == 'comment' and self._drawing:
-                InfoMsgs.write('drawing obj finished')
                 self._current_drawing.finish()
+                InfoMsgs.write('drawing finished')
                 self._current_drawing = None
                 self._drawing = False
 
-    # https://forum.qt.io/topic/121473/qgesturerecognizer-registerrecognizer-crashes-using-pyside2
-    #
-    # def event(self, event) -> bool:
-    #     # if event.type() == QEvent.Gesture:
-    #     #     if event.gesture(PanGesture) is not None:
-    #     #         return self.pan_gesture(event)
-    #
-    #     return QGraphicsView.event(self, event)
-    #
-    # def pan_gesture(self, event: QGestureEvent) -> bool:
-    #     pan: PanGesture = event.gesture(PanGesture)
-    #     print(pan)
-    #     return True
+    """
+    --> https://forum.qt.io/topic/121473/qgesturerecognizer-registerrecognizer-crashes-using-pyside2
+    
+    def event(self, event) -> bool:
+        # if event.type() == QEvent.Gesture:
+        #     if event.gesture(PanGesture) is not None:
+        #         return self.pan_gesture(event)
+
+        return QGraphicsView.event(self, event)
+
+    def pan_gesture(self, event: QGestureEvent) -> bool:
+        pan: PanGesture = event.gesture(PanGesture)
+        print(pan)
+        return True
+    """
 
     def dragEnterEvent(self, event):
         if event.mimeData().hasFormat('text/plain'):

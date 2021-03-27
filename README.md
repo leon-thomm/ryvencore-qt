@@ -166,7 +166,7 @@ if __name__ == "__main__":
     sys.exit(app.exec_())
 ```
 
-For a detailed overview visit the [docs page](https://leon-thomm.github.io/ryvencore/). For a precise definition of the flows and features, see [Features](https://leon-thomm.github.io/ryvencore-qt/features/).
+For a detailed overview visit the [docs page](https://leon-thomm.github.io/ryvencore-qt/). For a precise definition of the flows and features, see [Features](https://leon-thomm.github.io/ryvencore-qt/features/).
 
 ### Future Development
 
