@@ -1,15 +1,10 @@
-from ..Base import Base, Signal
+from ..Base import Base
 
 
 class Log(Base):
 
-    enabled = Signal()
-    disabled = Signal()
-    wrote = Signal(str)
-    cleared = Signal()
-
     def __init__(self, title: str):
-        super(Log, self).__init__()
+        Base.__init__(self)
 
         self.title: str = title
         self.lines: [str] = []
@@ -25,19 +20,15 @@ class Log(Base):
             s += ' '+str(arg)
         self.lines.append(s)
         self.current_lines.append(s)
-        self.wrote.emit(s)
 
     def clear(self):
         self.current_lines.clear()
-        self.cleared.emit()
 
     def disable(self):
         self.enabled_ = False
-        self.disabled.emit()
 
     def enable(self):
         self.enabled_ = True
-        self.enabled.emit()
 
     def save_to_file(self, filepath: str, all_lines=True):
         """Saves the log data to a file. If all_lines is false, it only saves the current (not cleared) lines."""

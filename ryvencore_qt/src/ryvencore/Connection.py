@@ -1,4 +1,4 @@
-from .Base import Base, Signal
+from .Base import Base
 
 from .InfoMsgs import InfoMsgs
 
@@ -7,12 +7,12 @@ class Connection(Base):
     """
     The base class for both types of abstract connections. All data is transmitted through a connection from an output
     port to some connected input port. The classes ExecConnection and DataConnection are ready for reimplementation,
-    so users can add additional functionality to connections (like "weights"). As the Session manages the class
-    references, custom reimplementations must be given in the Session constructor.
+    so users can add additional functionality to connections (like "weights").
+    Custom reimplementations must be provided in the RC.CLASSES dict.
     """
 
     def __init__(self, params):
-        super().__init__()
+        Base.__init__(self)
 
         self.out, self.inp, self.flow = params
 
@@ -39,7 +39,7 @@ class DataConnection(Connection):
         self.data = None
 
     def get_val(self):
-        """Gets the value of the output port"""
+        """Gets the value of the output port -- only used in exec mode flows"""
         InfoMsgs.write('data connection getting value')
 
         # request data backwards

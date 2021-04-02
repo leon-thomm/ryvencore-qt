@@ -11,9 +11,14 @@ from .ConnectionItem import DataConnectionItem, ExecConnectionItem
 from .SessionThreadingBridge import SessionThreadingBridge
 from .Node import Node
 from .FlowView import FlowView
+from .WRAPPERS import VarsManager, Logger, Log, DataConnection, Flow
 
 
-class Session(RC_Session):
+class Session(RC_Session, QObject):
+
+    # new_script_created = Signal(Script)
+    script_renamed = Signal(object)
+    script_deleted = Signal(object)
 
     build_flow_view_request = Signal(object, tuple)
     complete_flow_view_config = Signal(dict)
@@ -31,22 +36,24 @@ class Session(RC_Session):
             exec_conn_item_class=None,
             node_class=None,
     ):
+        QObject.__init__(self)
 
-        # registering classes
-        CLASSES['data conn item'] = DataConnectionItem if not data_conn_item_class else data_conn_item_class
-        CLASSES['exec conn item'] = ExecConnectionItem if not exec_conn_item_class else exec_conn_item_class
+        # custom WRAPPERS
+        CLASSES['node base'] = Node if not node_class else node_class
+        CLASSES['data conn'] = DataConnection if not data_conn_class else data_conn_class
+        CLASSES['logger'] = Logger
+        CLASSES['log'] = Log
+        CLASSES['vars manager'] = VarsManager
+        CLASSES['flow'] = Flow
 
-        if data_conn_class:
-            CLASSES['data conn'] = data_conn_class
         if exec_conn_class:
             CLASSES['exec conn'] = exec_conn_class
 
-        if node_class:
-            CLASSES['node base'] = node_class
-        else:
-            CLASSES['node base'] = Node
+        # register additional classes
+        CLASSES['data conn item'] = DataConnectionItem if not data_conn_item_class else data_conn_item_class
+        CLASSES['exec conn item'] = ExecConnectionItem if not exec_conn_item_class else exec_conn_item_class
 
-        super().__init__(gui=True)
+        RC_Session.__init__(self, gui=True)
 
         # general
         self.flow_views = {}  # {Script : FlowView}
@@ -72,17 +79,16 @@ class Session(RC_Session):
         if performance_mode:
             self.design.set_performance_mode(performance_mode)
 
-    def set_stylesheet(self, s: str):
-        """Sets the session's stylesheet which can be accessed by NodeItems.
-        You usually want this to be the same as your window's stylesheet."""
-
-        self.design.global_stylesheet = s
 
     def create_func_script(self, title: str = None, create_default_logs=True,
                            config: dict = None,
                            flow_view_size: list = None) -> Script:
+        """Creates and returns a new function script.
+        If a config is provided the title parameter will be ignored and the script will not be initialized,
+        which you need to do manually after you made sure that the config doesnt contain other function nodes
+        that have not been loaded yet."""
 
-        script = super().create_func_script(title=title, create_default_logs=create_default_logs, config=config)
+        script = RC_Session.create_func_script(self, title=title, create_default_logs=create_default_logs, config=config)
 
         self._build_flow_view(script, flow_view_size)
 
@@ -91,12 +97,27 @@ class Session(RC_Session):
     def create_script(self, title: str = None, create_default_logs=True,
                       config: dict = None,
                       flow_view_size: list = None) -> Script:
+        """Creates and returns a new script.
+        If a config is provided the title parameter will be ignored."""
 
-        script = super().create_script(title=title, create_default_logs=create_default_logs, config=config)
+        script = RC_Session.create_script(self, title=title, create_default_logs=create_default_logs, config=config)
 
         self._build_flow_view(script, flow_view_size)
 
         return script
+
+    def rename_script(self, script: Script, title: str):
+        """Renames an existing script; emits script_renamed"""
+
+        RC_Session.rename_script(self, script=script, title=title)
+        self.script_renamed.emit(script)
+
+    def delete_script(self, script: Script):
+        """Deletes an existing script; emits script_deleted"""
+
+        RC_Session.delete_script(self, script=script)
+        self.script_deleted.emit(script)
+
 
     def _build_flow_view(self, script, view_size):
         """Builds the flow view in the GUI thread"""
@@ -133,7 +154,9 @@ class Session(RC_Session):
         return flow_view
 
     def serialize(self) -> dict:
-        data = super().serialize()
+        """Returns the project as dict to be saved and loaded again using load()"""
+
+        data = RC_Session.serialize(self)
 
         # FUNCTION SCRIPTS
         complete_function_scripts_data = []
@@ -181,4 +204,10 @@ class Session(RC_Session):
             if s.title == title:
                 return s
         return None
+
+    def set_stylesheet(self, s: str):
+        """Sets the session's stylesheet which can be accessed by NodeItems.
+        You usually want this to be the same as your window's stylesheet."""
+
+        self.design.global_stylesheet = s
 

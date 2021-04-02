@@ -1,4 +1,4 @@
-from ..Base import Base, Signal
+from ..Base import Base
 
 from .Variable import Variable
 
@@ -8,12 +8,8 @@ from ..InfoMsgs import InfoMsgs
 class VarsManager(Base):
     """Manages script variables and triggers receivers when values of variables change"""
 
-    new_var_created = Signal(Variable)
-    var_deleted = Signal(Variable)
-    var_val_changed = Signal(Variable, object)
-
     def __init__(self, script, config=None):
-        super().__init__()
+        Base.__init__(self)
 
         self.script = script
 
@@ -38,11 +34,10 @@ class VarsManager(Base):
         return True
 
     def create_new_var(self, name: str, val=None) -> Variable:
-        """Creates and returns a new script variable and emits new_var_created"""
+        """Creates and returns a new script variable"""
 
         v = Variable(name, val)
         self.variables.append(v)
-        self.new_var_created.emit(v)
         return v
 
     def get_var(self, name) -> Variable:
@@ -71,7 +66,6 @@ class VarsManager(Base):
 
         var = self.variables[var_index]
         var.val = val
-        self.var_val_changed.emit(var, var.val)
 
         # update all variable usages by calling all registered object's methods on updated variable with the new val
         for receiver, var_name in self.var_receivers.keys():
@@ -89,10 +83,9 @@ class VarsManager(Base):
         return None
 
     def delete_variable(self, var: Variable):
-        """Deletes a variable and triggers the var_deleted signal."""
+        """Deletes a variable."""
 
         self.variables.remove(var)
-        self.var_deleted.emit(var)
 
     def register_receiver(self, receiver, var_name: str, method):
         """A registered receiver (method) gets triggered every time the

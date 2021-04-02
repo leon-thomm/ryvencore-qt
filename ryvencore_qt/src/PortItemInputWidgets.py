@@ -73,8 +73,8 @@ class RCIW_BUILTIN_LineEdit(QLineEdit, IWB):
         f = self.font()
         f.setPointSize(10)
         self.setFont(f)
-        self.textChanged.connect(M(self.text_changed))
-        self.editingFinished.connect(M(self.editing_finished))
+        self.textChanged.connect(self.text_changed)
+        self.editingFinished.connect(self.editing_finished)
 
     def text_changed(self, new_text):
         if self.resizing:

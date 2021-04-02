@@ -1,31 +1,17 @@
-from qtpy.QtCore import QObject, Signal
-
+from .Base import Base
 from .Connection import Connection
 from .Node import Node
 from .NodePort import NodePort
 from .RC import FlowAlg, PortObjPos, CLASSES
 
 
-class Flow(QObject):
+class Flow(Base):
     """
     Manages all abstract flow components (nodes, connections) and includes implementations for editing.
     """
 
-    # SIGNALS
-
-    node_added = Signal(Node)
-    node_removed = Signal(Node)
-    connection_added = Signal(Connection)
-    connection_removed = Signal(Connection)
-    connection_request_valid = Signal(bool)
-    nodes_created_from_config = Signal(list)
-    connections_created_from_config = Signal(list)
-
-    algorithm_mode_changed = Signal(str)
-
-
-    def __init__(self, session, script, parent=None):
-        super().__init__(parent=parent)
+    def __init__(self, session, script):
+        Base.__init__(self)
 
         self.session = session
         self.script = script
@@ -46,8 +32,18 @@ class Flow(QObject):
             self.set_algorithm_mode('exec')
 
         # build flow
+
         new_nodes = self.create_nodes_from_config(config['nodes'])
+
+        #   the following connections should not cause updates in sequential nodes
+        blocked_nodes = filter(lambda n: n.block_init_updates, new_nodes)
+        for node in blocked_nodes:
+            node.block_updates = True
+
         self.connect_nodes_from_config(new_nodes, config['connections'])
+
+        for node in blocked_nodes:
+            node.block_updates = False
 
 
     def create_nodes_from_config(self, nodes_config: list):
@@ -73,49 +69,40 @@ class Flow(QObject):
             node = self.create_node(node_class, n_c)
             nodes.append(node)
 
-        self.nodes_created_from_config.emit(nodes)
         return nodes
 
 
     def create_node(self, node_class, config=None):
-        """Creates, adds and returns a new node object; emits node_added"""
+        """Creates, adds and returns a new node object"""
 
         node = node_class((self, self.session, config))
+        node.load_user_config()  # --> Node.set_data()
         self.add_node(node)
         return node
 
 
     def add_node(self, node: Node):
-        """Stores a node object and emits node_added"""
+        """Stores a node object and causes the node's place_event()"""
 
         if not node.initialized:
             node.finish_initialization()
 
         self.nodes.append(node)
 
-        self.node_added.emit(node)
-
-        if not self.session.gui:
-            # node.load_user_config()
-            # node.update()
-            self.node_placed(node)
-
-
-    def node_placed(self, node: Node):
-        """Triggered after the FlowWidget added the item to the scene;
-        the node is finally initialized and updated here"""
-
-        node.load_user_config()
         node.place_event()
-        # node.update()
+
+
+    def node_view_placed(self, node: Node):
+        """Triggered after the node's GUI content has been fully initialized"""
+
+        node.view_place_event()
 
 
     def remove_node(self, node: Node):
-        """Removes a node from internal list without deleting it; emits node_removed"""
+        """Removes a node from internal list without deleting it"""
 
         node.prepare_removal()
         self.nodes.remove(node)
-        self.node_removed.emit(node)
 
 
     def connect_nodes_from_config(self, nodes: [Node], config: list):
@@ -147,12 +134,10 @@ class Flow(QObject):
                                        connected_node.inputs[c_connected_input_port_index])
                 connections.append(c)
 
-        self.connections_created_from_config.emit(connections)
-
         return connections
 
 
-    def check_connection_validity(self, p1: NodePort, p2: NodePort, emit=True) -> bool:
+    def check_connection_validity(self, p1: NodePort, p2: NodePort) -> bool:
         """Checks whether a considered connect action is legal"""
 
         valid = True
@@ -163,17 +148,13 @@ class Flow(QObject):
         if p1.io_pos == p2.io_pos or p1.type_ != p2.type_:
             valid = False
 
-        if emit:
-            # used by FlowWidget
-            self.connection_request_valid.emit(valid)
-
         return valid
 
 
     def connect_nodes(self, p1: NodePort, p2: NodePort):
         """Connects nodes or disconnects them if they are already connected"""
 
-        if not self.check_connection_validity(p1, p2, emit=False):
+        if not self.check_connection_validity(p1, p2):
             raise Exception('Illegal connection request. Use check_connection_validity to check if a request is legal.')
 
         out = p1
@@ -199,25 +180,23 @@ class Flow(QObject):
 
 
     def add_connection(self, c: Connection):
-        """Adds a connection object and emits connection_added"""
+        """Adds a connection object"""
 
         c.out.connections.append(c)
         c.inp.connections.append(c)
         c.out.connected()
         c.inp.connected()
         self.connections.append(c)
-        self.connection_added.emit(c)
 
 
     def remove_connection(self, c: Connection):
-        """Removes a connection object without deleting it and emits connection_removed"""
+        """Removes a connection object without deleting it"""
 
         c.out.connections.remove(c)
         c.inp.connections.remove(c)
         c.out.disconnected()
         c.inp.disconnected()
         self.connections.remove(c)
-        self.connection_removed.emit(c)
 
 
     def algorithm_mode(self) -> str:
@@ -233,8 +212,6 @@ class Flow(QObject):
             self.alg_mode = FlowAlg.DATA
         elif mode == 'exec':
             self.alg_mode = FlowAlg.EXEC
-
-        self.algorithm_mode_changed.emit(self.algorithm_mode())
 
 
     def generate_config_data(self):
@@ -256,7 +233,6 @@ class Flow(QObject):
         for n in nodes:
             cfg[n] = n.config_data()
         self._tmp_data = cfg
-        # self.nodes_config_generated.emit(cfg)
         return cfg
 
 
@@ -289,5 +265,4 @@ class Flow(QObject):
                     cfg[c] = c_dict
 
         self._tmp_data = cfg
-        # self.connections_config_generated.emit(cfg)
         return cfg

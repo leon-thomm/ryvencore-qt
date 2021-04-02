@@ -22,8 +22,8 @@ class PortItem(QGraphicsWidget):
         self.port = port
         self.flow_view = flow_view
 
-        self.port.has_been_connected.connect(self.port_connected)
-        self.port.has_been_disconnected.connect(self.port_disconnected)
+        # self.port.has_been_connected.connect(self.port_connected)
+        # self.port.has_been_disconnected.connect(self.port_disconnected)
 
         self.pin = PortItemPin(self.port, self, self.node, self.node_item)
 
@@ -61,8 +61,8 @@ class InputPortItem(PortItem):
         self.widget = None
         self.proxy: FlowViewProxyWidget = None
 
-        if self.port.type_ == 'data':
-            self.port.val_updated.connect(self._port_val_updated)
+        # if self.port.type_ == 'data':
+        #     self.port.val_updated.connect(self._port_val_updated)
 
         if self.port.add_config and 'widget data' in self.port.add_config:
             self.create_widget()
@@ -156,6 +156,10 @@ class InputPortItem(PortItem):
         """Disables the widget"""
         if self.widget:
             self.widget.setEnabled(False)
+
+        if self.port.type_ == 'data':
+            self.port.connections[0].activated.connect(self._port_val_updated)
+
         self._port_val_updated(self.port.val)
 
     def port_disconnected(self):

@@ -1,4 +1,4 @@
-from .Base import Base, Signal
+from .Base import Base
 
 from .RC import PortObjPos, FlowAlg
 from .tools import serialize
@@ -8,11 +8,8 @@ from .InfoMsgs import InfoMsgs
 class NodePort(Base):
     """The base class for inputs and outputs of nodes with basic functionality."""
 
-    has_been_connected = Signal()
-    has_been_disconnected = Signal()
-
     def __init__(self, node, io_pos, type_, label_str):
-        super().__init__()
+        Base.__init__(self)
 
         self.val = None
         self.node = node
@@ -26,10 +23,10 @@ class NodePort(Base):
         pass
 
     def connected(self):
-        self.has_been_connected.emit()
+        pass
 
     def disconnected(self):
-        self.has_been_disconnected.emit()
+        pass
 
     def config_data(self):
         data_dict = {
@@ -41,8 +38,6 @@ class NodePort(Base):
 
 
 class NodeInput(NodePort):
-
-    val_updated = Signal(object)
 
     def __init__(self, node, type_, label_str='', add_config=None):
         super().__init__(node, PortObjPos.INPUT, type_, label_str)
@@ -58,18 +53,18 @@ class NodeInput(NodePort):
     def get_val(self):
         InfoMsgs.write('getting value of node input')
 
-        if self.node.flow.alg_mode == FlowAlg.DATA and self.val is not None:  # TODO: change this
+        if self.node.flow.alg_mode == FlowAlg.DATA:
             return self.val
-        else:
+        elif len(self.connections) > 0:
             return self.connections[0].get_val()
+        else:
+            return None
 
     def update(self, data=None):
         """called from another node or from connected()"""
         if self.type_ == 'data':
             self.val = data  # self.get_val()
             InfoMsgs.write('Data in input set to', data)
-
-            self.val_updated.emit(self.val)
 
         self.node.update(input_called=self.node.inputs.index(self))
 
