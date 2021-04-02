@@ -1,4 +1,4 @@
-from .Base import Base, Signal
+from .Base import Base
 
 from .NodePort import NodeInput, NodeOutput
 from .NodePortBP import NodeInputBP, NodeOutputBP
@@ -13,14 +13,6 @@ class Node(Base):
     static attributes, which works really well in Python.
     All the main API for programming nodes, i.e. creating subclasses of this class, is defined here."""
 
-    # SIGNALS
-    updated = Signal()
-    input_added = Signal(NodeInput, int)
-    output_added = Signal(NodeOutput, int)
-    input_removed = Signal(NodeInput)
-    output_removed = Signal(NodeOutput)
-
-    # STATIC FIELDS
     title = ''
     type_ = ''
     init_inputs: [NodeInputBP] = []
@@ -29,7 +21,7 @@ class Node(Base):
     description: str = ''
 
     def __init__(self, params):
-        super().__init__()
+        Base.__init__(self)
 
         self.flow, design, config = params
         self.script = self.flow.script
@@ -40,6 +32,9 @@ class Node(Base):
 
         self.init_config = config
         self.initialized = False
+
+        self.block_init_updates = False
+        self.block_updates = False
 
     def finish_initialization(self):
         """
@@ -64,7 +59,7 @@ class Node(Base):
 
     def load_user_config(self):
         """Loads the component-specific config data that was returned by get_data() previously; prints an exception
-        if it fails but doesn't crash, as this always happens when developing nodes"""
+        if it fails but doesn't crash because that usually happens when developing nodes"""
 
         if self.init_config:
             try:
@@ -74,8 +69,7 @@ class Node(Base):
                     self.set_data(deserialize(self.init_config['state data']))
             except Exception as e:
                 InfoMsgs.write_err(
-                    'Exception while setting data in', self.title, 'Node:', e,
-                    ' (was this intended?)')
+                    'Exception while setting data in', self.title, 'node:', e, ' (was this intended?)')
 
 
     def setup_ports(self, inputs_config=None, outputs_config=None):
@@ -118,17 +112,20 @@ class Node(Base):
     #                         /____/
 
 
-    def update(self, input_called=-1, output_called=-1):
+    def update(self, input_called=-1):  # , output_called=-1):
         """'Activates' the node, causing an update_event(); prints an exception if something crashed, but prevents
         the application from crashing in such a case"""
 
-        InfoMsgs.write('update in', self.title, 'on input', input_called)
+        if self.block_updates:
+            InfoMsgs.write('update blocked in', self.title, 'node')
+            return
+
+        InfoMsgs.write('update in', self.title, 'node on input', input_called)
 
         try:
             self.update_event(input_called)
-            self.updated.emit()
         except Exception as e:
-            InfoMsgs.write_err('EXCEPTION IN', self.title, 'Node:', e)
+            InfoMsgs.write_err('EXCEPTION in', self.title, 'Node:', e)
 
     # OVERRIDE
     def update_event(self, input_called=-1):
@@ -157,9 +154,23 @@ class Node(Base):
     # OVERRIDE
     def place_event(self):
         """
-        called once all GUI for the node has been created;
-        any initial communication to widgets is supposed to happen here;
-        this method is not called when running without gui
+        place_event() is called once the node object has been fully initialized and placed in the Flow.
+        When loading content, place_event() is executed *before* the connections are built,
+        which is important for nodes that need to update once and, during this process set output data values,
+        to prevent other (later connected) nodes from receiving updates because of that.
+        Notice that this method gets executed *every time* the node is added to the flow, which can happen
+        multiple times, due to undo/redo operations for example.
+        Also note that GUI content is generally not accessible yet from here, for that use view_place_event().
+        """
+
+        pass
+
+    # OVERRIDE
+    def view_place_event(self):
+        """
+        view_place_event() is called once all GUI for the node has been created by the frontend.
+        Any initial communication to widgets is supposed to happen here, and this method is not called
+        when running without gui.
         """
 
         pass
@@ -218,7 +229,6 @@ class Node(Base):
     def new_log(self, title) -> Log:
         """Requesting a new custom Log"""
 
-        # new_log = self.script.logger.new_log(self, title)
         new_log = self.script.logger.new_log(title)
         self.logs.append(new_log)
         return new_log
@@ -254,9 +264,6 @@ class Node(Base):
             type_=type_,
             label_str=label,
             add_config=add_config,
-            # widget_name=widget_name,
-            # widget_pos=widget_pos,
-            # config_data=config
         )
 
         if pos < -1:
@@ -266,28 +273,17 @@ class Node(Base):
         else:
             self.inputs.insert(pos, inp)
 
-        # self.item.add_new_input(inp, pos)
-        self.input_added.emit(inp, pos)
 
-    def delete_input(self, i):
-
-        # def remove_input(self, index: int):
-
+    def delete_input(self, index):
         """Disconnects and removes input"""
 
-        inp: NodeInput = None
-        if type(i) == int:
-            inp = self.inputs[i]
-        elif type(i) == NodeInput:
-            inp = i
+        inp: NodeInput = self.inputs[index]
 
         # break all connections
         for c in inp.connections:
             self.flow.connect_nodes(c.out, inp)
 
         self.inputs.remove(inp)
-        # self.item.remove_input(inp)
-        self.input_removed.emit(inp)
 
 
     def create_output(self, type_: str = 'data', label: str = '', pos=-1):
@@ -307,28 +303,17 @@ class Node(Base):
         else:
             self.outputs.insert(pos, out)
 
-        # self.item.add_new_output(out, pos)
-        self.output_added.emit(out, pos)
 
-        # if self.session.threaded:
-        #     out.moveToThread(self.flow.worker_thread)
-
-    def delete_output(self, o):
+    def delete_output(self, index):
         """Disconnects and removes output"""
 
-        out: NodeOutput = None
-        if type(o) == int:
-            out = self.outputs[o]
-        elif type(o) == NodeOutput:
-            out = o
+        out: NodeOutput = self.outputs[index]
 
         # break all connections
         for c in out.connections:
             self.flow.connect_nodes(out, c.inp)
 
         self.outputs.remove(out)
-        # self.item.remove_output(out)
-        self.output_removed.emit(out)
 
 
     # VARIABLES

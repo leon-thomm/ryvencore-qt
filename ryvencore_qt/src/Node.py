@@ -1,11 +1,10 @@
-from qtpy.QtCore import Signal
+from qtpy.QtCore import QObject, Signal
 
-from .ryvencore import *
 from .ryvencore import Node as RC_Node
 from .GlobalAttributes import Location
 
 
-class Node(RC_Node):
+class Node(RC_Node, QObject):
     """Base class nodes in ryvencore-qt"""
 
     description_html: str = None
@@ -16,12 +15,19 @@ class Node(RC_Node):
     color: str = '#c69a15'
     icon: str = None
 
+    # SIGNALS
+    updated = Signal()
+    input_added = Signal(object, int)
+    output_added = Signal(object, int)
+    input_removed = Signal(object)
+    output_removed = Signal(object)
     update_shape_triggered = Signal()
     hide_unused_ports_triggered = Signal()
     show_unused_ports_triggered = Signal()
 
     def __init__(self, params):
-        super().__init__(params)
+        QObject.__init__(self)
+        RC_Node.__init__(self, params)
 
         self.default_actions = self.init_default_actions()
         self.special_actions = {}
@@ -90,8 +96,38 @@ class Node(RC_Node):
         self.update(data['input index'])
 
     """
-    Some specifications of ryvencore.Node's default behavior:
+    specifications of ryvencore.Node's default behavior:
     """
+
+    # @override
+    def update(self, input_called=-1):
+        RC_Node.update(self, input_called)
+        self.updated.emit()
+
+    # @override
+    def create_input(self, type_: str = 'data', label: str = '',
+                     add_config={}, pos=-1):
+        RC_Node.create_input(self, type_=type_, label=label, add_config=add_config, pos=pos)
+
+        self.input_added.emit(self.inputs[pos], pos)
+
+    # @override
+    def create_output(self, type_: str = 'data', label: str = '', pos=-1):
+        RC_Node.create_output(self, type_=type_, label=label, pos=pos)
+
+        self.output_added.emit(self.outputs[pos], pos)
+
+    # @override
+    def delete_input(self, index):
+        inp = self.inputs[index]
+        RC_Node.delete_input(self, index=index)
+        self.input_removed.emit(inp)
+
+    # @override
+    def delete_output(self, index):
+        out = self.outputs[index]
+        RC_Node.delete_output(self, index=index)
+        self.output_removed.emit(out)
 
     # @override
     def custom_config_data(self) -> dict:
@@ -108,21 +144,23 @@ class Node(RC_Node):
 
     # @override
     def input(self, index: int):
-        if len(self.inputs[index].connections) == 0:
+        if len(self.inputs[index].connections) == 0 and self.item:
             iw = self.input_widget(index)
             return iw.get_val() if iw else None
         else:
-            return super().input(index)
+            return RC_Node.input(self, index)
 
     # @override
     def prepare_removal(self):  # gets also subclassed by user
         if self.main_widget():
             self.main_widget().remove_event()
-        super().prepare_removal()
+        RC_Node.prepare_removal(self)
 
 
     """
-    Additional stuff for GUI access:
+    additional stuff for GUI access:
+    [everything below is pure ryvencore-qt API and, to ensure ryvencore compatibility, 
+    should not be used unchecked in nodes]
     """
 
 

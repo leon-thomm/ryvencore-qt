@@ -22,6 +22,8 @@ from .ConnectionItem import default_cubic_connection_path, ConnectionItem
 from .DrawingObject import DrawingObject
 from .ryvencore.InfoMsgs import InfoMsgs
 from .ryvencore.RC import PortObjPos, CLASSES
+
+
 # from .ryvencore.RC import FlowVPUpdateMode as VPUpdateMode
 
 
@@ -34,7 +36,7 @@ class FlowView(QGraphicsView):
     create_node_request = Signal(object, dict)
     remove_node_request = Signal(Node)
 
-    check_connection_validity_request = Signal(NodePort, NodePort)
+    check_connection_validity_request = Signal(NodePort, NodePort, bool)
     connect_request = Signal(NodePort, NodePort)
 
     get_nodes_config_request = Signal(list)
@@ -43,10 +45,8 @@ class FlowView(QGraphicsView):
 
     viewport_update_mode_changed = Signal(str)
 
-
     def __init__(self, session, script, flow, config=None, flow_size: list = None, parent=None):
         super(FlowView, self).__init__(parent=parent)
-
 
         # UNDO/REDO
         self._undo_stack = QUndoStack(self)
@@ -90,7 +90,7 @@ class FlowView(QGraphicsView):
         # CONNECTIONS TO FLOW
         self.create_node_request.connect(self.flow.create_node)
         self.remove_node_request.connect(self.flow.remove_node)
-        self.node_placed.connect(self.flow.node_placed)
+        self.node_placed.connect(self.flow.node_view_placed)
         self.check_connection_validity_request.connect(self.flow.check_connection_validity)
         self.get_nodes_config_request.connect(self.flow.generate_nodes_config)
         self.get_connections_config_request.connect(self.flow.generate_connections_config)
@@ -204,7 +204,6 @@ class FlowView(QGraphicsView):
         for c in self.flow.connections:
             self.add_connection(c)
 
-
     def show_framerate(self, show: bool = True, m_sec_interval: int = 1000):
         self._showing_framerate = show
         self.framerate_timer.setInterval(m_sec_interval)
@@ -241,14 +240,9 @@ class FlowView(QGraphicsView):
 
     def _theme_changed(self, t):
         self._place_node_widget.setStyleSheet(self.session.design.node_selection_stylesheet)
-
         # TODO: repaint background. how?
-        # self.scene().update(self.sceneRect())
-        # and
-        # self.scene().update()
-        # both doesn't work, I don't know why
-
         self.viewport().update()
+        self.scene().update(self.sceneRect())
 
     def _scene_selection_changed(self):
         self.nodes_selection_changed.emit(self.selected_nodes())
@@ -310,7 +304,7 @@ class FlowView(QGraphicsView):
 
         QGraphicsView.mouseMoveEvent(self, event)
 
-        if self._right_mouse_pressed_in_flow:    # PAN
+        if self._right_mouse_pressed_in_flow:  # PAN
 
             if not self._panning:
                 self._panning = True
@@ -345,11 +339,9 @@ class FlowView(QGraphicsView):
         elif event.button() == Qt.RightButton:
             self._right_mouse_pressed_in_flow = False
             if self._mouse_press_pos == self._last_mouse_move_pos:
-
                 self._place_node_widget.reset_list()
                 self.show_place_node_widget(event.pos())
                 return
-
 
         if self._dragging_connection:
 
@@ -424,7 +416,7 @@ class FlowView(QGraphicsView):
                 (event.type() == QTabletEvent.TabletPress and event.button() == Qt.RightButton):
             return  # let the mousePress/Move/Release-Events handle it
 
-        scaled_event_pos: QPointF = event.posF()/self._current_scale
+        scaled_event_pos: QPointF = event.posF() / self._current_scale
 
         if event.type() == QTabletEvent.TabletPress:
             self.mouse_event_taken = True
@@ -471,7 +463,7 @@ class FlowView(QGraphicsView):
 
     """
     --> https://forum.qt.io/topic/121473/qgesturerecognizer-registerrecognizer-crashes-using-pyside2
-    
+
     def event(self, event) -> bool:
         # if event.type() == QEvent.Gesture:
         #     if event.gesture(PanGesture) is not None:
@@ -536,7 +528,6 @@ class FlowView(QGraphicsView):
                         for y in range(diff_y, self.sceneRect().toRect().height(), diff_y):
                             painter.drawPoint(x, y)
 
-
         self.set_stylus_proxy_pos()  # has to be called here instead of in drawForeground to prevent lagging
         self.set_zoom_proxy_pos()
 
@@ -551,7 +542,6 @@ class FlowView(QGraphicsView):
             pos = self.mapToScene(10, 23)
             painter.setFont(QFont('Poppins', round(11 * self._total_scale_div)))
             painter.drawText(pos, "{:.2f}".format(self.framerate))
-
 
         # DRAW CURRENTLY DRAGGED CONNECTION
         if self._dragging_connection:
@@ -571,7 +561,6 @@ class FlowView(QGraphicsView):
                 default_cubic_connection_path(pos1, pos2)
             )
 
-
         # DRAW SELECTED NIs BORDER
         for ni in self.selected_node_items():
             pen = QPen(self.session.design.flow_theme.flow_highlight_pen_color)
@@ -585,7 +574,6 @@ class FlowView(QGraphicsView):
             w = ni.boundingRect().width() * size_factor
             h = ni.boundingRect().height() * size_factor
             painter.drawRoundedRect(x, y, w, h, 10, 10)
-
 
         # DRAW SELECTED DRAWINGS BORDER
         for p_o in self.selected_drawings():
@@ -621,7 +609,8 @@ class FlowView(QGraphicsView):
         the top left corner in order to get the full scene"""
 
         self.hide_proxies()
-        img = QImage(self.sceneRect().width() / self._total_scale_div, self.sceneRect().height() / self._total_scale_div,
+        img = QImage(self.sceneRect().width() / self._total_scale_div,
+                     self.sceneRect().height() / self._total_scale_div,
                      QImage.Format_RGB32)
         img.fill(Qt.transparent)
 
@@ -760,9 +749,6 @@ class FlowView(QGraphicsView):
 
         self.ensureVisible(target_rect, 0, 0)
 
-
-
-
     # NODES
     def create_node__cmd(self, node_class):
         self._push_undo(
@@ -826,7 +812,7 @@ class FlowView(QGraphicsView):
     # CONNECTIONS
     def connect_node_ports__cmd(self, p1: NodePort, p2: NodePort):
         self._temp_connection_ports = (p1, p2)
-        self.check_connection_validity_request.emit(p1, p2)
+        self.check_connection_validity_request.emit(p1, p2, True)
 
     def connection_request_valid(self, valid: bool):
         """
@@ -867,9 +853,10 @@ class FlowView(QGraphicsView):
             else:
                 item = CLASSES['exec conn item'](c, self.session.design)
 
-
-
         self._add_connection_item(item)
+
+        item.out_item.port_connected()
+        item.inp_item.port_connected()
 
     def _add_connection_item(self, item: ConnectionItem):
         self.connection_items[item.connection] = item
@@ -880,6 +867,10 @@ class FlowView(QGraphicsView):
     def remove_connection(self, c: Connection):
         item = self.connection_items[c]
         self._remove_connection_item(item)
+
+        item.out_item.port_disconnected()
+        item.inp_item.port_disconnected()
+
         del self.connection_items[c]
 
     def _remove_connection_item(self, item: ConnectionItem):
@@ -930,7 +921,7 @@ class FlowView(QGraphicsView):
         """Removes a drawing from the scene."""
 
         # TODO https://github.com/leon-thomm/ryvencore/issues/4
-        
+
         self.scene().removeItem(drawing)
         self.drawings.remove(drawing)
 
@@ -940,8 +931,8 @@ class FlowView(QGraphicsView):
 
         new_drawings = []
         for d_config in drawings_config:
-            x = d_config['pos x']+offset_pos.x()
-            y = d_config['pos y']+offset_pos.y()
+            x = d_config['pos x'] + offset_pos.x()
+            y = d_config['pos y'] + offset_pos.y()
             new_drawing = self.create_drawing(config=d_config)
             self.add_drawing(new_drawing, QPointF(x, y))
             new_drawings.append(new_drawing)

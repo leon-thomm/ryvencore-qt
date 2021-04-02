@@ -1,15 +1,13 @@
-from .Base import Base, Signal
+from .Base import Base
 
-from .Flow import Flow
-from .logging.Logger import Logger
-from .script_variables.VarsManager import VarsManager
+from .RC import CLASSES
 
 
 class Script(Base):
     """A Script consists of a Flow, the corresponding FlowView, a variables manager and a logger."""
 
     def __init__(self, session, title: str = None, config_data: dict = None, create_default_logs=True):
-        super(Script, self).__init__(parent=session)
+        Base.__init__(self)
 
         self.session = session
         self.logger = None
@@ -27,14 +25,11 @@ class Script(Base):
             self.init_flow_config = config_data['flow'] if config_data else None
             self.init_vars_manager_config = config_data['variables']
 
-        self.logger = Logger(self, self._create_default_logs)
-        self.flow = Flow(self.session, self, self)
+        self.logger = CLASSES['logger'](self, self._create_default_logs)
+        self.flow = CLASSES['flow'](self.session, self)
 
         # VARS MANAGER
-        if self.init_config:
-            self.vars_manager = VarsManager(self, self.init_vars_manager_config)
-        else:
-            self.vars_manager = VarsManager(self)
+        self.vars_manager = CLASSES['vars manager'](self, self.init_vars_manager_config)
 
 
     def load_flow(self):
@@ -46,11 +41,6 @@ class Script(Base):
         """Returns the config data of the script, including variables and flow content"""
 
         flow_data = self.flow.generate_config_data()
-        # self.generate_flow_view_config_request.emit(flow_data)
-        #
-        # while self.flow_view._temp_config_data is None:
-        #     time.sleep(0.001)  # 'join' threads
-        # flow_config, flow_view_config = self.flow_view._temp_config_data
 
         script_dict = {
             'name': self.title,
