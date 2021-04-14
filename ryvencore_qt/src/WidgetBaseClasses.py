@@ -8,12 +8,12 @@ class MWB:
         self.node, self.node_item = params
 
     # OVERRIDE
-    def get_data(self) -> dict:
+    def get_state(self) -> dict:
         data = {}
         return data
 
     # OVERRIDE
-    def set_data(self, data: dict):
+    def set_state(self, data: dict):
         pass
 
     # OVERRIDE
@@ -43,12 +43,12 @@ class IWB:
         return None
 
     # OVERRIDE
-    def get_data(self) -> dict:
+    def get_state(self) -> dict:
         data = {}
         return data
 
     # OVERRIDE
-    def set_data(self, data: dict):
+    def set_state(self, data: dict):
         pass
 
     # OVERRIDE

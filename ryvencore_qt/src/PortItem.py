@@ -69,15 +69,15 @@ class InputPortItem(PortItem):
 
             if self.port.dtype:
                 c_d = self.port.add_config['widget data']
-                self.widget.set_data(deserialize(c_d))
+                self.widget.set_state(deserialize(c_d))
 
             elif 'widget data' in self.port.add_config:
                 try:
                     c_d = self.port.add_config['widget data']
                     if type(c_d) == dict:  # backwards compatibility
-                        self.widget.set_data(c_d)
+                        self.widget.set_state(c_d)
                     else:
-                        self.widget.set_data(deserialize(c_d))
+                        self.widget.set_state(deserialize(c_d))
                 except Exception as e:
                     print('Exception while setting data in', self.node.title,
                           '\'s input widget:', e, ' (was this intended?)')

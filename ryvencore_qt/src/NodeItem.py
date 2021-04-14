@@ -85,9 +85,9 @@ class NodeItem(QGraphicsItem, QObject):
             if self.main_widget:
                 try:
                     if type(self.init_config['main widget data']) == dict:  # backwards compatibility
-                        self.main_widget.set_data(self.init_config['main widget data'])
+                        self.main_widget.set_state(self.init_config['main widget data'])
                     else:
-                        self.main_widget.set_data(deserialize(self.init_config['main widget data']))
+                        self.main_widget.set_state(deserialize(self.init_config['main widget data']))
                 except Exception as e:
                     print('Exception while setting data in', self.node.title, 'Node\'s main widget:', e,
                           ' (was this intended?)')
@@ -453,12 +453,13 @@ class NodeItem(QGraphicsItem, QObject):
                     input_cfg['has widget'] = True
 
                     if inp_item.port.dtype:  # dtype widget
-                        input_cfg['widget name'] = str(inp_item.port.dtype)
+                        # input_cfg['widget name'] = str(inp_item.widget)
+                        pass
                     else:  # custom widget
                         input_cfg['widget name'] = inp_item.port.add_config['widget name']
+                        input_cfg['widget pos'] = inp_item.port.add_config['widget pos']
 
-                    input_cfg['widget data'] = serialize(inp_item.widget.get_data())
-                    input_cfg['widget pos'] = inp_item.port.add_config['widget pos']
+                    input_cfg['widget data'] = serialize(inp_item.widget.get_state())
                 else:
                     input_cfg['has widget'] = False
 
@@ -468,6 +469,6 @@ class NodeItem(QGraphicsItem, QObject):
         node_config['pos x'] = self.pos().x()
         node_config['pos y'] = self.pos().y()
         if self.main_widget:
-            node_config['main widget data'] = serialize(self.main_widget.get_data())
+            node_config['main widget data'] = serialize(self.main_widget.get_state())
 
         return node_config

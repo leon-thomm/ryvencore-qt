@@ -78,6 +78,7 @@ class NodeInput(NodePort):
 
         if self.dtype:
             data['dtype'] = str(self.dtype)
+            data['dtype state'] = serialize(self.dtype.get_state())
 
         return data
 

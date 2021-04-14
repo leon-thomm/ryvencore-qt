@@ -36,10 +36,10 @@ class RCIW_BUILTIN_SpinBox(QSpinBox, IWB):
     def get_val(self):
         return self.value()
 
-    def get_data(self) -> dict:
+    def get_state(self) -> dict:
         return {'val': self.value()}
 
-    def set_data(self, data):
+    def set_state(self, data):
         if type(data) == dict:
             self.setValue(data['val'])
         else:  # backwards compatibility
@@ -103,10 +103,10 @@ class RCIW_BUILTIN_LineEdit(QLineEdit, IWB):
             val = self.text()
         return val
 
-    def get_data(self) -> dict:
+    def get_state(self) -> dict:
         return {'text': self.text()}
 
-    def set_data(self, data):
+    def set_state(self, data):
         if type(data) == str:  # backwards compatibility
             self.setText(data)
         elif type(data) == dict:
@@ -124,18 +124,20 @@ class RCIW_BUILTIN_LineEdit_small(RCIW_BUILTIN_LineEdit):
 
 
 
+class DType_IW_Base(IWB):
+    def __str__(self):
+        return self.__class__.__name__
 
 
 
 
-
-class Data_IW(QLineEdit, IWB):  # virtual
+class Data_IW(QLineEdit, DType_IW_Base):  # virtual
 
     base_width = None  # specified by subclasses
 
     def __init__(self, params):
         QLineEdit.__init__(self)
-        IWB.__init__(self, params)
+        DType_IW_Base.__init__(self, params)
 
         dtype = self.input.dtype
 
@@ -179,10 +181,10 @@ class Data_IW(QLineEdit, IWB):  # virtual
         except Exception as e:
             pass
 
-    def get_data(self) -> dict:
+    def get_state(self) -> dict:
         return {'text': self.text()}
 
-    def set_data(self, data: dict):
+    def set_state(self, data: dict):
         self.setText(data['text'])
 
 
@@ -203,13 +205,13 @@ class Data_IW_L(Data_IW):
 # -----------------------------------
 
 
-class String_IW(QLineEdit, IWB):  # virtual
+class String_IW(QLineEdit, DType_IW_Base):  # virtual
 
     width = None  # specified by subclasses
 
     def __init__(self, params):
         QLineEdit.__init__(self)
-        IWB.__init__(self, params)
+        DType_IW_Base.__init__(self, params)
 
         dtype = self.input.dtype
 
@@ -235,10 +237,10 @@ class String_IW(QLineEdit, IWB):  # virtual
         finally:
             self.block = False
 
-    def get_data(self) -> dict:
+    def get_state(self) -> dict:
         return {'text': self.text()}
 
-    def set_data(self, data: dict):
+    def set_state(self, data: dict):
         self.setText(data['text'])
 
 
@@ -259,10 +261,10 @@ class String_IW_L(String_IW):
 # -----------------------------------
 
 
-class Integer_IW(QSpinBox, IWB):
+class Integer_IW(QSpinBox, DType_IW_Base):
     def __init__(self, params):
         QSpinBox.__init__(self)
-        IWB.__init__(self, params)
+        DType_IW_Base.__init__(self, params)
 
         dtype = self.input.dtype
 
@@ -288,17 +290,17 @@ class Integer_IW(QSpinBox, IWB):
         finally:
             self.block = False
 
-    def get_data(self) -> dict:
+    def get_state(self) -> dict:
         return {'val': self.value()}
 
-    def set_data(self, data: dict):
+    def set_state(self, data: dict):
         self.setValue(data['val'])
 
 
-class Float_IW(QLineEdit, IWB):
+class Float_IW(QLineEdit, DType_IW_Base):
     def __init__(self, params):
         QLineEdit.__init__(self)
-        IWB.__init__(self, params)
+        DType_IW_Base.__init__(self, params)
 
         dtype = self.input.dtype
 
@@ -325,17 +327,17 @@ class Float_IW(QLineEdit, IWB):
         finally:
             self.block = False
 
-    def get_data(self) -> dict:
+    def get_state(self) -> dict:
         return {'text': self.text()}
 
-    def set_data(self, data: dict):
+    def set_state(self, data: dict):
         self.setText(data['text'])
 
 
-class Boolean_IW(QCheckBox, IWB):
+class Boolean_IW(QCheckBox, DType_IW_Base):
     def __init__(self, params):
         QCheckBox.__init__(self)
-        IWB.__init__(self, params)
+        DType_IW_Base.__init__(self, params)
 
         dtype = self.input.dtype
 
@@ -360,17 +362,17 @@ class Boolean_IW(QCheckBox, IWB):
         finally:
             self.block = False
 
-    def get_data(self) -> dict:
+    def get_state(self) -> dict:
         return {'checked': self.isChecked()}
 
-    def set_data(self, data: dict):
+    def set_state(self, data: dict):
         self.setChecked(data['checked'])
 
 
-class Choice_IW(QComboBox, IWB):
+class Choice_IW(QComboBox, DType_IW_Base):
     def __init__(self, params):
         QComboBox.__init__(self)
-        IWB.__init__(self, params)
+        DType_IW_Base.__init__(self, params)
 
         dtype = self.input.dtype
 
@@ -395,13 +397,13 @@ class Choice_IW(QComboBox, IWB):
         finally:
             self.block = False
 
-    def get_data(self) -> dict:
+    def get_state(self) -> dict:
         return {
             'items': [self.itemText(i) for i in range(self.count())],
             'active': self.currentText(),
         }
 
-    def set_data(self, data: dict):
+    def set_state(self, data: dict):
         self.clear()
         self.addItems(data['items'])
         self.setCurrentText(data['active'])

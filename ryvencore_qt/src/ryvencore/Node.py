@@ -58,15 +58,15 @@ class Node(Base):
         # self.update()
 
     def load_user_config(self):
-        """Loads the component-specific config data that was returned by get_data() previously; prints an exception
+        """Loads the component-specific config data that was returned by get_state() previously; prints an exception
         if it fails but doesn't crash because that usually happens when developing nodes"""
 
         if self.init_config:
             try:
                 if type(self.init_config['state data']) == dict:  # backwards compatibility
-                    self.set_data(self.init_config['state data'])
+                    self.set_state(self.init_config['state data'])
                 else:
-                    self.set_data(deserialize(self.init_config['state data']))
+                    self.set_state(deserialize(self.init_config['state data']))
             except Exception as e:
                 InfoMsgs.write_err(
                     'Exception while setting data in', self.title, 'node:', e, ' (was this intended?)')
@@ -94,8 +94,11 @@ class Node(Base):
         else:  # when loading saved nodes, the init_inputs and init_outputs are irrelevant
             for inp in inputs_config:
                 if 'dtype' in inp:
-                    self.create_input_dt(dtype=DType.from_str(inp['dtype']), label=inp['label'],
-                                         add_config=inp)
+                    self.create_input_dt(
+                        dtype=DType.from_str(inp['dtype'])(_load_state=deserialize(inp['dtype state'])),
+                        label=inp['label'],
+                        add_config=inp
+                    )
                 else:
                     self.create_input(
                         type_=inp['type'], label=inp['label'],
@@ -111,14 +114,7 @@ class Node(Base):
             for out in outputs_config:
                 self.create_output(out['type'], out['label'])
 
-
-    #                        __                             _    __     __
-    #              ____ _   / /  ____ _   ____     _____   (_)  / /_   / /_     ____ ___
-    #             / __ `/  / /  / __ `/  / __ \   / ___/  / /  / __/  / __ \   / __ `__ \
-    #            / /_/ /  / /  / /_/ /  / /_/ /  / /     / /  / /_   / / / /  / / / / / /
-    #            \__,_/  /_/   \__, /   \____/  /_/     /_/   \__/  /_/ /_/  /_/ /_/ /_/
-    #                         /____/
-
+    # -----------------------------------------------------------------------------------------------------------------
 
     def update(self, input_called=-1):  # , output_called=-1):
         """'Activates' the node, causing an update_event(); prints an exception if something crashed, but prevents
@@ -198,7 +194,7 @@ class Node(Base):
     # OVERRIDE
     def custom_config_data(self) -> dict:
         """Convenience method for saving some std config for all nodes in an editor.
-        get_data()/set_data() then stays clean for all specific node subclasses"""
+        get_state()/set_state() then stays clean for all specific node subclasses"""
 
         return {}
 
@@ -208,30 +204,27 @@ class Node(Base):
         pass
 
     # OVERRIDE
-    def get_data(self) -> dict:
+    def get_state(self) -> dict:
         """
         Used to store node-specific custom data that needs to be reloaded when loading a project or pasting copied
         components. All values will be serialized by pickle and base64. The corresponding method for the opposite
-        operation is set_data().
+        operation is set_state().
         """
         return {}
 
     # OVERRIDE
-    def set_data(self, data: dict):
+    def set_state(self, data: dict):
         """
-        Used for reloading node-specific custom data which has been previously returned by get_data()
+        Used for reloading node-specific custom data which has been previously returned by get_state()
         """
         pass
 
-    #                                 _
-    #              ____ _   ____     (_)
-    #             / __ `/  / __ \   / /
-    #            / /_/ /  / /_/ /  / /
-    #            \__,_/  / .___/  /_/
-    #                   /_/
+    # -----------------------------------------------------------------------------------------------------------------
+
+    # API
 
 
-    # LOGGING
+    #   LOGGING
 
 
     def new_log(self, title) -> Log:
@@ -259,7 +252,7 @@ class Node(Base):
         self.script.logger.log_message(msg, target)
 
 
-    # PORTS
+    #   PORTS
 
 
     def create_input(self, type_: str = 'data', label: str = '',
@@ -344,7 +337,7 @@ class Node(Base):
         self.outputs.remove(out)
 
 
-    # VARIABLES
+    #   VARIABLES
 
 
     def get_vars_manager(self):
@@ -374,6 +367,8 @@ class Node(Base):
         self.get_vars_manager().unregister_receiver(self, name)
 
 
+    # -----------------------------------------------------------------------------------------------------------------
+
 
 
     def prepare_removal(self):
@@ -402,7 +397,7 @@ class Node(Base):
         # general attributes
         node_dict = {
             'identifier': self.identifier,
-            'state data': serialize(self.get_data()),
+            'state data': serialize(self.get_state()),
             **self.custom_config_data()
         }
 
