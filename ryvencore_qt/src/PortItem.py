@@ -3,7 +3,9 @@ from qtpy.QtWidgets import QGraphicsGridLayout, QGraphicsWidget, \
 from qtpy.QtCore import Qt, QRectF, QPointF, QSizeF
 from qtpy.QtGui import QFontMetricsF, QFont
 
-from .PortItemInputWidgets import RCIW_BUILTIN_SpinBox, RCIW_BUILTIN_LineEdit, RCIW_BUILTIN_LineEdit_small
+from .PortItemInputWidgets import RCIW_BUILTIN_SpinBox, RCIW_BUILTIN_LineEdit, RCIW_BUILTIN_LineEdit_small, \
+    Data_IW_S, Data_IW_M, Data_IW_L, Float_IW, Integer_IW, Choice_IW, Boolean_IW, String_IW_S, String_IW_M, String_IW_L
+from .ryvencore import dtypes
 from .ryvencore.tools import deserialize
 from .tools import get_longest_line, shorten
 
@@ -61,22 +63,24 @@ class InputPortItem(PortItem):
         self.widget = None
         self.proxy: FlowViewProxyWidget = None
 
-        # if self.port.type_ == 'data':
-        #     self.port.val_updated.connect(self._port_val_updated)
+        self.create_widget()
 
-        if self.port.add_config and 'widget data' in self.port.add_config:
-            self.create_widget()
-            try:
+        if self.port.add_config:
+
+            if self.port.dtype:
                 c_d = self.port.add_config['widget data']
-                if type(c_d) == dict:  # backwards compatibility
-                    self.widget.set_data(c_d)
-                else:
-                    self.widget.set_data(deserialize(c_d))
-            except Exception as e:
-                print('Exception while setting data in', self.node.title,
-                      '\'s input widget:', e, ' (was this intended?)')
-        else:
-            self.create_widget()
+                self.widget.set_data(deserialize(c_d))
+
+            elif 'widget data' in self.port.add_config:
+                try:
+                    c_d = self.port.add_config['widget data']
+                    if type(c_d) == dict:  # backwards compatibility
+                        self.widget.set_data(c_d)
+                    else:
+                        self.widget.set_data(deserialize(c_d))
+                except Exception as e:
+                    print('Exception while setting data in', self.node.title,
+                          '\'s input widget:', e, ' (was this intended?)')
 
         self.setup_ui()
 
@@ -88,65 +92,64 @@ class InputPortItem(PortItem):
         l.setAlignment(self.pin, Qt.AlignVCenter | Qt.AlignLeft)
         l.addItem(self.label, 0, 1)
         l.setAlignment(self.label, Qt.AlignVCenter | Qt.AlignLeft)
-
-        if self.widget is not None:
-            if self.port.add_config['widget pos'] == 'besides':
-                l.addItem(self.proxy, 0, 2)
-            elif self.port.add_config['widget pos'] == 'below':
+        if self.widget:
+            if self.port.add_config and self.port.add_config.get('widget pos') == 'below':
                 l.addItem(self.proxy, 1, 0, 1, 2)
+            else:
+                l.addItem(self.proxy, 0, 2)  # besides
+
             l.setAlignment(self.proxy, Qt.AlignCenter)
 
-    def create_widget(self, configuration=None):
-        if (self.port.type_ and self.port.type_ == 'data') or (configuration and configuration['type'] == 'data'):
+    def create_widget(self):
 
-            if 'widget name' not in self.port.add_config:
-                return  # no input widget
+        params = (self.port, self, self.node, self.node_item)
 
-            wn = self.port.add_config['widget name']
+        if self.port.dtype:
 
-            params = (self.port, self, self.node, self.node_item)
+            dtype = self.port.dtype
 
-            # choose correct class for builtin line edit (the small version for small nodes)
-            _RCIW_BUILTIN_LineEdit = RCIW_BUILTIN_LineEdit if self.node.style == 'extended' else \
-                RCIW_BUILTIN_LineEdit_small
+            if isinstance(dtype, dtypes.Data):
+                if dtype.size == 's':
+                    self.widget = Data_IW_S(params)
+                elif dtype.size == 'm':
+                    self.widget = Data_IW_M(params)
+                elif dtype.size == 'l':
+                    self.widget = Data_IW_L(params)
 
-            if wn == 'std line edit s':
-                self.widget = _RCIW_BUILTIN_LineEdit(params, size='small')
-            elif wn == 'std line edit m' or wn == 'std line edit':
-                self.widget = _RCIW_BUILTIN_LineEdit(params)
-            elif wn == 'std line edit l':
-                self.widget = _RCIW_BUILTIN_LineEdit(params, size='large')
-            elif wn == 'std line edit s r':
-                self.widget = _RCIW_BUILTIN_LineEdit(params, size='small', resize=True)
-            elif wn == 'std line edit m r':
-                self.widget = _RCIW_BUILTIN_LineEdit(params, resize=True)
-            elif wn == 'std line edit l r':
-                self.widget = _RCIW_BUILTIN_LineEdit(params, size='large', resize=True)
-            elif wn == 'std spin box':
-                self.widget = RCIW_BUILTIN_SpinBox(params)
+            elif isinstance(dtype, dtypes.String):
+                if dtype.size == 's':
+                    self.widget = String_IW_S(params)
+                elif dtype.size == 'm':
+                    self.widget = String_IW_M(params)
+                elif dtype.size == 'l':
+                    self.widget = String_IW_L(params)
 
+            elif isinstance(dtype, dtypes.Integer):
+                self.widget = Integer_IW(params)
 
-            # backwards compatibility
+            elif isinstance(dtype, dtypes.Float):
+                self.widget = Float_IW(params)
 
-            elif wn == 'std line edit s r nb':
-                self.widget = _RCIW_BUILTIN_LineEdit(params, size='small', resize=True)
-            elif wn == 'std line edit m r nb':
-                self.widget = _RCIW_BUILTIN_LineEdit(params, resize=True)
-            elif wn == 'std line edit l r nb':
-                self.widget = _RCIW_BUILTIN_LineEdit(params, size='large', resize=True)
+            elif isinstance(dtype, dtypes.Boolean):
+                self.widget = Boolean_IW(params)
 
+            elif isinstance(dtype, dtypes.Choice):
+                self.widget = Choice_IW(params)
+
+        elif self.port.type_ == 'data' and self.port.add_config and 'widget name' in self.port.add_config:
 
             # custom input widget
+            self.widget = self.get_input_widget_class(self.port.add_config['widget name'])(params)
 
-            else:
-                self.widget = self.get_input_widget_class(wn)(params)
+        else:
+            return
 
-            # catch up to possible missed connects
-            if len(self.port.connections) > 0:
-                self.port_connected()
+        # catch up to missed connections
+        if len(self.port.connections) > 0:
+            self.port_connected()
 
-            self.proxy = FlowViewProxyWidget(self.flow_view, parent=self.node_item)
-            self.proxy.setWidget(self.widget)
+        self.proxy = FlowViewProxyWidget(self.flow_view, parent=self.node_item)
+        self.proxy.setWidget(self.widget)
 
     def get_input_widget_class(self, widget_name):
         """Returns the CLASS of a defined custom input widget"""

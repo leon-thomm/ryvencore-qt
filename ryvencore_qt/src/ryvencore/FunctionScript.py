@@ -1,3 +1,4 @@
+from .Base import Base
 from .Script import Script
 from .RC import CLASSES
 from .FunctionNodeTypes import build_function_classes
@@ -7,9 +8,11 @@ class FunctionScript(Script):
     """Besides all the properties of a Script, a FunctionScript automatically create an input node and an output node
     in the Flow, and locally defines a new Node class and registers it in the session."""
 
-    ID_ctr = 0  # ensures I don't need to change the func node class's identifier when script name is changed
-    # the ID gets stored when serializing and is reloaded in a way that the ID_ctr will afterwards still be larger than
-    # any ID used, even if there were func scripts deleted which created holes in the id assignments
+    id_ctr = Base.IDCtr()  # using custom ID to count FunctionScripts
+    # this ensures that I don't need to change the func node class's identifier when the script's title changes.
+    # the ID gets stored when serializing and is reloaded in a way that the ctr will afterwards still be larger than
+    # any ID used, even if there were func scripts deleted which created holes in the id assignments, so we don't get
+    # dangerous overlapping
 
     FunctionInputNode, FunctionOutputNode, FunctionScriptNode = None, None, None
 
@@ -26,11 +29,10 @@ class FunctionScript(Script):
         self.returns: [dict] = []
         self.caller_stack = []  # : [FunctionScriptNode]; used by input, output and function nodes
 
+        self.ID = self.id_ctr.count()
         if config_data and 'ID' in config_data:
-            self.ID = max(config_data['ID'], self.ID_ctr)
-        else:
-            self.ID = self.ID_ctr
-        self.ID_ctr = self.ID + 1
+            self.ID = max(config_data['ID'], self.ID)
+        self.id_ctr.set_count(self.ID)
 
         super().__init__(session, title, config_data, create_default_logs)
 

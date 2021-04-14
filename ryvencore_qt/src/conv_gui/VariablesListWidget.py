@@ -1,4 +1,4 @@
-from qtpy.QtWidgets import QVBoxLayout, QWidget, QLineEdit
+from qtpy.QtWidgets import QVBoxLayout, QWidget, QLineEdit, QScrollArea
 from qtpy.QtCore import Qt
 
 from .VarsList_VarWidget import VarsList_VarWidget
@@ -26,15 +26,23 @@ class VariablesListWidget(QWidget):
         self.list_layout = QVBoxLayout()
         self.list_layout.setAlignment(Qt.AlignTop)
 
-        # w = QWidget()
-        # w.setLayout(self.list_layout)
-        #
-        # scroll_area = QScrollArea()
-        # scroll_area.setLayout(QVBoxLayout())
-        # scroll_area.setWidget(w)
-        #
-        # main_layout.addWidget(scroll_area)
-        main_layout.addLayout(self.list_layout)
+        # list scroll area
+
+        self.list_scroll_area = QScrollArea()
+        self.list_scroll_area.setWidgetResizable(True)
+        self.list_scroll_area.setContentsMargins(0, 0, 0, 0)
+
+        w = QWidget()
+        w.setContentsMargins(0, 0, 0, 0)
+        w.setLayout(self.list_layout)
+
+        self.list_scroll_area.setWidget(w)
+
+        main_layout.addWidget(self.list_scroll_area)
+
+        # ------------------
+
+        # controls
 
         self.new_var_name_lineedit = QLineEdit()
         self.new_var_name_lineedit.setPlaceholderText('new var\'s title')
@@ -42,6 +50,9 @@ class VariablesListWidget(QWidget):
 
         main_layout.addWidget(self.new_var_name_lineedit)
 
+        # ------------------
+
+        self.setContentsMargins(0, 0, 0, 0)
         self.setLayout(main_layout)
 
         self.recreate_list()

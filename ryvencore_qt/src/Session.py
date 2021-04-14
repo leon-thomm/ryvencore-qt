@@ -205,9 +205,9 @@ class Session(RC_Session, QObject):
                 return s
         return None
 
-    def set_stylesheet(self, s: str):
-        """Sets the session's stylesheet which can be accessed by NodeItems.
-        You usually want this to be the same as your window's stylesheet."""
-
-        self.design.global_stylesheet = s
+    # def set_stylesheet(self, s: str):
+    #     """Sets the session's stylesheet which can be accessed by NodeItems.
+    #     You usually want this to be the same as your window's stylesheet."""
+    #
+    #     self.design.global_stylesheet = s
 

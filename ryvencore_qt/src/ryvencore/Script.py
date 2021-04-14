@@ -25,12 +25,14 @@ class Script(Base):
             self.init_flow_config = config_data['flow'] if config_data else None
             self.init_vars_manager_config = config_data['variables']
 
+        # logging
         self.logger = CLASSES['logger'](self, self._create_default_logs)
-        self.flow = CLASSES['flow'](self.session, self)
 
-        # VARS MANAGER
+        # vars manager
         self.vars_manager = CLASSES['vars manager'](self, self.init_vars_manager_config)
 
+        # flow
+        self.flow = CLASSES['flow'](self.session, self)
 
     def load_flow(self):
         if self.init_flow_config:

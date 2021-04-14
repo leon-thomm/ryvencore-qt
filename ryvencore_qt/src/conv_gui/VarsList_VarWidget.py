@@ -13,8 +13,6 @@ from .EditVal_Dialog import EditVal_Dialog
 class VarsList_VarWidget(QWidget):
     """A QWidget representing a single script variable for the VariablesListWidget."""
 
-    # name_LE_editing_finished = Signal()
-
     def __init__(self, vars_list_widget, vars_manager, var):
         super(VarsList_VarWidget, self).__init__()
 
@@ -28,6 +26,7 @@ class VarsList_VarWidget(QWidget):
 
         # UI
         main_layout = QHBoxLayout()
+        main_layout.setContentsMargins(0, 0, 0, 0)
 
         # create icon via label
         variable_icon = QIcon(Location.PACKAGE_PATH+'/resources/pics/variable_picture.png')

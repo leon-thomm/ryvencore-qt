@@ -2,6 +2,7 @@ from qtpy.QtCore import QObject, Signal
 
 from .ryvencore import Node as RC_Node
 from .GlobalAttributes import Location
+from .ryvencore.dtypes import DType
 
 
 class Node(RC_Node, QObject):
@@ -42,6 +43,7 @@ class Node(RC_Node, QObject):
         from .ryvencore.FunctionScript import FunctionScript
         FunctionScript.FunctionScriptNode.icon = func_node_icon
 
+    """actions"""
 
     def init_default_actions(self) -> dict:
         actions = {
@@ -112,6 +114,12 @@ class Node(RC_Node, QObject):
         self.input_added.emit(self.inputs[pos], pos)
 
     # @override
+    def create_input_dt(self, dtype: DType, label: str = '', add_config={}, pos=-1):
+        RC_Node.create_input_dt(self, dtype=dtype, label=label, add_config=add_config, pos=pos)
+
+        self.input_added.emit(self.inputs[pos], pos)
+
+    # @override
     def create_output(self, type_: str = 'data', label: str = '', pos=-1):
         RC_Node.create_output(self, type_=type_, label=label, pos=pos)
 
@@ -172,7 +180,11 @@ class Node(RC_Node, QObject):
 
 
     def main_widget(self):
-        return self.item.main_widget
+        """Returns the main_widget object, or None if the item doesn't exist (yet)"""
+        if self.item:
+            return self.item.main_widget
+        else:
+            return None
 
 
     def has_main_widget(self):

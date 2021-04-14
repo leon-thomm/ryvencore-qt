@@ -20,6 +20,7 @@ setup(
         'ryvencore_qt.src.ryvencore',
         'ryvencore_qt.src.ryvencore.logging',
         'ryvencore_qt.src.ryvencore.script_variables',
+        'ryvencore_qt.src.ryvencore.dtypes',
     ],
     include_package_data=True,
     classifiers=[

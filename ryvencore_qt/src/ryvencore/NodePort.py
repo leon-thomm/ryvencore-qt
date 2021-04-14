@@ -1,6 +1,7 @@
 from .Base import Base
 
 from .RC import PortObjPos, FlowAlg
+from .dtypes import DType
 from .tools import serialize
 from .InfoMsgs import InfoMsgs
 
@@ -39,11 +40,14 @@ class NodePort(Base):
 
 class NodeInput(NodePort):
 
-    def __init__(self, node, type_, label_str='', add_config=None):
+    def __init__(self, node, type_, label_str='', add_config=None, dtype: DType = None):
         super().__init__(node, PortObjPos.INPUT, type_, label_str)
 
-        # add_config can be used to store additional config data for enhanced input ports
+        # add_config can be used to store additional config data for enhanced data input ports
         self.add_config = add_config
+
+        # optional dtype
+        self.dtype: DType = dtype
 
     def disconnected(self):
         super().disconnected()
@@ -53,12 +57,10 @@ class NodeInput(NodePort):
     def get_val(self):
         InfoMsgs.write('getting value of node input')
 
-        if self.node.flow.alg_mode == FlowAlg.DATA:
+        if self.node.flow.alg_mode == FlowAlg.DATA or len(self.connections) == 0:
             return self.val
-        elif len(self.connections) > 0:
+        else:  # len(self.connections) > 0:
             return self.connections[0].get_val()
-        else:
-            return None
 
     def update(self, data=None):
         """called from another node or from connected()"""
@@ -68,10 +70,15 @@ class NodeInput(NodePort):
 
         self.node.update(input_called=self.node.inputs.index(self))
 
-    def config_data(self, include_val=False):
+    def config_data(self):
         data = super().config_data()
-        if include_val:
+
+        if len(self.connections) == 0:
             data['val'] = serialize(self.get_val())
+
+        if self.dtype:
+            data['dtype'] = str(self.dtype)
+
         return data
 
 

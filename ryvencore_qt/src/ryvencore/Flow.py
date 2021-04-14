@@ -66,6 +66,9 @@ class Flow(Base):
                         node_class = nc
                         break
 
+            if node_class is None:
+                raise Exception(f"Couldn't find a registered node with identifier {n_c['identifier']}.")
+
             node = self.create_node(node_class, n_c)
             nodes.append(node)
 

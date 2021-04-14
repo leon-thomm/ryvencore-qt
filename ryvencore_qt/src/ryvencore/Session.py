@@ -1,13 +1,11 @@
 from .Base import Base
 
 
-from .Script import Script, Flow, Logger, VarsManager
-from .logging.Log import Log
+from .Script import Script
 from .FunctionScript import FunctionScript
 from .InfoMsgs import InfoMsgs
 from .RC import CLASSES
 from .Node import Node
-from .Connection import DataConnection, ExecConnection
 
 
 class Session(Base):
@@ -20,19 +18,33 @@ class Session(Base):
     ):
         Base.__init__(self)
 
+        # register classes
+
         if not CLASSES['node base']:
             CLASSES['node base'] = Node
+
         if not CLASSES['data conn']:
+            from .Connection import DataConnection
             CLASSES['data conn'] = DataConnection
+
         if not CLASSES['exec conn']:
+            from .Connection import ExecConnection
             CLASSES['exec conn'] = ExecConnection
+
         if not CLASSES['logger']:
+            from .logging.Logger import Logger
             CLASSES['logger'] = Logger
+
         if not CLASSES['log']:
+            from .logging.Log import Log
             CLASSES['log'] = Log
+
         if not CLASSES['vars manager']:
+            from .script_variables.VarsManager import VarsManager
             CLASSES['vars manager'] = VarsManager
+
         if not CLASSES['flow']:
+            from .Flow import Flow
             CLASSES['flow'] = Flow
 
         # initialize node classes for FunctionScripts with correct Node base
@@ -147,7 +159,7 @@ class Session(Base):
         return InfoMsgs
 
 
-    def load(self, project: dict) -> ([Script], [Script]):
+    def load(self, project: dict) -> ([Script], [FunctionScript]):
         """Loads a project and raises an exception if required nodes are missing"""
 
         if 'scripts' not in project and 'function scripts' not in project:
@@ -188,7 +200,7 @@ class Session(Base):
         return data
 
 
-    def all_nodes(self) -> list:
+    def all_node_objects(self) -> list:
         """Returns a list containing all Node objects used in any flow which is useful for advanced project analysis"""
 
         nodes = []

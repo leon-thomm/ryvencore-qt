@@ -442,6 +442,7 @@ class NodeItem(QGraphicsItem, QObject):
     # CONFIG
 
     def complete_config(self, node_config):
+
         # add input widgets config
         for i in range(len(node_config['inputs'])):
             input_cfg = node_config['inputs'][i]
@@ -450,11 +451,17 @@ class NodeItem(QGraphicsItem, QObject):
             if inp_item.port.type_ == 'data':
                 if inp_item.widget:
                     input_cfg['has widget'] = True
-                    input_cfg['widget name'] = inp_item.port.add_config['widget name']
+
+                    if inp_item.port.dtype:  # dtype widget
+                        input_cfg['widget name'] = str(inp_item.port.dtype)
+                    else:  # custom widget
+                        input_cfg['widget name'] = inp_item.port.add_config['widget name']
+
                     input_cfg['widget data'] = serialize(inp_item.widget.get_data())
                     input_cfg['widget pos'] = inp_item.port.add_config['widget pos']
                 else:
                     input_cfg['has widget'] = False
+
                 node_config['inputs'][i] = input_cfg
 
         # add item properties
