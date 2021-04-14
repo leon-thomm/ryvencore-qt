@@ -1,7 +1,7 @@
 from .Base import Base
 
 
-from .Script import Script, Flow, Logger, VarsManager
+from .Script import Script
 from .logging.Log import Log
 from .FunctionScript import FunctionScript
 from .InfoMsgs import InfoMsgs
@@ -22,17 +22,29 @@ class Session(Base):
 
         if not CLASSES['node base']:
             CLASSES['node base'] = Node
+
         if not CLASSES['data conn']:
+            from .Connection import DataConnection
             CLASSES['data conn'] = DataConnection
+
         if not CLASSES['exec conn']:
+            from .Connection import ExecConnection
             CLASSES['exec conn'] = ExecConnection
+
         if not CLASSES['logger']:
+            from .logging.Logger import Logger
             CLASSES['logger'] = Logger
+
         if not CLASSES['log']:
+            from .logging.Log import Log
             CLASSES['log'] = Log
+
         if not CLASSES['vars manager']:
+            from .script_variables.VarsManager import VarsManager
             CLASSES['vars manager'] = VarsManager
+
         if not CLASSES['flow']:
+            from .Flow import Flow
             CLASSES['flow'] = Flow
 
         # initialize node classes for FunctionScripts with correct Node base
