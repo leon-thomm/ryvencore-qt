@@ -10,9 +10,9 @@ pip install ryvencore-qt
 
 ### Dependencies
 
-ryvencore-qt uses [QtPy](https://github.com/spyder-ide/qtpy), which is a wrapper for Qt, so you can choose between Pyside2 and PyQt.
+ryvencore-qt uses [QtPy](https://github.com/spyder-ide/qtpy), which is a wrapper for Qt, so you can choose between Pyside2 and PyQt5.
 
-There are no other dependencies besides Qt for the frontend!
+There are no dependencies besides Qt for the frontend! The backend (ryvencore) which you can use directly to run your flows without frontend does not have a single dependency so far!
 
 ### Features
 
@@ -96,7 +96,7 @@ With an update mechanism to build nodes that automatically adapt to change of va
             self.my_log.write(f'received msg: {msgs[-1]}')
     ```
 - **threading compatibility**  
-All internal communication between the abstract components and the GUI of the flows is implemented in a somewhat thread-save way, so with ryvencore-qt you can keep the abstract components in a separate thread. While this is currently very experimental, first successful tests have been made and I think it's of crucial importance as this opens the door to the world of realtime data processing.
+All internal communication between the abstract components and the GUI of the flows is implemented in a somewhat thread-save way, so with ryvencore-qt you can keep the backend in a separate thread. While this is currently very experimental, first successful tests have been made, and I think it's of crucial importance as this opens the door to the world of realtime data processing.
 
 ### Usage
 
@@ -168,20 +168,18 @@ if __name__ == "__main__":
 
 For a detailed overview visit the [docs page](https://leon-thomm.github.io/ryvencore-qt/). For a precise definition of the flows and features, see [Features](https://leon-thomm.github.io/ryvencore-qt/features/).
 
+<!--
+
 ### Future Development
 
 #### Qt Dependency
 
 I am currently investigating on options for a more scalable replacement for the Qt signals which ryvencore's components use for communication in gui mode. Following suggestions of others, I'm especially looking at brokerless message queues like ZeroMQ, NNG right now. This might ultimately enable scaling ryvencore into the web with a JS based frontend in the browser. That's clearly far far future, but very exciting and a point where contributions by users with more experience with this would be very welcome.
 
-<!--
-#### Code Generation
-
-I already made a working code generation prototype for Ryven 2. For Ryven 3 I made a new one, which currently has a (quite solvable) issue in the recursive module import when loading modules that are part of the current package...
--->
-
 ### Contributing
 
 Due to my study, I myself will not be able to work on this a lot during the next months. I did my best to provide an internal structure that is a good foundation for further development. For discussing general ideas and suggestions, notice the *Discussions* section. I'd be very happy to see people contribute.
 
 Have a nice day!
+
+-->
