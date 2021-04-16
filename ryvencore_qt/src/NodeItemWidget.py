@@ -20,10 +20,10 @@ class NodeItemWidget(QGraphicsWidget):
         self.flow_view = self.node_item.flow_view
 
         self.body_padding = 6
-        self.header_padding = 2
+        self.header_padding = (0, 0, 0, 0)  # theme dependent and hence updated in setup_layout()!
 
         self.icon = NodeItem_Icon(node, node_item) if node.icon else None
-        self.collapse_button = NodeItem_CollapseButton(node, node_item) if node.style == 'extended' else None
+        self.collapse_button = NodeItem_CollapseButton(node, node_item) if node.style == 'normal' else None
         self.title_label = TitleLabel(node, node_item)
         self.main_widget_proxy: FlowViewProxyWidget = None
         if self.node_item.main_widget:
@@ -39,22 +39,21 @@ class NodeItemWidget(QGraphicsWidget):
 
     def setup_layout(self) -> QGraphicsLinearLayout:
 
+        self.header_padding = self.node_item.session_design.flow_theme.header_padding
+
         #   main layout
         layout = QGraphicsLinearLayout(Qt.Vertical)
         layout.setContentsMargins(0, 0, 0, 0)
         layout.setSpacing(0)
 
-        if self.node.style == 'extended':
+        if self.node.style == 'normal':
             self.header_widget = QGraphicsWidget()
             # self.header_widget.setContentsMargins(0, 0, 0, 0)
             self.header_widget.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
             self.header_layout = QGraphicsLinearLayout(Qt.Horizontal)
             self.header_layout.setSpacing(0)
             self.header_layout.setContentsMargins(
-                self.header_padding,
-                self.header_padding,
-                self.header_padding,
-                self.header_padding
+                *self.header_padding
             )
             if self.icon:
                 self.header_layout.addItem(self.icon)
@@ -166,7 +165,7 @@ class NodeItemWidget(QGraphicsWidget):
                       QPointF(w / 2, h / 2))
         self.setPos(rect.left(), rect.top())
 
-        if not self.node.style == 'extended':
+        if not self.node.style == 'normal':
             if self.icon:
                 self.icon.setPos(
                     QPointF(-self.icon.boundingRect().width() / 2,

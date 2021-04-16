@@ -8,7 +8,7 @@ class PrintNode(rc.Node):
 
     # all basic properties
     title = 'Print'
-    description = 'prints your data'
+    doc = 'prints your data'
     # there is also description_html
     init_inputs = [
         rc.NodeInputBP('data')
@@ -29,7 +29,7 @@ class PrintNode(rc.Node):
 class RandNode(rc.Node):
     
     title = 'Rand'
-    description = 'generates random float'
+    doc = 'generates random float'
     init_inputs = [
         rc.NodeInputBP('data', '', {'widget name': 'std line edit', 'widget pos': 'besides'})
     ]

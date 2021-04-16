@@ -29,9 +29,9 @@ from PySide2.QtCore import QObject, Signal
 
 
 class MyNode(rc.Node):
-
     title = '...'
-    description = '...'
+    doc = '...'
+
     # ...
 
     class SIGNALS(QObject):

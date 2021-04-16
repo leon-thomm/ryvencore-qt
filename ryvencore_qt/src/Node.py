@@ -12,7 +12,7 @@ class Node(RC_Node, QObject):
     main_widget_class: list = None
     main_widget_pos: str = 'below ports'
     input_widget_classes: dict = {}
-    style: str = 'extended'
+    style: str = 'normal'
     color: str = '#c69a15'
     icon: str = None
 

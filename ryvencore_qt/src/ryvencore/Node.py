@@ -20,7 +20,7 @@ class Node(Base):
     init_inputs: [NodeInputBP] = []
     init_outputs: [NodeOutputBP] = []
     identifier: str = None  # set by Session if None
-    description: str = ''
+    doc: str = ''
 
     def __init__(self, params):
         Base.__init__(self)

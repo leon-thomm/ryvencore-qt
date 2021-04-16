@@ -240,6 +240,9 @@ class FlowView(QGraphicsView):
 
     def _theme_changed(self, t):
         self._place_node_widget.setStyleSheet(self.session.design.node_selection_stylesheet)
+        for n, ni in self.node_items.items():
+            ni.widget.rebuild_ui()
+
         # TODO: repaint background. how?
         self.viewport().update()
         self.scene().update(self.sceneRect())

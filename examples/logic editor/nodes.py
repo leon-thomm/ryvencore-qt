@@ -38,7 +38,7 @@ class SignalNode(NodeBase):
     """A node for generating high or low voltage signals."""
 
     title = 'signal'
-    description = 'creates a signal, 1 or 0'
+    doc = 'creates a signal, 1 or 0'
     init_inputs = []
     init_outputs = [
         rc.NodeOutputBP('data')
@@ -73,7 +73,7 @@ class SignalNode(NodeBase):
 
 class ANDGateNode(NodeBase):
     title = 'AND'
-    description = '1 <=> both inputs are 1'
+    doc = '1 <=> both inputs are 1'
     init_inputs = [
         rc.NodeInputBP('data'),
         rc.NodeInputBP('data'),
@@ -88,7 +88,7 @@ class ANDGateNode(NodeBase):
 
 class ORGateNode(NodeBase):
     title = 'OR'
-    description = '1 <=> at least one input is 1'
+    doc = '1 <=> at least one input is 1'
     init_inputs = [
         rc.NodeInputBP('data'),
         rc.NodeInputBP('data'),
@@ -103,7 +103,7 @@ class ORGateNode(NodeBase):
 
 class XORGateNode(NodeBase):
     title = 'XOR'
-    description = '1 <=> odd number of inputs is 1'
+    doc = '1 <=> odd number of inputs is 1'
     init_inputs = [
         rc.NodeInputBP('data'),
         rc.NodeInputBP('data'),
@@ -118,7 +118,7 @@ class XORGateNode(NodeBase):
 
 class NOTGateNode(NodeBase):
     title = 'NOT'
-    description = 'negates the signal'
+    doc = 'negates the signal'
     init_inputs = [
         rc.NodeInputBP('data'),
     ]
@@ -132,7 +132,7 @@ class NOTGateNode(NodeBase):
 
 class NANDGateNode(NodeBase):
     title = 'NAND'
-    description = 'NOT AND'
+    doc = 'NOT AND'
     init_inputs = [
         rc.NodeInputBP('data'),
         rc.NodeInputBP('data'),
@@ -147,7 +147,7 @@ class NANDGateNode(NodeBase):
 
 class NORGateNode(NodeBase):
     title = 'NOR'
-    description = 'NOT OR'
+    doc = 'NOT OR'
     init_inputs = [
         rc.NodeInputBP('data'),
         rc.NodeInputBP('data'),
@@ -187,7 +187,7 @@ QPushButton {{
 
 class LEDNode(NodeBase):
     title = 'LED'
-    description = 'shows red if signal is 1, black if it is 0'
+    doc = 'shows red if signal is 1, black if it is 0'
     init_inputs = [
         rc.NodeInputBP('data')
     ]

@@ -4,6 +4,7 @@ from qtpy.QtWidgets import QStyle, QStyleOption
 
 from .tools import pythagoras
 
+
 class FlowTheme:
     
     # STATIC ATTRIBUTES
@@ -22,6 +23,8 @@ NodeWidget {
 }
 '''
     node_selection_stylesheet = ''
+
+    header_padding = (10, 2, 10, 2)  # (left, top, right, botton)
     
     exec_conn_color = QColor('#ffffff')
     exec_conn_width = 1.5
@@ -92,7 +95,7 @@ NodeWidget {
 
         painter.setRenderHint(QPainter.Antialiasing)
 
-        if node_style == 'extended':
+        if node_style == 'normal':
             self.draw_NI_extended(node, painter, color, w, h, bounding_rect, title_rect)
         elif node_style == 'small':
             self.draw_NI_small(node, painter, color, w, h, bounding_rect)
@@ -119,7 +122,7 @@ NodeWidget {
         text_rect = node_item_bounding_rect
         text_rect.setTop(text_rect.top())
 
-        if node_style == 'extended':
+        if node_style == 'normal':
             painter.drawText(text_rect, Qt.AlignLeft | Qt.AlignVCenter, title)
         elif node_style == 'small':
             painter.drawText(text_rect, Qt.AlignTop | Qt.AlignHCenter, title)
@@ -201,6 +204,8 @@ class FlowTheme_Toy(FlowTheme):
 
     node_selection_stylesheet = ''
 
+    header_padding = (12, 5, 10, 2)
+
     exec_conn_color = QColor(188, 187, 242)
     exec_conn_width = 5
     exec_conn_pen_style = Qt.SolidLine
@@ -215,7 +220,7 @@ class FlowTheme_Toy(FlowTheme):
     def paint_NI_title_label(self, node, painter, option, hovering, node_style, node_title, node_color, 
                              node_item_bounding_rect):
         
-        if node_style == 'extended':
+        if node_style == 'normal':
             self.paint_NI_title_label_default(
                 painter=painter, 
                 node_style=node_style, 
@@ -310,6 +315,8 @@ class FlowTheme_DarkTron(FlowTheme):
 
     node_selection_stylesheet = ''
 
+    header_padding = (12, 5, 10, 2)
+
     exec_conn_color = QColor(0, 120, 180)
     exec_conn_width = 4
     exec_conn_pen_style = Qt.SolidLine
@@ -322,7 +329,7 @@ class FlowTheme_DarkTron(FlowTheme):
 
     
     def paint_NI_title_label(self, node, painter, option, hovering, node_style, node_title, node_color, node_item_bounding_rect):
-        if node_style == 'extended':
+        if node_style == 'normal':
             self.paint_NI_title_label_default(
                 painter=painter, 
                 node_style=node_style, 
@@ -378,7 +385,7 @@ class FlowTheme_DarkTron(FlowTheme):
 
         painter.setRenderHint(QPainter.Antialiasing)
 
-        if node_style == 'extended':
+        if node_style == 'normal':
             self.draw_NI_extended(node, painter, color, w, h, bounding_rect, title_rect)
         elif node_style == 'small':
             if option.state & QStyle.State_MouseOver:  # use special dark background color when mouse hovers
@@ -477,6 +484,8 @@ class FlowTheme_Ghost(FlowTheme):
 
     node_selection_stylesheet = ''
 
+    header_padding = (12, 6, 10, 2)
+
     exec_conn_color = QColor(0, 17, 25)
     exec_conn_width = 2
     exec_conn_pen_style = Qt.SolidLine
@@ -514,7 +523,7 @@ class FlowTheme_Ghost(FlowTheme):
     def paint_NI_title_label(self, node, painter, option, hovering, node_style, node_title, node_color, 
                              node_item_bounding_rect):
         
-        if node_style == 'extended':
+        if node_style == 'normal':
             self.paint_NI_title_label_default(
                 painter=painter, 
                 node_style=node_style, 
@@ -577,7 +586,7 @@ class FlowTheme_Ghost(FlowTheme):
 
         painter.setRenderHint(QPainter.Antialiasing)
 
-        if node_style == 'extended':
+        if node_style == 'normal':
             self.draw_NI_extended(node, painter, color, w, h, bounding_rect, title_rect)
         elif node_style == 'small':
             if option.state & QStyle.State_MouseOver:  # use special dark background color when mouse hovers
@@ -646,6 +655,8 @@ class FlowTheme_Blender(FlowTheme):
 
     node_selection_stylesheet = ''
 
+    header_padding = (8, 6, 10, 2)
+
     exec_conn_color = QColor(0, 17, 25)
     exec_conn_width = 2
     exec_conn_pen_style = Qt.SolidLine
@@ -677,7 +688,7 @@ class FlowTheme_Blender(FlowTheme):
 
 
     def paint_NI_title_label(self, node, painter, option, hovering, node_style, node_title, node_color, node_item_bounding_rect):
-        if node_style == 'extended':
+        if node_style == 'normal':
             self.paint_NI_title_label_default(
                 painter=painter, 
                 node_style=node_style, 
@@ -770,6 +781,8 @@ class FlowTheme_Simple(FlowTheme):
 
     node_selection_stylesheet = ''
 
+    header_padding = (10, 2, 10, 2)
+
     exec_conn_color = QColor('#989c9f')
     exec_conn_width = 2
     exec_conn_pen_style = Qt.SolidLine
@@ -805,7 +818,7 @@ class FlowTheme_Simple(FlowTheme):
 
 
     def paint_NI_title_label(self, node, painter, option, hovering, node_style, node_title, node_color, node_item_bounding_rect):
-        if node_style == 'extended':
+        if node_style == 'normal':
             self.paint_NI_title_label_default(
                 painter=painter,
                 node_style=node_style,
@@ -909,6 +922,8 @@ class FlowTheme_Ueli(FlowTheme):
 
     node_selection_stylesheet = ''
 
+    header_padding = (5, 2, 10, 0)
+
     exec_conn_color = QColor('#989c9f')
     exec_conn_width = 2
     exec_conn_pen_style = Qt.SolidLine
@@ -945,7 +960,7 @@ class FlowTheme_Ueli(FlowTheme):
 
 
     def paint_NI_title_label(self, node, painter, option, hovering, node_style, node_title, node_color, node_item_bounding_rect):
-        if node_style == 'extended':
+        if node_style == 'normal':
             painter.setPen(QPen(QColor(node_color.name())))
             painter.setFont(QFont('Poppins', 13))
             painter.drawText(node_item_bounding_rect, Qt.AlignLeft | Qt.AlignVCenter, node_title)
@@ -1042,10 +1057,11 @@ class FlowTheme_Ueli(FlowTheme):
 
 class FlowTheme_Samuel1(FlowTheme):
 
-
     name = 'Samuel 1d'
 
     node_selection_stylesheet = ''
+
+    header_padding = (4, 2, 2, 2)
 
     exec_conn_color = QColor('#ffffff')
     exec_conn_width = 1.5
@@ -1091,7 +1107,7 @@ class FlowTheme_Samuel1(FlowTheme):
 
         painter.setPen(QPen(self.node_title_color))
 
-        if node_style == 'extended':
+        if node_style == 'normal':
             painter.setFont(QFont('Segoe UI', 11))
             align = Qt.AlignLeft | Qt.AlignVCenter
         else:
@@ -1162,9 +1178,10 @@ class FlowTheme_Samuel1(FlowTheme):
 
 class FlowTheme_Samuel1_Light(FlowTheme_Samuel1):
 
-
     name = 'Samuel 1l'
     type_ = 'light'
+
+    header_padding = (2, 2, 2, 2)
 
     node_selection_stylesheet = '''
 NodeSelectionWidget {
@@ -1191,11 +1208,11 @@ NodeWidget {
     node_item_shadow_color = QColor('#cccccc')
 
 
-
 class FlowTheme_Samuel2(FlowTheme):
 
-
     name = 'Samuel 2d'
+
+    header_padding = (12, 0, 2, 2)
 
     exec_conn_color = QColor('#ffffff')
     exec_conn_width = 1.5
@@ -1235,7 +1252,7 @@ class FlowTheme_Samuel2(FlowTheme):
 
         painter.setPen(QPen(self.node_title_color))
 
-        if node_style == 'extended':
+        if node_style == 'normal':
             painter.setFont(QFont('Segoe UI', 11))
             align = Qt.AlignLeft | Qt.AlignVCenter
         else:
@@ -1297,9 +1314,10 @@ class FlowTheme_Samuel2(FlowTheme):
 
 class FlowTheme_Samuel2_Light(FlowTheme_Samuel2):
 
-
     name = 'Samuel 2l'
     type_ = 'light'
+
+    header_padding = (12, 0, 2, 2)
 
     exec_conn_color = QColor('#1f1f1f')
 

@@ -9,7 +9,7 @@ class NodeItem_Icon(QGraphicsWidget):
     def __init__(self, node, node_item):
         super().__init__(parent=node_item)
 
-        if node.style == 'extended':
+        if node.style == 'normal':
             self.size = QSize(20, 20)
         else:
             self.size = QSize(50, 50)

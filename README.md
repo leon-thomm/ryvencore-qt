@@ -31,7 +31,7 @@ All information of a node is part of its class. A minimal node definition can be
     
     class PrintNode(rc.Node):
         title = 'Print'
-        description = 'prints your data'
+        doc = 'prints your data'
         init_inputs = [
             rc.NodeInputBP('data')
         ]

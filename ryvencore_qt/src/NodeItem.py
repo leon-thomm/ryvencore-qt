@@ -43,7 +43,7 @@ class NodeItem(QGraphicsItem, QObject):
         self.init_config = config
 
         # CONNECT TO NODE
-        self.node.updated.connect(self.update)
+        self.node.updated.connect(self.node_updated)
         self.node.update_shape_triggered.connect(self.update_shape)
         self.node.hide_unused_ports_triggered.connect(self.hide_unused_ports_triggered)
         self.node.show_unused_ports_triggered.connect(self.show_unused_ports_triggered)
@@ -70,8 +70,8 @@ class NodeItem(QGraphicsItem, QObject):
         # TOOLTIP
         if self.node.description_html:
             self.setToolTip(self.node.description_html)
-        elif self.node.description != '':
-            self.setToolTip('<html><head/><body><p>' + self.node.description + '</p></body></html>')
+        elif self.node.doc != '':
+            self.setToolTip('<html><head/><body><p>' + self.node.doc + '</p></body></html>')
         self.setCursor(Qt.SizeAllCursor)
 
         # DESIGN THEME
@@ -114,7 +114,10 @@ class NodeItem(QGraphicsItem, QObject):
 
     def node_updated(self):
         if self.session_design.animations_enabled:
+            if self.animator.running():
+                self.animator.stop()
             self.animator.start()
+        self.update()
 
     def add_new_input(self, inp: NodeInput, pos: int):
 
