@@ -1,8 +1,7 @@
 from qtpy.QtCore import Qt
-from qtpy.QtWidgets import QWidget, QMessageBox, QVBoxLayout, QLineEdit, QHBoxLayout, QPushButton
+from qtpy.QtWidgets import QWidget, QMessageBox, QVBoxLayout, QLineEdit, QHBoxLayout, QPushButton, QScrollArea
 
 from .ScriptsList_ScriptWidget import ScriptsList_ScriptWidget
-
 
 
 class ScriptsListWidget(QWidget):
@@ -10,8 +9,8 @@ class ScriptsListWidget(QWidget):
 
     # TODO: scroll area
 
-    def __init__(self, session):
-        super(ScriptsListWidget, self).__init__()
+    def __init__(self, session, parent=None):
+        super(ScriptsListWidget, self).__init__(parent=parent)
 
         self.session = session
         self.session.script_flow_view_created.connect(self.add_new_script)
@@ -28,7 +27,23 @@ class ScriptsListWidget(QWidget):
         self.list_layout = QVBoxLayout()
         self.list_layout.setAlignment(Qt.AlignTop)
 
-        main_layout.addLayout(self.list_layout)
+        # list scroll area
+
+        self.list_scroll_area = QScrollArea()
+        self.list_scroll_area.setWidgetResizable(True)
+        self.list_scroll_area.setContentsMargins(0, 0, 0, 0)
+
+        w = QWidget()
+        w.setContentsMargins(0, 0, 0, 0)
+        w.setLayout(self.list_layout)
+
+        self.list_scroll_area.setWidget(w)
+
+        main_layout.addWidget(self.list_scroll_area)
+
+        # ------------------
+
+        # controls
 
         self.new_script_title_lineedit = QLineEdit()
         self.new_script_title_lineedit.setPlaceholderText('new script\'s title')
@@ -48,6 +63,9 @@ class ScriptsListWidget(QWidget):
 
         main_layout.addLayout(buttons_layout)
 
+        # ------------------
+
+        self.setContentsMargins(0, 0, 0, 0)
         self.setLayout(main_layout)
 
         self.recreate_list()

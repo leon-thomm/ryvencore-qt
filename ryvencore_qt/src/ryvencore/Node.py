@@ -1,7 +1,9 @@
+
 from .Base import Base
 
 from .NodePort import NodeInput, NodeOutput
 from .NodePortBP import NodeInputBP, NodeOutputBP
+from .dtypes import DType
 from .logging.Log import Log
 from .InfoMsgs import InfoMsgs
 from .tools import serialize, deserialize
@@ -23,14 +25,12 @@ class Node(Base):
     def __init__(self, params):
         Base.__init__(self)
 
-        self.flow, design, config = params
+        self.flow, self.session, self.init_config = params
         self.script = self.flow.script
-        self.session = self.script.session
         self.inputs: [NodeInputBP] = []
         self.outputs: [NodeOutputBP] = []
         self.logs = []
 
-        self.init_config = config
         self.initialized = False
 
         self.block_init_updates = False
@@ -58,15 +58,15 @@ class Node(Base):
         # self.update()
 
     def load_user_config(self):
-        """Loads the component-specific config data that was returned by get_data() previously; prints an exception
+        """Loads the component-specific config data that was returned by get_state() previously; prints an exception
         if it fails but doesn't crash because that usually happens when developing nodes"""
 
         if self.init_config:
             try:
                 if type(self.init_config['state data']) == dict:  # backwards compatibility
-                    self.set_data(self.init_config['state data'])
+                    self.set_state(self.init_config['state data'])
                 else:
-                    self.set_data(deserialize(self.init_config['state data']))
+                    self.set_state(deserialize(self.init_config['state data']))
             except Exception as e:
                 InfoMsgs.write_err(
                     'Exception while setting data in', self.title, 'node:', e, ' (was this intended?)')
@@ -77,40 +77,44 @@ class Node(Base):
         if not inputs_config and not outputs_config:
             for i in range(len(self.init_inputs)):
                 inp = self.init_inputs[i]
-                self.create_input(
-                    inp.type_, inp.label,
-                    add_config=self.init_inputs[i].add_config
-                    # widget_name=self.init_inputs[i].widget_name,
-                    # widget_pos =self.init_inputs[i].widget_pos
-                )
+
+                if inp.dtype:
+                    self.create_input_dt(dtype=inp.dtype, label=inp.label, add_config=inp.add_config)
+
+                else:
+                    self.create_input(
+                        inp.type_, inp.label,
+                        add_config=self.init_inputs[i].add_config
+                    )
 
             for o in range(len(self.init_outputs)):
                 out = self.init_outputs[o]
                 self.create_output(out.type_, out.label)
 
-        else:  # when loading saved Nodes, the init_inputs and init_outputs are irrelevant
+        else:  # when loading saved nodes, the init_inputs and init_outputs are irrelevant
             for inp in inputs_config:
-                # has_widget = inp['has widget'] if inp['type'] == 'data' else False
+                if 'dtype' in inp:
+                    self.create_input_dt(
+                        dtype=DType.from_str(inp['dtype'])(_load_state=deserialize(inp['dtype state'])),
+                        label=inp['label'],
+                        add_config=inp
+                    )
+                else:
+                    self.create_input(
+                        type_=inp['type'], label=inp['label'],
+                        add_config=inp,
+                    )
 
-                self.create_input(
-                    type_=inp['type'], label=inp['label'],
-                    add_config=inp,
-                    # widget_name=inp['widget name'] if has_widget else None,
-                    # widget_pos =inp['widget position'] if has_widget else None,
-                    # config=inp['widget data'] if has_widget else None
-                )
+                if 'val' in inp:
+                    # this means the input is 'data' and did not have any connections,
+                    # so we saved its value which was probably represented by some widget
+                    # in the front end which has probably overridden the Node.input() method
+                    self.inputs[-1].val = deserialize(inp['val'])
 
             for out in outputs_config:
                 self.create_output(out['type'], out['label'])
 
-
-    #                        __                             _    __     __
-    #              ____ _   / /  ____ _   ____     _____   (_)  / /_   / /_     ____ ___
-    #             / __ `/  / /  / __ `/  / __ \   / ___/  / /  / __/  / __ \   / __ `__ \
-    #            / /_/ /  / /  / /_/ /  / /_/ /  / /     / /  / /_   / / / /  / / / / / /
-    #            \__,_/  /_/   \__, /   \____/  /_/     /_/   \__/  /_/ /_/  /_/ /_/ /_/
-    #                         /____/
-
+    # -----------------------------------------------------------------------------------------------------------------
 
     def update(self, input_called=-1):  # , output_called=-1):
         """'Activates' the node, causing an update_event(); prints an exception if something crashed, but prevents
@@ -190,7 +194,7 @@ class Node(Base):
     # OVERRIDE
     def custom_config_data(self) -> dict:
         """Convenience method for saving some std config for all nodes in an editor.
-        get_data()/set_data() then stays clean for all specific node subclasses"""
+        get_state()/set_state() then stays clean for all specific node subclasses"""
 
         return {}
 
@@ -200,30 +204,27 @@ class Node(Base):
         pass
 
     # OVERRIDE
-    def get_data(self) -> dict:
+    def get_state(self) -> dict:
         """
         Used to store node-specific custom data that needs to be reloaded when loading a project or pasting copied
         components. All values will be serialized by pickle and base64. The corresponding method for the opposite
-        operation is set_data().
+        operation is set_state().
         """
         return {}
 
     # OVERRIDE
-    def set_data(self, data: dict):
+    def set_state(self, data: dict):
         """
-        Used for reloading node-specific custom data which has been previously returned by get_data()
+        Used for reloading node-specific custom data which has been previously returned by get_state()
         """
         pass
 
-    #                                 _
-    #              ____ _   ____     (_)
-    #             / __ `/  / __ \   / /
-    #            / /_/ /  / /_/ /  / /
-    #            \__,_/  / .___/  /_/
-    #                   /_/
+    # -----------------------------------------------------------------------------------------------------------------
+
+    # API
 
 
-    # LOGGING
+    #   LOGGING
 
 
     def new_log(self, title) -> Log:
@@ -251,18 +252,38 @@ class Node(Base):
         self.script.logger.log_message(msg, target)
 
 
-    # PORTS
+    #   PORTS
 
 
     def create_input(self, type_: str = 'data', label: str = '',
                      add_config={}, pos=-1):
-        """Creates and adds a new input, possible positions for widgets are 'besides' and 'below """
-        InfoMsgs.write('create_new_input called')
+        """Creates and adds a new input at index pos"""
+        # InfoMsgs.write('create_input called')
 
         inp = NodeInput(
             node=self,
             type_=type_,
             label_str=label,
+            add_config=add_config,
+        )
+
+        if pos < -1:
+            pos += len(self.inputs)
+        if pos == -1:
+            self.inputs.append(inp)
+        else:
+            self.inputs.insert(pos, inp)
+
+
+    def create_input_dt(self, dtype: DType, label: str = '', add_config={}, pos=-1):
+        """Creates and adds a new data input with a DType"""
+        # InfoMsgs.write('create_input called')
+
+        inp = NodeInput(
+            node=self,
+            type_='data',
+            label_str=label,
+            dtype=dtype,
             add_config=add_config,
         )
 
@@ -316,7 +337,7 @@ class Node(Base):
         self.outputs.remove(out)
 
 
-    # VARIABLES
+    #   VARIABLES
 
 
     def get_vars_manager(self):
@@ -346,6 +367,8 @@ class Node(Base):
         self.get_vars_manager().unregister_receiver(self, name)
 
 
+    # -----------------------------------------------------------------------------------------------------------------
+
 
 
     def prepare_removal(self):
@@ -365,22 +388,23 @@ class Node(Base):
         return False
 
 
-    def config_data(self, include_data_inp_values=False) -> dict:
-        """Returns all metadata of the NI including position, package etc. in a JSON-able dict format.
-        Used to rebuild the Flow when loading a project.
-        include_data_inp_values is only used for code generation."""
+    def config_data(self) -> dict:
+        """
+        Returns all metadata of the node in JSON-compatible dict.
+        Used to rebuild the Flow when loading a project or pasting components.
+        """
 
         # general attributes
         node_dict = {
             'identifier': self.identifier,
-            'state data': serialize(self.get_data()),
+            'state data': serialize(self.get_state()),
             **self.custom_config_data()
         }
 
         # inputs
         inputs = []
         for i in self.inputs:
-            input_dict = i.config_data(include_data_inp_values)
+            input_dict = i.config_data()
             inputs.append(input_dict)
         node_dict['inputs'] = inputs
 

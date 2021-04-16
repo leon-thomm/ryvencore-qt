@@ -29,7 +29,7 @@ I really would like to add many more widgets to this list in the future.
 
 ## Writing your own GUI
 
-All custom widgets must be QWidgets and subclass one of ryvencore's widget base classes. Both classes have similar functionality for serialization and loading as `Node`. They have methods `get_data() -> dict` and `set_data(data: dict)` (and also a `remove_event()` right now) to subclass.
+All custom widgets must be QWidgets and subclass one of ryvencore's widget base classes. Both classes have similar functionality for serialization and loading as `Node`. They have methods `get_state() -> dict` and `set_state(data: dict)` (and also a `remove_event()` right now) to subclass.
 
 ### Main Widget
 

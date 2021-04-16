@@ -66,6 +66,9 @@ class Flow(Base):
                         node_class = nc
                         break
 
+            if node_class is None:
+                raise Exception(f"Couldn't find a registered node with identifier {n_c['identifier']}.")
+
             node = self.create_node(node_class, n_c)
             nodes.append(node)
 
@@ -76,7 +79,7 @@ class Flow(Base):
         """Creates, adds and returns a new node object"""
 
         node = node_class((self, self.session, config))
-        node.load_user_config()  # --> Node.set_data()
+        node.load_user_config()  # --> Node.set_state()
         self.add_node(node)
         return node
 

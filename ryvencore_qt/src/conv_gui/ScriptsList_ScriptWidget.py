@@ -26,6 +26,7 @@ class ScriptsList_ScriptWidget(QWidget):
 
         # UI
         main_layout = QHBoxLayout()
+        main_layout.setContentsMargins(0, 0, 0, 0)
 
         # create icon via label
         if isinstance(script, FunctionScript):

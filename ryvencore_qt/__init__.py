@@ -8,7 +8,7 @@ Location.PACKAGE_PATH = os.path.normpath(os.path.dirname(__file__))
 os.environ['RC_MODE'] = 'gui'
 
 # backend imports
-from .src.ryvencore import InfoMsgs, NodeInputBP, NodeOutputBP, ExecConnection, Logger, Log
+from .src.ryvencore import InfoMsgs, NodeInputBP, NodeOutputBP, ExecConnection, Logger, Log, dtypes
 # Note: Node and DataConnection are subclassed by ryvencore-qt and imported below
 
 # front end ...

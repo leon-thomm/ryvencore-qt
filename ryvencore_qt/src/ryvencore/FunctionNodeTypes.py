@@ -76,12 +76,12 @@ def build_function_classes(BaseClass):
 
             self.script.output_node.release_values()
 
-        def get_data(self) -> dict:
+        def get_state(self) -> dict:
             return {
 
             }
 
-        def set_data(self, data: dict):
+        def set_state(self, data: dict):
             pass
 
 
@@ -204,11 +204,11 @@ def build_function_classes(BaseClass):
                 self.function_script.output_node.update()
                 self.function_script.caller_stack.pop()
 
-        def get_data(self):
+        def get_state(self):
             data = {'title': self.function_script.title}
             return data
 
-        def set_data(self, data: dict):
+        def set_state(self, data: dict):
             # find parent function script by unique title
             for fs in self.session.function_scripts:
                 if fs.title == data['title']:

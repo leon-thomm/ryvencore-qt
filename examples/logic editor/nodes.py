@@ -23,13 +23,13 @@ class SignalNode_MainWidget(rc.MWB, QCheckBox):
 
         self.stateChanged.connect(self.node.update_signal)
 
-    def get_data(self) -> dict:
+    def get_state(self) -> dict:
         # saving the checked state
         return {
             'checked': self.checkState()
         }
 
-    def set_data(self, data: dict):
+    def set_state(self, data: dict):
         # reloading the checked state
         self.setChecked(data['checked'])
 
@@ -60,13 +60,13 @@ class SignalNode(NodeBase):
         # note that 1 and 0 can be interpreted as True and False
         # by all the logical operators that these nodes use
 
-    def get_data(self) -> dict:
+    def get_state(self) -> dict:
         # saving signal state
         return {
             'signal high': self.signal_high
         }
 
-    def set_data(self, data):
+    def set_state(self, data):
         # reloading signal state
         self.signal_high = data['signal high']
 

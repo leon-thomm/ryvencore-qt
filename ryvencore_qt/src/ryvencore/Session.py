@@ -2,12 +2,10 @@ from .Base import Base
 
 
 from .Script import Script
-from .logging.Log import Log
 from .FunctionScript import FunctionScript
 from .InfoMsgs import InfoMsgs
 from .RC import CLASSES
 from .Node import Node
-from .Connection import DataConnection, ExecConnection
 
 
 class Session(Base):
@@ -19,6 +17,8 @@ class Session(Base):
             gui: bool = False,
     ):
         Base.__init__(self)
+
+        # register classes
 
         if not CLASSES['node base']:
             CLASSES['node base'] = Node
@@ -159,7 +159,7 @@ class Session(Base):
         return InfoMsgs
 
 
-    def load(self, project: dict) -> ([Script], [Script]):
+    def load(self, project: dict) -> ([Script], [FunctionScript]):
         """Loads a project and raises an exception if required nodes are missing"""
 
         if 'scripts' not in project and 'function scripts' not in project:
@@ -200,7 +200,7 @@ class Session(Base):
         return data
 
 
-    def all_nodes(self) -> list:
+    def all_node_objects(self) -> list:
         """Returns a list containing all Node objects used in any flow which is useful for advanced project analysis"""
 
         nodes = []

@@ -6,7 +6,7 @@ from qtpy.QtGui import QFontDatabase
 from .FlowTheme import FlowTheme_Toy, FlowTheme_DarkTron, FlowTheme_Ghost, FlowTheme_Blender, \
     FlowTheme_Simple, FlowTheme_Ueli, FlowTheme_Samuel1, FlowTheme, FlowTheme_Samuel1_Light, \
     FlowTheme_Samuel2, FlowTheme_Samuel2_Light
-from .. import Location
+from .GlobalAttributes import Location
 
 
 class Design(QObject):
@@ -38,13 +38,14 @@ class Design(QObject):
 
     @staticmethod
     def register_fonts():
-        QFontDatabase.addApplicationFont(
+        db = QFontDatabase()
+        db.addApplicationFont(
             Location.PACKAGE_PATH + '/resources/fonts/poppins/Poppins-Medium.ttf'
         )
-        QFontDatabase.addApplicationFont(
+        db.addApplicationFont(
             Location.PACKAGE_PATH + '/resources/fonts/source_code_pro/SourceCodePro-Regular.ttf'
         )
-        QFontDatabase.addApplicationFont(
+        db.addApplicationFont(
             Location.PACKAGE_PATH + '/resources/fonts/asap/Asap-Regular.ttf'
         )
 

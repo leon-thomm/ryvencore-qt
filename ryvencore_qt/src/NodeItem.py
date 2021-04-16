@@ -85,9 +85,9 @@ class NodeItem(QGraphicsItem, QObject):
             if self.main_widget:
                 try:
                     if type(self.init_config['main widget data']) == dict:  # backwards compatibility
-                        self.main_widget.set_data(self.init_config['main widget data'])
+                        self.main_widget.set_state(self.init_config['main widget data'])
                     else:
-                        self.main_widget.set_data(deserialize(self.init_config['main widget data']))
+                        self.main_widget.set_state(deserialize(self.init_config['main widget data']))
                 except Exception as e:
                     print('Exception while setting data in', self.node.title, 'Node\'s main widget:', e,
                           ' (was this intended?)')
@@ -442,6 +442,7 @@ class NodeItem(QGraphicsItem, QObject):
     # CONFIG
 
     def complete_config(self, node_config):
+
         # add input widgets config
         for i in range(len(node_config['inputs'])):
             input_cfg = node_config['inputs'][i]
@@ -450,17 +451,24 @@ class NodeItem(QGraphicsItem, QObject):
             if inp_item.port.type_ == 'data':
                 if inp_item.widget:
                     input_cfg['has widget'] = True
-                    input_cfg['widget name'] = inp_item.port.add_config['widget name']
-                    input_cfg['widget data'] = serialize(inp_item.widget.get_data())
-                    input_cfg['widget pos'] = inp_item.port.add_config['widget pos']
+
+                    if inp_item.port.dtype:  # dtype widget
+                        # input_cfg['widget name'] = str(inp_item.widget)
+                        pass
+                    else:  # custom widget
+                        input_cfg['widget name'] = inp_item.port.add_config['widget name']
+                        input_cfg['widget pos'] = inp_item.port.add_config['widget pos']
+
+                    input_cfg['widget data'] = serialize(inp_item.widget.get_state())
                 else:
                     input_cfg['has widget'] = False
+
                 node_config['inputs'][i] = input_cfg
 
         # add item properties
         node_config['pos x'] = self.pos().x()
         node_config['pos y'] = self.pos().y()
         if self.main_widget:
-            node_config['main widget data'] = serialize(self.main_widget.get_data())
+            node_config['main widget data'] = serialize(self.main_widget.get_state())
 
         return node_config
