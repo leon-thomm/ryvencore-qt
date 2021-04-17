@@ -35,6 +35,9 @@ class ConnectionItem(QGraphicsItem):
         self.path: QPainterPath = None
         self.gradient = None
 
+        # for rendering flow pictures
+        self.setCacheMode(QGraphicsItem.DeviceCoordinateCache)
+
         self.recompute()
 
     def boundingRect(self):
