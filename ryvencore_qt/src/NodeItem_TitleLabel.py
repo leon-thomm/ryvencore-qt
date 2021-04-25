@@ -16,14 +16,12 @@ class TitleLabel(QGraphicsWidget):
 
         self.node = node
         self.node_item = node_item
-        self.title_str = self.node.title
+
         font = QFont('Poppins', 15) if self.node.style == 'normal' else \
             QFont('K2D', 20, QFont.Bold, True)  # should be quite similar to every specific font chosen by the painter
-        fm = QFontMetricsF(font)
-
-        # approximately!
-        self.width = fm.width(get_longest_line(self.title_str)+'___')
-        self.height = fm.height() * 0.7 * (self.title_str.count('\n') + 1)
+        self.fm = QFontMetricsF(font)
+        self.title_str, self.width, self.height = None, None, None
+        self.update_shape()
 
         self.color = QColor(30, 43, 48)
         self.pen_width = 1.5
@@ -31,6 +29,13 @@ class TitleLabel(QGraphicsWidget):
 
         # # Design.flow_theme_changed.connect(self.theme_changed)
         # self.update_design()
+
+    def update_shape(self):
+        self.title_str = self.node.display_title
+
+        # approximately!
+        self.width = self.fm.width(get_longest_line(self.title_str)+'___')
+        self.height = self.fm.height() * 0.7 * (self.title_str.count('\n') + 1)
 
     def boundingRect(self):
         return QRectF(QPointF(0, 0), self.geometry().size())

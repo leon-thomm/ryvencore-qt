@@ -45,8 +45,8 @@ class NodeItem(QGraphicsItem, QObject):
         # CONNECT TO NODE
         self.node.updated.connect(self.node_updated)
         self.node.update_shape_triggered.connect(self.update_shape)
-        self.node.hide_unused_ports_triggered.connect(self.hide_unused_ports_triggered)
-        self.node.show_unused_ports_triggered.connect(self.show_unused_ports_triggered)
+        self.node.hide_unconnected_ports_triggered.connect(self.hide_unconnected_ports_triggered)
+        self.node.show_unconnected_ports_triggered.connect(self.show_unconnected_ports_triggered)
         self.node.input_added.connect(self.add_new_input)
         self.node.output_added.connect(self.add_new_output)
         self.node.input_removed.connect(self.remove_input)
@@ -84,20 +84,23 @@ class NodeItem(QGraphicsItem, QObject):
         if self.init_config is not None:
             if self.main_widget:
                 try:
-                    if type(self.init_config['main widget data']) == dict:  # backwards compatibility
-                        self.main_widget.set_state(self.init_config['main widget data'])
-                    else:
-                        self.main_widget.set_state(deserialize(self.init_config['main widget data']))
+                    self.main_widget.set_state(deserialize(self.init_config['main widget data']))
                 except Exception as e:
                     print('Exception while setting data in', self.node.title, 'Node\'s main widget:', e,
                           ' (was this intended?)')
 
         # catch up on ports
         for i in self.node.inputs:
-            self.add_new_input(i, -1)
+            self.add_new_input(i)
 
         for o in self.node.outputs:
-            self.add_new_output(o, -1)
+            self.add_new_output(o)
+
+        if self.init_config is not None:
+            if self.init_config.get('unconnected ports hidden'):
+                self.hide_unconnected_ports_triggered()
+            if self.init_config.get('collapsed'):
+                self.collapse()
 
         self.initializing = False
 
@@ -119,18 +122,18 @@ class NodeItem(QGraphicsItem, QObject):
             self.animator.start()
         self.update()
 
-    def add_new_input(self, inp: NodeInput, pos: int):
+    def add_new_input(self, inp: NodeInput, insert: int = None):
 
         # create item
         # inp.item = InputPortItem(inp.node, self, inp)
         item = InputPortItem(inp.node, self, inp)
 
-        if pos == -1:
+        if insert is not None:
+            self.inputs.insert(insert, item)
+            self.widget.insert_input_into_layout(insert, item)
+        else:
             self.inputs.append(item)
             self.widget.add_input_to_layout(item)
-        else:
-            self.inputs.insert(pos, item)
-            self.widget.insert_input_into_layout(pos, item)
 
         if not self.initializing:
             self.update_shape()
@@ -160,18 +163,18 @@ class NodeItem(QGraphicsItem, QObject):
             self.update_shape()
             self.update()
 
-    def add_new_output(self, out: NodeOutput, pos: int):
+    def add_new_output(self, out: NodeOutput, insert: int = None):
 
         # create item
         # out.item = OutputPortItem(out.node, self, out)
         item = OutputPortItem(out.node, self, out)
 
-        if pos == -1:
+        if insert is not None:
+            self.outputs.insert(insert, item)
+            self.widget.insert_output_into_layout(insert, item)
+        else:
             self.outputs.append(item)
             self.widget.add_output_to_layout(item)
-        else:
-            self.outputs.insert(pos, item)
-            self.widget.insert_output_into_layout(pos, item)
 
         if not self.initializing:
             self.update_shape()
@@ -248,12 +251,14 @@ class NodeItem(QGraphicsItem, QObject):
             )
         )
 
-    def hide_unused_ports_triggered(self):
-        self.widget.hide_unused_ports()
+    def hide_unconnected_ports_triggered(self):
+        self.widget.hide_unconnected_ports()
+        self.hiding_unconnected_ports = True
         self.update_shape()
 
-    def show_unused_ports_triggered(self):
-        self.widget.show_unused_ports()
+    def show_unconnected_ports_triggered(self):
+        self.widget.show_unconnected_ports()
+        self.hiding_unconnected_ports = False
         self.update_shape()
 
     def expand(self):
@@ -445,6 +450,9 @@ class NodeItem(QGraphicsItem, QObject):
     # CONFIG
 
     def complete_config(self, node_config):
+        """
+        Completes the node's config by all frontend related data
+        """
 
         # add input widgets config
         for i in range(len(node_config['inputs'])):
@@ -473,5 +481,8 @@ class NodeItem(QGraphicsItem, QObject):
         node_config['pos y'] = self.pos().y()
         if self.main_widget:
             node_config['main widget data'] = serialize(self.main_widget.get_state())
+
+        node_config['unconnected ports hidden'] = self.hiding_unconnected_ports
+        node_config['collapsed'] = self.collapsed
 
         return node_config

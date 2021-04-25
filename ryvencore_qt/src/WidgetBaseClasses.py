@@ -59,6 +59,9 @@ class IWB:
     def val_update_event(self, val):
         pass
 
+    def update_node_input(self, val):
+        self.input.update(val)
+
     def update_node(self):
         self.node.update(self.node.inputs.index(self.input))
 

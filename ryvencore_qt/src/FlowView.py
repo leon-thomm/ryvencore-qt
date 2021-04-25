@@ -141,13 +141,13 @@ class FlowView(QGraphicsView):
         self.hide_place_node_widget()
 
         # ZOOM WIDGET
-        self._zoom_proxy = FlowViewProxyWidget(self)
-        self._zoom_proxy.setFlag(QGraphicsItem.ItemIgnoresTransformations, True)
-        self._zoom_proxy.setZValue(1001)
-        self._zoom_widget = FlowViewZoomWidget(self)
-        self._zoom_proxy.setWidget(self._zoom_widget)
-        self.scene().addItem(self._zoom_proxy)
-        self.set_zoom_proxy_pos()
+        # self._zoom_proxy = FlowViewProxyWidget(self)
+        # self._zoom_proxy.setFlag(QGraphicsItem.ItemIgnoresTransformations, True)
+        # self._zoom_proxy.setZValue(1001)
+        # self._zoom_widget = FlowViewZoomWidget(self)
+        # self._zoom_proxy.setWidget(self._zoom_widget)
+        # self.scene().addItem(self._zoom_proxy)
+        # self.set_zoom_proxy_pos()
 
         # STYLUS
         self.stylus_mode = ''
@@ -532,7 +532,7 @@ class FlowView(QGraphicsView):
                             painter.drawPoint(x, y)
 
         self.set_stylus_proxy_pos()  # has to be called here instead of in drawForeground to prevent lagging
-        self.set_zoom_proxy_pos()
+        # self.set_zoom_proxy_pos()
 
     def drawForeground(self, painter, rect):
 
@@ -630,20 +630,22 @@ class FlowView(QGraphicsView):
         return img
 
     # PROXY POSITIONS
-    def set_zoom_proxy_pos(self):
-        self._zoom_proxy.setPos(self.mapToScene(self.viewport().width() - self._zoom_widget.width(), 0))
+
+    # def set_zoom_proxy_pos(self):
+    #     self._zoom_proxy.setPos(self.mapToScene(self.viewport().width() - self._zoom_widget.width(), 0))
 
     def set_stylus_proxy_pos(self):
         self._stylus_modes_proxy.setPos(
-            self.mapToScene(self.viewport().width() - self._stylus_modes_widget.width() - self._zoom_widget.width(), 0))
+            self.mapToScene(self.viewport().width() - self._stylus_modes_widget.width(), 0))
+            # self.mapToScene(self.viewport().width() - self._stylus_modes_widget.width() - self._zoom_widget.width(), 0))
 
     def hide_proxies(self):
         self._stylus_modes_proxy.hide()
-        self._zoom_proxy.hide()
+        # self._zoom_proxy.hide()
 
     def show_proxies(self):
         self._stylus_modes_proxy.show()
-        self._zoom_proxy.show()
+        # self._zoom_proxy.show()
 
     # PLACE NODE WIDGET
     def show_place_node_widget(self, pos, nodes=None):

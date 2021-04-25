@@ -20,7 +20,20 @@ class Node(Base):
     init_inputs: [NodeInputBP] = []
     init_outputs: [NodeOutputBP] = []
     identifier: str = None  # set by Session if None
+    identifier_prefix: str = None
     doc: str = ''
+
+
+    @classmethod
+    def build_identifier(cls):
+
+        full_prefix = (cls.identifier_prefix + '.') if cls.identifier_prefix is not None else ''
+
+        if cls.identifier is None:
+            cls.identifier = cls.__name__
+
+        cls.identifier = full_prefix + cls.identifier
+
 
     def __init__(self, params):
         Base.__init__(self)
@@ -82,10 +95,7 @@ class Node(Base):
                     self.create_input_dt(dtype=inp.dtype, label=inp.label, add_config=inp.add_config)
 
                 else:
-                    self.create_input(
-                        inp.type_, inp.label,
-                        add_config=self.init_inputs[i].add_config
-                    )
+                    self.create_input(inp.type_, inp.label, add_config=self.init_inputs[i].add_config)
 
             for o in range(len(self.init_outputs)):
                 out = self.init_outputs[o]
@@ -96,14 +106,9 @@ class Node(Base):
                 if 'dtype' in inp:
                     self.create_input_dt(
                         dtype=DType.from_str(inp['dtype'])(_load_state=deserialize(inp['dtype state'])),
-                        label=inp['label'],
-                        add_config=inp
-                    )
+                        label=inp['label'], add_config=inp)
                 else:
-                    self.create_input(
-                        type_=inp['type'], label=inp['label'],
-                        add_config=inp,
-                    )
+                    self.create_input(type_=inp['type'], label=inp['label'], add_config=inp)
 
                 if 'val' in inp:
                     # this means the input is 'data' and did not have any connections,
@@ -255,8 +260,7 @@ class Node(Base):
     #   PORTS
 
 
-    def create_input(self, type_: str = 'data', label: str = '',
-                     add_config={}, pos=-1):
+    def create_input(self, type_: str = 'data', label: str = '', add_config={}, insert: int = None):
         """Creates and adds a new input at index pos"""
         # InfoMsgs.write('create_input called')
 
@@ -267,15 +271,13 @@ class Node(Base):
             add_config=add_config,
         )
 
-        if pos < -1:
-            pos += len(self.inputs)
-        if pos == -1:
-            self.inputs.append(inp)
+        if insert is not None:
+            self.inputs.insert(insert, inp)
         else:
-            self.inputs.insert(pos, inp)
+            self.inputs.append(inp)
 
 
-    def create_input_dt(self, dtype: DType, label: str = '', add_config={}, pos=-1):
+    def create_input_dt(self, dtype: DType, label: str = '', add_config={}, insert: int = None):
         """Creates and adds a new data input with a DType"""
         # InfoMsgs.write('create_input called')
 
@@ -287,12 +289,10 @@ class Node(Base):
             add_config=add_config,
         )
 
-        if pos < -1:
-            pos += len(self.inputs)
-        if pos == -1:
-            self.inputs.append(inp)
+        if insert is not None:
+            self.inputs.insert(insert, inp)
         else:
-            self.inputs.insert(pos, inp)
+            self.inputs.append(inp)
 
 
     def delete_input(self, index):
@@ -307,7 +307,7 @@ class Node(Base):
         self.inputs.remove(inp)
 
 
-    def create_output(self, type_: str = 'data', label: str = '', pos=-1):
+    def create_output(self, type_: str = 'data', label: str = '', insert: int = None):
         """Creates and adds a new output"""
 
         out = NodeOutput(
@@ -316,13 +316,10 @@ class Node(Base):
               label_str=label
         )
 
-        # pi = OutputPortInstance(self, type_, label)
-        if pos < -1:
-            pos += len(self.outputs)
-        if pos == -1:
-            self.outputs.append(out)
+        if insert is not None:
+            self.outputs.insert(insert, out)
         else:
-            self.outputs.insert(pos, out)
+            self.outputs.append(out)
 
 
     def delete_output(self, index):

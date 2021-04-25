@@ -67,9 +67,9 @@ class Session(Base):
 
     def register_node(self, node_class):
         """Registers a Node which then can be accessed in all scripts"""
-        if not node_class.identifier:
-            node_class.identifier = node_class.__name__
-            InfoMsgs.write('assigned identifier:', node_class.identifier)
+
+        # build node class identifier
+        node_class.build_identifier()
 
         self.nodes.append(node_class)
 

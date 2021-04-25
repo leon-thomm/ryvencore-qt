@@ -18,13 +18,13 @@ class Node(RC_Node, QObject):
 
     # SIGNALS
     updated = Signal()
-    input_added = Signal(object, int)
-    output_added = Signal(object, int)
+    input_added = Signal(object, object)
+    output_added = Signal(object, object)
     input_removed = Signal(object)
     output_removed = Signal(object)
     update_shape_triggered = Signal()
-    hide_unused_ports_triggered = Signal()
-    show_unused_ports_triggered = Signal()
+    hide_unconnected_ports_triggered = Signal()
+    show_unconnected_ports_triggered = Signal()
 
     def __init__(self, params):
         QObject.__init__(self)
@@ -32,8 +32,7 @@ class Node(RC_Node, QObject):
 
         self.default_actions = self.init_default_actions()
         self.special_actions = {}
-
-        # self.display_title = self.title  TODO: Node display_title
+        self.display_title = self.title
 
         self.item = None  # set by the flow view
 
@@ -48,7 +47,8 @@ class Node(RC_Node, QObject):
     def init_default_actions(self) -> dict:
         actions = {
             'update shape': {'method': self.update_shape},
-            'hide unused ports': {'method': self.hide_unused_ports}
+            'hide unconnected ports': {'method': self.hide_unconnected_ports},
+            'change title': {'method': self.change_title}
         }
         return actions
 
@@ -107,23 +107,50 @@ class Node(RC_Node, QObject):
         self.updated.emit()
 
     # @override
-    def create_input(self, type_: str = 'data', label: str = '',
-                     add_config={}, pos=-1):
-        RC_Node.create_input(self, type_=type_, label=label, add_config=add_config, pos=pos)
+    def create_input(self, type_: str = 'data', label: str = '', add_config={}, insert: int = None):
+        RC_Node.create_input(self, type_=type_, label=label, add_config=add_config, insert=insert)
 
-        self.input_added.emit(self.inputs[pos], pos)
+        if insert is not None:
+
+            if insert < 0:
+                index = insert-1
+            else:
+                index = insert
+
+            self.input_added.emit(self.inputs[index], insert)
+
+        else:
+            self.input_added.emit(self.inputs[-1], None)
 
     # @override
-    def create_input_dt(self, dtype: DType, label: str = '', add_config={}, pos=-1):
-        RC_Node.create_input_dt(self, dtype=dtype, label=label, add_config=add_config, pos=pos)
+    def create_input_dt(self, dtype: DType, label: str = '', add_config={}, insert: int = None):
+        RC_Node.create_input_dt(self, dtype=dtype, label=label, add_config=add_config, insert=insert)
 
-        self.input_added.emit(self.inputs[pos], pos)
+        if insert is not None:
+
+            if insert < 0:
+                index = insert-1
+            else:
+                index = insert
+
+            self.input_added.emit(self.inputs[index], insert)
+        else:
+            self.input_added.emit(self.inputs[-1], None)
 
     # @override
-    def create_output(self, type_: str = 'data', label: str = '', pos=-1):
-        RC_Node.create_output(self, type_=type_, label=label, pos=pos)
+    def create_output(self, type_: str = 'data', label: str = '', insert: int = None):
+        RC_Node.create_output(self, type_=type_, label=label, insert=insert)
 
-        self.output_added.emit(self.outputs[pos], pos)
+        if insert is not None:
+
+            if insert < 0:
+                index = insert-1
+            else:
+                index = insert
+
+            self.output_added.emit(self.outputs[index], insert)
+        else:
+            self.output_added.emit(self.outputs[-1], None)
 
     # @override
     def delete_input(self, index):
@@ -141,14 +168,13 @@ class Node(RC_Node, QObject):
     def custom_config_data(self) -> dict:
         return {
             'special actions': self.get_special_actions_data(self.special_actions),
-            # 'display title': self.display_title,
+            'display title': self.display_title,
         }
 
     # @override
     def load_custom_config(self, data: dict):
         self.special_actions = self.set_special_actions_data(data['special actions'])
-        # if 'display title' in data:
-        #     self.display_title = data['display title']
+        self.display_title = data['display title']
 
     # @override
     def input(self, index: int):
@@ -170,6 +196,11 @@ class Node(RC_Node, QObject):
     [everything below is pure ryvencore-qt API and, to ensure ryvencore compatibility, 
     should not be used unchecked in nodes]
     """
+
+
+    def set_display_title(self, t: str):
+        self.display_title = t
+        self.update_shape()
 
 
     def flow_view(self):
@@ -219,17 +250,39 @@ class Node(RC_Node, QObject):
         self.update_shape_triggered.emit()
 
 
-    def hide_unused_ports(self):
+    def hide_unconnected_ports(self):
         """Causes the GUI item to hide all unconnected ports"""
 
-        del self.default_actions['hide unused ports']
-        self.default_actions['show unused ports'] = {'method': self.show_unused_ports}
-        self.hide_unused_ports_triggered.emit()
+        del self.default_actions['hide unconnected ports']
+        self.default_actions['show unconnected ports'] = {'method': self.show_unconnected_ports}
+        self.hide_unconnected_ports_triggered.emit()
 
 
-    def show_unused_ports(self):
+    def show_unconnected_ports(self):
         """Causes the GUI item to show all unconnected ports that have been hidden previously"""
 
-        del self.default_actions['show unused ports']
-        self.default_actions['hide unused ports'] = {'method': self.hide_unused_ports}
-        self.show_unused_ports_triggered.emit()
+        del self.default_actions['show unconnected ports']
+        self.default_actions['hide unconnected ports'] = {'method': self.hide_unconnected_ports}
+        self.show_unconnected_ports_triggered.emit()
+
+
+    def change_title(self):
+        from qtpy.QtWidgets import QDialog, QVBoxLayout, QLineEdit
+
+        class ChangeTitleDialog(QDialog):
+            def __init__(self, title):
+                super().__init__()
+                self.new_title = None
+                self.setLayout(QVBoxLayout())
+                self.line_edit = QLineEdit(title)
+                self.layout().addWidget(self.line_edit)
+                self.line_edit.returnPressed.connect(self.return_pressed)
+
+            def return_pressed(self):
+                self.new_title = self.line_edit.text()
+                self.accept()
+
+        d = ChangeTitleDialog(self.display_title)
+        d.exec_()
+        if d.new_title:
+            self.set_display_title(d.new_title)

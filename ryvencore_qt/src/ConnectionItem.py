@@ -41,15 +41,17 @@ class ConnectionItem(QGraphicsItem):
         self.recompute()
 
     def boundingRect(self):
-        op = self.out_pos()
-        ip = self.inp_pos()
-        rect = QRectF(
-            0 if op.x() < ip.x() else (ip.x()-op.x()),
-            0 if op.y() < ip.y() else (ip.y()-op.y()),
-            abs(ip.x()-op.x()),
-            abs(ip.y()-op.y())
-        )
-        return rect
+        if self.path:
+            return self.path.boundingRect()
+        else:
+            op = self.out_pos()
+            ip = self.inp_pos()
+            return QRectF(
+                0 if op.x() < ip.x() else (ip.x()-op.x()),
+                0 if op.y() < ip.y() else (ip.y()-op.y()),
+                abs(ip.x()-op.x()),
+                abs(ip.y()-op.y())
+            )
 
 
     def recompute(self):

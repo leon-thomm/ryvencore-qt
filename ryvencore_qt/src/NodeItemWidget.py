@@ -134,14 +134,17 @@ class NodeItemWidget(QGraphicsWidget):
 
     def update_shape(self):
 
+        self.title_label.update_shape()
+
         # makes extended node items shrink according to resizing input widgets
         if not self.node_item.initializing:
             self.rebuild_ui()
-        # strangely, this only works for small node items without this, not for extended ones
+        # strangely, this only works for small node items without this, not for normal ones
 
         mw = self.node_item.main_widget
         if mw is not None:  # maybe the main_widget got resized
-            self.main_widget_proxy.setMaximumSize(mw.size())
+            # self.main_widget_proxy.setMaximumSize(mw.size())
+            self.main_widget_proxy.setMaximumSize(mw.maximumSize())
             self.adjustSize()
             self.adjustSize()
 
@@ -236,7 +239,7 @@ class NodeItemWidget(QGraphicsWidget):
         if self.main_widget_proxy:
             self.main_widget_proxy.show()
 
-    def hide_unused_ports(self):
+    def hide_unconnected_ports(self):
         for inp in self.node_item.inputs:
             if len(inp.port.connections) == 0:
                 inp.hide()
@@ -244,7 +247,7 @@ class NodeItemWidget(QGraphicsWidget):
             if len(out.port.connections) == 0:
                 out.hide()
 
-    def show_unused_ports(self):
+    def show_unconnected_ports(self):
         for inp in self.node_item.inputs:
             inp.show()
         for out in self.node_item.outputs:

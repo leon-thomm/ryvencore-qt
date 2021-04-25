@@ -1,8 +1,6 @@
-from PySide2.QtGui import QFont
-from PySide2.QtWidgets import QCheckBox, QComboBox
 from qtpy.QtCore import Signal
-from qtpy.QtGui import QFontMetrics
-from qtpy.QtWidgets import QSpinBox, QLineEdit
+from qtpy.QtGui import QFontMetrics, QFont
+from qtpy.QtWidgets import QSpinBox, QLineEdit, QSlider, QCheckBox, QComboBox
 
 
 from .WidgetBaseClasses import IWB
@@ -167,7 +165,7 @@ class Data_IW(QLineEdit, DType_IW_Base):  # virtual
         self.node.update_shape()
 
     def editing_finished(self):
-        self.update_node()
+        self.update_node_input(self.get_val())
 
     def get_val(self):
         try:
@@ -225,7 +223,7 @@ class String_IW(QLineEdit, DType_IW_Base):  # virtual
 
     def editing_finished(self):
         if not self.block:
-            self.update_node()
+            self.update_node_input(self.get_val())
 
     def get_val(self):
         return self.text()
@@ -278,7 +276,7 @@ class Integer_IW(QSpinBox, DType_IW_Base):
 
     def val_changed(self, val):
         if not self.block:
-            self.update_node()
+            self.update_node_input(val)
 
     def get_val(self):
         return self.value()
@@ -306,8 +304,8 @@ class Float_IW(QLineEdit, DType_IW_Base):
 
         self.setFont(QFont('source code pro', 10))
         fm = QFontMetrics(self.font())
-        self.setMaximumWidth(fm.width(dtype.decimals+1))
-        self.setText(dtype.default)
+        self.setMaximumWidth(fm.width(' ')*dtype.decimals+1)
+        self.setText(str(dtype.default))
         self.setToolTip(dtype.doc)
 
         self.block = False  # ignore updates from val_update_event
@@ -315,10 +313,10 @@ class Float_IW(QLineEdit, DType_IW_Base):
 
     def text_changed(self):
         if not self.block:
-            self.update_node()
+            self.update_node_input(self.get_val())
 
     def get_val(self):
-        return self.text()
+        return float(self.text())
 
     def val_update_event(self, val):
         self.block = True
@@ -350,7 +348,7 @@ class Boolean_IW(QCheckBox, DType_IW_Base):
 
     def state_changed(self, state):
         if not self.block:
-            self.update_node()
+            self.update_node_input(self.get_val())
 
     def get_val(self):
         return self.isChecked()
@@ -358,7 +356,7 @@ class Boolean_IW(QCheckBox, DType_IW_Base):
     def val_update_event(self, val):
         self.block = True
         try:
-            self.setChecked(val)
+            self.setChecked(bool(val))
         finally:
             self.block = False
 
@@ -385,7 +383,7 @@ class Choice_IW(QComboBox, DType_IW_Base):
 
     def text_changed(self):
         if not self.block:
-            self.update_node()
+            self.update_node_input(self.get_val())
 
     def get_val(self):
         return self.currentText()
