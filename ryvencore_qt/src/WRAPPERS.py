@@ -4,8 +4,7 @@ Same for Session."""
 
 from qtpy.QtCore import QObject, Signal
 
-from .ryvencore.logging.Log import Log as RC_Log
-from .ryvencore.logging.Logger import Logger as RC_Logger
+from .ryvencore.logging.LogsManager import LogsManager as RC_Logger
 
 from .ryvencore.Flow import Flow as RC_Flow
 from .ryvencore.Node import Node
@@ -16,46 +15,18 @@ from .ryvencore.script_variables.Variable import Variable
 from .ryvencore.script_variables.VarsManager import VarsManager as RC_VarsManager
 
 
-class Log(RC_Log, QObject):
+class LogsManager(RC_Logger, QObject):
 
-    enabled = Signal()
-    disabled = Signal()
-    wrote = Signal(str)
-    cleared = Signal()
-
-    def __init__(self, title: str):
-        QObject.__init__(self)
-        RC_Log.__init__(self, title=title)
-
-    def write(self, *args):
-        RC_Log.write(self, args)
-        self.wrote.emit(self.current_lines[-1])
-
-    def clear(self):
-        RC_Log.clear(self)
-        self.cleared.emit()
-
-    def disable(self):
-        RC_Log.disable(self)
-        self.disabled.emit()
-
-    def enable(self):
-        RC_Log.enable(self)
-        self.enabled.emit()
-
-
-class Logger(RC_Logger, QObject):
-
-    new_log_created = Signal(Log)
+    new_log_created = Signal(object)
 
     def __init__(self, script, create_default_logs=True):
         QObject.__init__(self)
         RC_Logger.__init__(self, script=script, create_default_logs=create_default_logs)
 
-    def new_log(self, title: str) -> Log:
-        log = RC_Logger.new_log(self, title=title)
-        self.new_log_created.emit(log)
-        return log
+    def new_logger(self, title: str):
+        logger = RC_Logger.new_logger(self, title=title)
+        self.new_log_created.emit(logger)
+        return logger
 
 
 class VarsManager(RC_VarsManager, QObject):

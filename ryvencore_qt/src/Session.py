@@ -11,7 +11,7 @@ from .ConnectionItem import DataConnectionItem, ExecConnectionItem
 from .SessionThreadingBridge import SessionThreadingBridge
 from .Node import Node
 from .FlowView import FlowView
-from .WRAPPERS import VarsManager, Logger, Log, DataConnection, Flow
+from .WRAPPERS import VarsManager, LogsManager, DataConnection, Flow
 
 
 class Session(RC_Session, QObject):
@@ -41,8 +41,8 @@ class Session(RC_Session, QObject):
         # custom WRAPPERS
         CLASSES['node base'] = Node if not node_class else node_class
         CLASSES['data conn'] = DataConnection if not data_conn_class else data_conn_class
-        CLASSES['logger'] = Logger
-        CLASSES['log'] = Log
+        CLASSES['logs manager'] = LogsManager
+        # CLASSES['log'] = Log
         CLASSES['vars manager'] = VarsManager
         CLASSES['flow'] = Flow
 

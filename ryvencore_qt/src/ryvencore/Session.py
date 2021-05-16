@@ -31,13 +31,13 @@ class Session(Base):
             from .Connection import ExecConnection
             CLASSES['exec conn'] = ExecConnection
 
-        if not CLASSES['logger']:
-            from .logging.Logger import Logger
-            CLASSES['logger'] = Logger
+        if not CLASSES['logs manager']:
+            from .logging.LogsManager import LogsManager
+            CLASSES['logs manager'] = LogsManager
 
-        if not CLASSES['log']:
-            from .logging.Log import Log
-            CLASSES['log'] = Log
+        # if not CLASSES['log']:
+        #     from .logging.Log import Log
+        #     CLASSES['log'] = Log
 
         if not CLASSES['vars manager']:
             from .script_variables.VarsManager import VarsManager

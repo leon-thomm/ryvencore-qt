@@ -1,5 +1,4 @@
-from qtpy.QtCore import QSize, QRectF, QPointF, QSizeF
-from qtpy.QtGui import Qt
+from qtpy.QtCore import QSize, QRectF, QPointF, QSizeF, Qt
 from qtpy.QtWidgets import QGraphicsWidget, QGraphicsLayoutItem
 
 from ryvencore_qt.src.GlobalAttributes import Location

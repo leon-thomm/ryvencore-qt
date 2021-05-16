@@ -29,8 +29,8 @@ CLASSES = {
     'node base': None,
     'data conn': None,
     'exec conn': None,
-    'logger': None,
-    'log': None,
+    'logs manager': None,
+    # 'log': None,
     'vars manager': None,
     'flow': None,
 }

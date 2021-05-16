@@ -89,16 +89,17 @@ While data flows should be the most common use case, exec flows (like UnrealEngi
 With an update mechanism to build nodes that automatically adapt to change of variables.
 
     ```python
+    import logging
     class MyNode(rc.Node):
         # ...
         def __init__(self, params):
             super().__init__(params)
-            self.my_log = self.new_log(title='nice log')
+            self.my_logger = self.new_log(title='nice log')
             # assuming a 'messages' var had been created in the flow's script
             self.register_var_receiver(name='messages', method=self.new_msg)
         
         def new_msg(self, msgs: list):
-            self.my_log.write(f'received msg: {msgs[-1]}')
+            self.my_logger.log(logging.INFO, f'received msg: {msgs[-1]}')
     ```
 - **threading compatibility**  
 All internal communication between the abstract components and the GUI of the flows is implemented in a somewhat thread-save way, so with ryvencore-qt you can keep the backend in a separate thread. While this is currently very experimental, first successful tests have been made, and I think it's of crucial importance as this opens the door to the world of realtime data processing.

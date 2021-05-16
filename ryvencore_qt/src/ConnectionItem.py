@@ -1,7 +1,7 @@
 # import math
 
-from qtpy.QtCore import QRectF, QPointF
-from qtpy.QtGui import QPainter, QColor, QRadialGradient, QPainterPath, QPen, Qt
+from qtpy.QtCore import QRectF, QPointF, Qt
+from qtpy.QtGui import QPainter, QColor, QRadialGradient, QPainterPath, QPen
 from qtpy.QtWidgets import QGraphicsItem, QStyleOptionGraphicsItem
 
 from .tools import sqrt

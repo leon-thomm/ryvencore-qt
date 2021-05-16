@@ -86,8 +86,8 @@ class ScriptsListWidget(QWidget):
 
 
     def rebuild_list(self):
-        for i in range(self.layout().count()):
-            self.list_layout.removeItem(self.layout().itemAt(0))
+        # for i in range(self.layout().count()):
+        #     self.list_layout.removeItem(self.layout().itemAt(0))
 
         for w in self.list_widgets:
             self.list_layout.addWidget(w)
