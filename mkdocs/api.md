@@ -23,7 +23,7 @@ The following signals are useful if you use custom widgets for listing the scrip
 
 ### Methods
 
-`Session(threaded: bool = False, gui_parent: QWidget = None, flow_theme_name=None, performance_mode=None, data_conn_class=None, data_conn_item_class=None, exec_conn_class=None, exec_conn_item_class=None, parent: QObject = None)`
+#### `Session(threaded: bool = False, gui_parent: QWidget = None, flow_theme_name=None, performance_mode=None, data_conn_class=None, data_conn_item_class=None, exec_conn_class=None, exec_conn_item_class=None, parent: QObject = None)`
 
 | Parameter                         | Description                               |
 | --------------------------------- | ----------------------------------------- |
@@ -39,22 +39,22 @@ The following signals are useful if you use custom widgets for listing the scrip
 
 This list (and especially the order) might get changed in the future multiple times, so make sure you always use the parameter names. Also, while I think subclassing the connection classes is a great feature, the default class's implementations are young and might receive changes in the future.
 
-`register_node(node)`
+#### `register_node(node)`
 
 Registers a Node which then can be accessed in all scripts,
 
-> [!NOTE]
-> You can register and unregister nodes at any time! Unregistering a node does not affect existent instances (so you can also reregister nodes).
+!!! note
+    You can register nodes at any time!
 
-`register_nodes(node_classes: list)`
+#### `register_nodes(node_classes: list)`
 
 Convenience class for registering a list of nodes at once.
 
-`unregister_node(node_class)`
+#### `unregister_node(node_class)`
 
 Unregisters a node which will then be removed from the internal list. Existing instances won't be affected.
 
-`create_script(title: str, flow_view_size: list = None, create_default_logs=True) -> Script`
+#### `create_script(title: str, flow_view_size: list = None, create_default_logs=True) -> Script`
 
 | Parameter                         | Description                               |
 | --------------------------------- | ----------------------------------------- |
@@ -64,43 +64,43 @@ Unregisters a node which will then be removed from the internal list. Existing i
 
 Creates and returns a script which triggers the `Session.new_script_created()` signal. By the time the script is returned, all abstract as well as the GUI components have been created.
 
-`create_func_script(title: str, flow_view_size: list = None, create_default_logs=True) -> Script`
+#### `create_func_script(title: str, flow_view_size: list = None, create_default_logs=True) -> Script`
 
 Same thing as `Session.create_script()` for `FunctionScript`s.
 
-`all_scripts() -> list`
+#### `all_scripts() -> list`
 
 Returns a list containing all scripts and function scripts.
 
-`check_new_script_title_validity(title: str) -> bool`
+#### `check_new_script_title_validity(title: str) -> bool`
 
 Checks whether a considered title for a new script (i.e. unique) is valid or not.
 
-`rename_script(script: Script, title: str)`
+#### `rename_script(script: Script, title: str)`
 
 Renames an existing script which triggers the `Session.script_renamed` signal.
 
-`delete_script(script: Script)`
+#### `delete_script(script: Script)`
 
 Deletes a script and triggers the `Session.script_deleted` signal.
 
-`load(project: dict) -> bool`
+#### `load(project: dict) -> bool`
 
 Loads a project, which means creating all scripts saved in the provided project dict and building all their contents including the flows.
 
-`serialize() -> dict`
+#### `serialize() -> dict`
 
 Returns the project as dict to be saved and loaded again using load().
 
-`info_messenger()`
+#### `info_messenger()`
 
 Returns a reference to the `InfoMsgs` class for printing only if info messages are enabled.
 
-`all_nodes() -> list`
+#### `all_nodes() -> list`
 
 Returns a list of all Node **instances** (objects) from all flows of the session's scripts.
 
-`set_stylesheet(s: str)`
+#### `set_stylesheet(s: str)`
 
 Sets the session's global stylesheet which can be accessed by nodes and their widgets.
 
@@ -110,19 +110,19 @@ The `InfoMsgs` class just provides a convenient way to print, such that the addi
 
 ### Methods
 
-`enable()`
+#### `enable()`
 
 Enables the printing.
 
-`disable()`
+#### `disable()`
 
 Disables the printing.
 
-`write(*args)`
+#### `write(*args)`
 
 Writes a list of arguments stringified using `str()` in the same format `print()` does.
 
-`write_err(*args)`
+#### `write_err(*args)`
 
 Same as `write(*args)` but for highlighted errors.
 
@@ -160,15 +160,15 @@ The logger manages all the logs of a script.
 
 ### Methods
 
-`create_default_logs()`
+#### `create_default_logs()`
 
 Creates the default script's logs *Global* and *Errors*. This is done automatically if you didn't disable default logs when creating the the script.
 
-`log_message(msg: str, target: str = '')`
+#### `log_message(msg: str, target: str = '')`
 
 Logs a message to all logs with name `target`. If you want to print to a specific log individual log (not one of the default logs), you should use the `Log.write()` method.
 
-`new_log(title: str) -> Log`
+#### `new_log(title: str) -> Log`
 
 Creates an individual new log which you can use for anything. Emits the `new_log_created` signal.
 
@@ -195,23 +195,23 @@ The following signals are useful if you implement your own log GUI. Connect them
 
 ### Methods
 
-`write(*args)`
+#### `write(*args)`
 
 Writes a list of arguments to the log like `print()` does, stringifying everything using `str()`.
 
-`clear()`
+#### `clear()`
 
 Clears the log and emits `cleared`. This doesn't clear the `lines` attribute!
 
-`disable()`
+#### `disable()`
 
 Disables the log and emits `disabled`. A disabled log does not `write` anymore.
 
-`enable()` 
+#### `enable()` 
 
 Enables the log and emits `enabled`.
 
-`save_to_file(filepath: str, all_lines=True)`
+#### `save_to_file(filepath: str, all_lines=True)`
 
 Saves `lines` to a file. If `all_lines` is `False` it only saves `current_lines`.
 
@@ -235,35 +235,35 @@ The following signals are useful if you implement your own script vars list GUI.
 
 ### Methods
 
-`check_new_var_name_validity(name: str) -> bool`
+#### `check_new_var_name_validity(name: str) -> bool`
 
 Checks whether `name` is a valid name for a new script variable.
 
-`create_new_var(name: str, val=None) -> Variable`
+#### `create_new_var(name: str, val=None) -> Variable`
 
 Creates and returns a new script variable with given name and initial value. Emits the `new_var_created` signal.
 
-`get_var(name) -> Variable`
+#### `get_var(name) -> Variable`
 
 Returns script variable with given name or `None` if it couldn't be found.
 
-`get_var_val(name)`
+#### `get_var_val(name)`
 
 Returns the value of a script variable with given name or `None` if it couldn't be found.
 
-`set_var(name, val) -> bool`
+#### `set_var(name, val) -> bool`
 
 Sets the value of an existing script variable. Returns `False` if the var couldn't be found.
 
-`delete_variable(var: Variable)`
+#### `delete_variable(var: Variable)`
 
 Deletes a script variable and emits `var_deleted`.
 
-`register_receiver(receiver, var_name: str, method)`
+#### `register_receiver(receiver, var_name: str, method)`
 
 Registers a var receiver. A registered receiver (method) gets triggered every time the value of a variable with the given name changes (also when it gets created).
 
-`unregister_receiver(receiver, var_name: str) -> bool`
+#### `unregister_receiver(receiver, var_name: str) -> bool`
 
 Unregisters a var receiver.
 
@@ -290,19 +290,19 @@ The `Flow` class represents the abstract flow (no GUI) and stores all the node o
 
 ### Methods
 
-`create_node(node_class, config=None)`
+#### `create_node(node_class, config=None)`
 
 Creates, adds and returns a new node object; emits node_added.
 
-`remove_node(node: Node)`
+#### `remove_node(node: Node)`
 
 Removes a node from internal list without deleting it; emits node_removed.
 
-`algorithm_mode() -> str`
+#### `algorithm_mode() -> str`
 
 Returns the flow's current algorithms mode (`data` for *data flow* or `exec` for *execution flow*). By default, flows run in data flow mode.
 
-`set_algorithm_mode(mode: str)`
+#### `set_algorithm_mode(mode: str)`
 
 | Parameter             | Description                               |
 | --------------------- | ----------------------------------------- |
@@ -312,18 +312,18 @@ Returns the flow's current algorithms mode (`data` for *data flow* or `exec` for
 
 The `FlowView` is the GUI representative for the `Flow`, i.e. the widget, and is accessible via `Script.flow_view`.
 
-`get_viewport_img() -> QImage`
+#### `get_viewport_img() -> QImage`
 
 Returns a clear image of the viewport.
 
-`get_whole_scene_img() -> QImage`
+#### `get_whole_scene_img() -> QImage`
 
 Returns an image of the whole scene, scaled accordingly to current scale factor.
 
 !!! bug
     Currently, this only works from the viewport's position down and right, so the user has to scroll to the top left corner in order to get the full scene.
 
-`show_framerate(show: bool = True, m_sec_interval: int = 1000)`
+#### `show_framerate(show: bool = True, m_sec_interval: int = 1000)`
 
 **WIP**
 
@@ -431,7 +431,7 @@ Triggered when the Node is removed from the flow. You can use this method do sto
         self.timer.stop()
     ```
 
-`update(input_called=-1)`
+#### `update(input_called=-1)`
 
 | Parameter             | Description                               |
 | --------------------- | ----------------------------------------- |
@@ -439,11 +439,11 @@ Triggered when the Node is removed from the flow. You can use this method do sto
 
 Triggers an update event.
 
-`input(index: int)`
+#### `input(index: int)`
 
 Returns the data that is at the data input with given index. If the input is not connected, the input will return the widget's data (if it has a widget), otherwise it will return the data from the output of the connected Node. In all other cases, it returns `None`.
 
-`exec_output(index: int)`
+#### `exec_output(index: int)`
 
 | Parameter             | Description                               |
 | --------------------- | ----------------------------------------- |
@@ -451,7 +451,7 @@ Returns the data that is at the data input with given index. If the input is not
 
 Executes the output with given index.
 
-`set_output_val(index: int, val)`
+#### `set_output_val(index: int, val)`
 
 | Parameter             | Description                               |
 | --------------------- | ----------------------------------------- |
@@ -460,7 +460,7 @@ Executes the output with given index.
 
 In dataflows, this causes update events in all connected nodes. This way, change of data is forward propagated through all nodes that depend on it.
 
-`new_log(title: str) -> Log`
+#### `new_log(title: str) -> Log`
 
 | Parameter             | Description                               |
 | --------------------- | ----------------------------------------- |
@@ -468,26 +468,26 @@ In dataflows, this causes update events in all connected nodes. This way, change
 
 Creates and returns a new log, owned by the Node.
 
-`disable_logs()`
+#### `disable_logs()`
 
 Disables all logs owned by the Node. The convenience Log widget ryvencore provides then can be hidden. All logs owned by a Node automatically get disabled when the Node is removed.
 
-`enable_logs()`
+#### `enable_logs()`
 
 Enables all logs owned by the Node. The convenience Log widget ryvencore provides then shows the widget again, in case it has been hidden after it was disabled. All logs owned by a Node automatically get enabled again when a removed Node is restored through an undo operation.
 
-`log_message(msg: str, target: str)`
+#### `log_message(msg: str, target: str)`
 
 | Parameter             | Description                               |
 | --------------------- | ----------------------------------------- |
 | `msg`                 | The message as string. |
 | `target`              | `'Global'` or `'Errors'`. Refers to one of the script's default logs. |
 
-`update_shape()`
+#### `update_shape()`
 
 Causes recompilation of the whole shape of the GUI item of the node.
 
-`create_input(type_: str = 'data', label: str = '', widget_name=None, widget_pos='besides', pos=-1, ...)`
+#### `create_input(type_: str = 'data', label: str = '', widget_name=None, widget_pos='besides', pos=-1, ...)`
 
 | Parameter             | Description                               |
 | --------------------- | ----------------------------------------- |
@@ -497,11 +497,11 @@ Causes recompilation of the whole shape of the GUI item of the node.
 | `widget_pos`          | `'besides'` or `'below'` the port. |
 | `pos`                 | The index this input should be inserted at. `-1` means appending at the end. |
 
-`delete_input(i)`
+#### `delete_input(i)`
 
 Deletes the input at index `i`. All existing connections get removed automatically.
 
-`create_output(type_: str = 'data', label: str = '', pos=-1)`
+#### `create_output(type_: str = 'data', label: str = '', pos=-1)`
 
 | Parameter             | Description                               |
 | --------------------- | ----------------------------------------- |
@@ -509,15 +509,15 @@ Deletes the input at index `i`. All existing connections get removed automatical
 | `label`               | The output's displayed label string. |
 | `pos`                 | The index this output should be inserted at. `-1` means appending at the end. |
 
-`delete_output(o)`
+#### `delete_output(o)`
 
 Deletes the output at index `o`. All existing connections get removed automatically.
 
-`session_stylesheet() -> str`
+#### `session_stylesheet() -> str`
 
 Returns the stylesheet registered via `Session.set_stylesheet()`. This can be useful for custom widgets.
 
-`get_var_val(name: str)`
+#### `get_var_val(name: str)`
 
 | Parameter             | Description                               |
 | --------------------- | ----------------------------------------- |
@@ -525,7 +525,7 @@ Returns the stylesheet registered via `Session.set_stylesheet()`. This can be us
 
 Returns the current value of a script variable and `None` if it couldn't be found.
 
-`set_var_val(name: str, val)`
+#### `set_var_val(name: str, val)`
 
 | Parameter             | Description                               |
 | --------------------- | ----------------------------------------- |
@@ -534,7 +534,7 @@ Returns the current value of a script variable and `None` if it couldn't be foun
 
 Sets the value of a script variable and causes all registered receivers to update (see below).
 
-`register_var_receiver(name: str, method)`
+#### `register_var_receiver(name: str, method)`
 
 | Parameter             | Description                               |
 | --------------------- | ----------------------------------------- |
@@ -551,7 +551,7 @@ Registers a method as receiver for changes of script variable with given name.
     self.used_variable_names.append('x')
     ```
 
-`unregister_var_receiver(name: str)`
+#### `unregister_var_receiver(name: str)`
 
 Unregisters a previously registered variable receiver.
 
