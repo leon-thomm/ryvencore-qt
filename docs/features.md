@@ -2,33 +2,43 @@
 
 ## Flows - A Rigurous Definition
 
-A *flow* is like a directed multigraph (not necessarily acyclic) whose vertices are *nodes* with *connections* as edges to other nodes.
+A *flow* in this context is a directed, usually but not necessarily acyclic, multigraph whose vertices are *nodes* with *connections* as edges to other nodes.
 
-The fundamental actions that can be performed on a flow are
+The fundamental operations to perform on a flow are
 
 - adding a node
 - removing a node and all incident connections
 - adding a connection between ports of two different nodes
 - removing an existing connection
 
-Standard flow execution (for data flows) is defined as follows:
+### Flow Modes
 
-By calling `Node.set_output_val(index, val)`, every outgoing connection is *activated*, with `val` as payload, which leads to an *update event* in every connected node. No automatic modification is performed on `val`. If there are multiple connections, the order of activation is the order in which they have been added.
+### data flows
 
-***
+The default flow mode is *data*. The flow execution here is defined as follows:
+
+By calling `Node.set_output_val(index, val)`, every outgoing connection is *activated*, with `val` as payload, which leads to an *update event* in every connected node. No automatic inspection, nor modification is performed on `val`. If there are multiple connections, the order of activation is the order in which they have been added.
 
 ### exec flows
-There are two types of connections, namely *data* and *exec*, and hence two types of node ports. Usually you will want to only use data connections and ports (-> *data flows*). For execution connections, by calling `Node.exec_output(index)`, the same happens as for data propagation described above, just that there is no `val` payload.
+
+> [!NOTE]
+> While the *data* mode is the more common use case, you can think of the *exec* mode as UnrealEngine's BluePrints (*exec*) compared to their material editor (*data*). The *exec* mode implementation might receive some modifications in the future.
+
+<!-- There are two types of connections, namely *data* and *exec* connections, and hence, two types of node ports. Usually you will want to only use data connections and ports (-> *data flows*).  -->
+
+For exec connections, by calling `Node.exec_output(index)`, the same effects take place as for data propagation described above, just that there is no `val` payload, it's just an activation signal causing an update.
+
+The fundamental difference is that in contrast to *data* mode, data is not forward propagated on change, but requested backwards, meaning a combinational node passively generating some data (like an addition on two values at inputs) not updated when input data changes, but when the output is requested in another connected node via `Node.input(index)`. See the Ryven documentation for an example.
 
 ***
-
-In both cases does the `input_called` parameter in `Node.update_event` represent the input index that received data, or a signal from an activated connection.
 
 The mode of a flow (*data* or *exec*) can be set at any time using `Flow.set_algorithm_mode`, default is *data*.
 
+In both cases the `input_called` parameter in `Node.update_event` represents the input index that received data or a signal respectively.
+
 ## Nodes System
 
-Nodes are subclasses of the `Node` class. Single node instances are instances of their class, and the basic properties that apply on all those nodes equally are stored as static attributes. Individually changing properties are inputs and outputs (which can be added, removed and modified at any time), display title, actions (see below) etc. You can put any code into your node classes, no limitations, and for sophisticated use you can override the default behavior by reimplementing methods.
+Nodes are subclasses of the `Node` class. Single node instances are instances of their class, and the basic properties that apply on all those nodes equally are stored as static attributes. Individually changing properties include inputs and outputs (which can be added, removed and modified at any time), display title, actions (see below) etc. You can put any code into your node classes, no limitations, and for sophisticated usage you can override the default behavior by reimplementing methods and creating your own `NodeBase` class(es).
 
 <!--
 One very important feature is the possibility of defining custom GUI components, i.e. widgets, for your nodes. A node can have a `main_widget` and input widgets, whose classes are stored in the `input_widget_classes` attribute.
@@ -42,16 +52,14 @@ Special actions are a very simple way to define right click operations for your 
 # creating a new entry
 self.special_actions['add some input'] = {'method': self.add_some_input_action}
 
-
 # with a corresponding method
 def add_some_input_action(self):
   self.create_input(type_='data', label='new input')
 
-
 # removing an entry
 del self.special_actions['add some input']
 
-# and storing individual data for multiple actions pointing to the same target method
+# storing individual data for multiple actions pointing to the same target method
 # which enables dynamic, current state dependent actions
 self.special_actions['add some input at index 0'] = {
   'method': self.add_some_input_at,
@@ -62,30 +70,37 @@ self.special_actions['add some input at index 1'] = {
   'data': 1
 }
 
-
 def add_some_input_at(self, index):
-  self.create_input(type_='data', label='inserted input')
+  self.create_input(type_='data', label='inserted input', index=index)
 ```
 
 Special actions are saved and reloaded automatically.
 
+> [!WARNING]
+> Only refer to your according node's methods in the `method` field, not some other objects'. When saving, the referred method's name is stored and the method field in the `special_actions` entry is recreated on load via `getattr(node, method_name)`.
+
+### Custom GUI
+
+You can add custom Qt widgets to your nodes. For instructions on how to register custom widgets in your nodes see Ryven docs.
+
 ## Load&Save
 
-To save a project, simply use `Session.serialize()`, to load a saved project use `Session.load()`. Before loading a project, you need to register all required nodes in the session.
+To save a project use `Session.serialize()`. To load a saved project use `Session.load()`. Before loading a project, you need to register all required nodes in the session.
 
 ## Script Variables
 
-Script variables are a nice way to improve the interface to your data. There is a really simple but extremely powerful *registration system* that you can use to register methods as *receivers* for a variable with a given name. Then, every time the variable's value gets updated, all registered receiver methods are called. The registration process is part of the API of the `Node` class, so you can easily create highly responsive nodes.
+Script variables are a nice way to improve the interface to your data. There is a really simple but extremely powerful *registration system* that you can use to register methods as *receivers* on a variable name with a method that gets called every time a script var's value with that name changed. The registration process is part of the API of the `Node` class, so you can easily create highly dynamic nodes.
 
-!!! example
-    I made a small *Matrix* node in Ryven where you can just type a few numbers into a small textedit (which is the custom `main_widget` of the node) and it creates a numpy array out of them. But you can also type in the name of a script variable somewhere (instead of a number) which makes the matrix node register as a receiver, so it updates and regenerates the matrix every time the value of a script variable with that name updated.
+> EXAMPLE
+>
+> I made a small *Matrix* node in Ryven where you can just type a few numbers into a small textedit (which is the custom `main_widget` of the node) and it creates a numpy array out of them. But you can also type in the name of a script variable somewhere (instead of a number) which makes the matrix node register as a receiver, so it updates and regenerates the matrix every time the value of a script variable with that name updated.
     
-!!! note
-    You could also work with default variables, for example, that you always create when creating a new script, by default, which all your nodes use to communicate or transmit data in more complex ways. This illustrates, there is really a bunch of quite interesting possibilities for sophisticated optimization with this. The system might be expanded in the future.
+> [!NOTE]
+> You could also work with default variables, for example, that you always create when creating a new script, by default, which all your nodes use to communicate or transmit data in more complex ways. This illustrates, there is really a bunch of quite interesting possibilities for sophisticated optimization with this. The system might be expanded in the future.
 
 ## Logging
 
-There is a `Logger` class which every script has an instance of. You can use the logger's [API](../api/#class-logger) to write messages to default logs and to request custom logs and write directly to them. The `Node`'s API already includes methods for requesting custom logs and manages *enable*-and *disable*-events according to actions in the flow (like removing the Node), but you can also request logs for anything else.
+Every *script* has a *logs manager*. You can use [API](../api/#class-logger) to write messages to default loggers and to request custom loggers (`python.logging.Logger`) and write directly to them. The `Node`'s API already includes methods for requesting custom loggers.
 
 <!--
 ## Convenience Classes
@@ -95,125 +110,161 @@ ryvecore already comes with a few convenience classes for widgets. Those conveni
 
 ## Styling
 
-Of course, design splays a huge role when thinking about *visual* scripting. Therefore, you have wide freedom in styling.
+Of course, design splays a huge role when talking about *visual* scripting. Therefore, there's a focus on styling freedom.
 
 ### Flow Themes
 
-There is a list of available flow themes (which I want to expand as far as possible). You can choose one via `Session.design.set_flow_theme()`. Currently available flow themes are `Samuel 1d`, `Samuel 1l`, `Samuel 2d`, `Samuel 2l`, `Ueli`, `Blender`, `Simple`, `Toy` and `Tron`. To make sure you can create a look that fits in nicely wherever you might integrate your editor, you can customize the colors for all the above themes using a config json file and passing it to the design using `Sessiong.design.load_from_config(filepath)`. The json file should look like this, for any value you can either write "default" or specify a specific setting according to the instructions in the info box.
+There is a list of available flow themes (which will hopefully grow). You can choose one via `Session.design.set_flow_theme()`. Currently available flow themes are
 
-??? note "config file"
-    You can also specify the initial flow theme, the performance mode (`'pretty'` or `'fast'`) and animations (which currently don't work I think). You can just copy the following json, save it in a file and specify.
-    ```python
-    {
-      "init flow theme": "Samuel 1l",
-      "init performance mode": "pretty",
-      "init animations enabled": true,
-      "flow themes": {
-        "Toy": {
-          "exec connection color": "default",
-          "exec connection width": "default",
-          "exec connection pen style": "default",
-          "data connection color": "default",
-          "data connection width": "default",
-          "data connection pen style": "default",
-          "flow background color": "default"
-        },
-        "Tron": {
-          "exec connection color": "default",
-          "exec connection width": "default",
-          "exec connection pen style": "default",
-          "data connection color": "default",
-          "data connection width": "default",
-          "data connection pen style": "default",
-          "flow background color": "default"
-        },
-        "Ghost": {
-          "exec connection color": "default",
-          "exec connection width": "default",
-          "exec connection pen style": "default",
-          "data connection color": "default",
-          "data connection width": "default",
-          "data connection pen style": "default",
-          "flow background color": "default",
-    
-          "nodes color": "default",
-          "small nodes color": "default"
-        },
-        "Blender": {
-          "exec connection color": "default",
-          "exec connection width": "default",
-          "exec connection pen style": "default",
-          "data connection color": "default",
-          "data connection width": "default",
-          "data connection pen style": "default",
-          "flow background color": "default",
-    
-          "nodes color": "default"
-        },
-        "Simple": {
-          "exec connection color": "default",
-          "exec connection width": "default",
-          "exec connection pen style": "default",
-          "data connection color": "default",
-          "data connection width": "default",
-          "data connection pen style": "default",
-          "flow background color": "default",
-    
-          "nodes background color": "default",
-          "small nodes background color": "default"
-        },
-        "Ueli": {
-          "exec connection color": "default",
-          "exec connection width": "default",
-          "exec connection pen style": "default",
-          "data connection color": "default",
-          "data connection width": "default",
-          "data connection pen style": "default",
-          "flow background color": "default",
-    
-          "nodes background color": "default",
-          "small nodes background color": "default"
-        },
-        "Samuel 1d": {
-          "exec connection color": "default",
-          "exec connection width": "default",
-          "exec connection pen style": "default",
-          "data connection color": "default",
-          "data connection width": "default",
-          "data connection pen style": "default",
-          "flow background color": "default",
-    
-          "extended node background color": "default",
-          "small node background color": "default",
-          "node title color": "default",
-          "port pin pen color": "default"
-        },
-        "Samuel 1l": {
-          "exec connection color": "default",
-          "exec connection width": "default",
-          "exec connection pen style": "default",
-          "data connection color": "default",
-          "data connection width": "default",
-          "data connection pen style": "default",
-          "flow background color": "default",
-    
-          "extended node background color": "default",
-          "small node background color": "default",
-          "node title color": "default",
-          "port pin pen color": "default"
-        }
-      }
+- `Samuel 1d`
+- `Samuel 1l`
+- `Samuel 2d`
+- `Samuel 2l`
+- `Ueli`
+- `Blender`
+- `Simple`
+- `Toy`
+-`Tron`
+
+To make sure you can create a look that fits in nicely wherever you might integrate your editor, you can customize the colors for all the above themes using a config json file and passing it to the design using `Session.design.load_from_config(filepath)`. The json file should look like this, for any value you can either write `"default"` or specify a specific setting according to the instructions in the info box.
+
+<details><summary>config file</summary>
+
+
+You can also specify the initial flow theme, the performance mode (`'pretty'` or `'fast'`) and animations (which currently don't work I think). You can just copy the following json, save it in a file and specify.
+```python
+{
+  "init flow theme": "Samuel 1l",
+  "init performance mode": "pretty",
+  "init animations enabled": true,
+  "flow themes": {
+    "Toy": {
+      "exec connection color": "default",
+      "exec connection width": "default",
+      "exec connection pen style": "default",
+      "data connection color": "default",
+      "data connection width": "default",
+      "data connection pen style": "default",
+      "flow background color": "default"
+    },
+    "Tron": {
+      "exec connection color": "default",
+      "exec connection width": "default",
+      "exec connection pen style": "default",
+      "data connection color": "default",
+      "data connection width": "default",
+      "data connection pen style": "default",
+      "flow background color": "default"
+    },
+    "Ghost": {
+      "exec connection color": "default",
+      "exec connection width": "default",
+      "exec connection pen style": "default",
+      "data connection color": "default",
+      "data connection width": "default",
+      "data connection pen style": "default",
+      "flow background color": "default",
+
+      "nodes color": "default",
+      "small nodes color": "default"
+    },
+    "Blender": {
+      "exec connection color": "default",
+      "exec connection width": "default",
+      "exec connection pen style": "default",
+      "data connection color": "default",
+      "data connection width": "default",
+      "data connection pen style": "default",
+      "flow background color": "default",
+
+      "nodes color": "default"
+    },
+    "Simple": {
+      "exec connection color": "default",
+      "exec connection width": "default",
+      "exec connection pen style": "default",
+      "data connection color": "default",
+      "data connection width": "default",
+      "data connection pen style": "default",
+      "flow background color": "default",
+
+      "nodes background color": "default",
+      "small nodes background color": "default"
+    },
+    "Ueli": {
+      "exec connection color": "default",
+      "exec connection width": "default",
+      "exec connection pen style": "default",
+      "data connection color": "default",
+      "data connection width": "default",
+      "data connection pen style": "default",
+      "flow background color": "default",
+
+      "nodes background color": "default",
+      "small nodes background color": "default"
+    },
+    "Samuel 1d": {
+      "exec connection color": "default",
+      "exec connection width": "default",
+      "exec connection pen style": "default",
+      "data connection color": "default",
+      "data connection width": "default",
+      "data connection pen style": "default",
+      "flow background color": "default",
+
+      "extended node background color": "default",
+      "small node background color": "default",
+      "node title color": "default",
+      "port pin pen color": "default"
+    },
+    "Samuel 1l": {
+      "exec connection color": "default",
+      "exec connection width": "default",
+      "exec connection pen style": "default",
+      "data connection color": "default",
+      "data connection width": "default",
+      "data connection pen style": "default",
+      "flow background color": "default",
+
+      "extended node background color": "default",
+      "small node background color": "default",
+      "node title color": "default",
+      "port pin pen color": "default"
     }
-    ```
-    Also note that the syntax of these configurations might receive some changes in the future. Give non-default values for widths in number format, not `str`. Possible values for pen styles are `solid line`, `dash line`, `dash dot line`, `dash dot dot line` and `dot line`. Give color as string in hex format (also compatible with alpha values like `#aabb4499`).
+  }
+}
+```
+
+</details>
+
+Also note that the syntax of these configurations might receive some changes in the future. Give non-default values for widths in number format, not `str`. Possible values for pen styles are
+
+- `solid line`
+- `dash line`
+- `dash dot line`
+- `dash dot dot line`
+- `dot line`
+
+Give colors as string in hex format (also compatible with alpha values like `#aabb4499`).
 
 ### StyleSheets
 
-The styling of widgets is pretty much in your hands. You can also store a stylesheet via `Session.design.set_stylesheet()` which is then accessible in custom node widget classes via `self.session.design.global_stylesheet`. When making a larger editor, you can style the builtin widgets (like the builtin input widgets for nodes) by referencing their class names in your qss.
+The styling of widgets is pretty much in your hands. 
+<!-- You can also store a stylesheet via `Session.design.set_stylesheet()` which is then accessible in custom node widget classes via `self.session.design.global_stylesheet`.  -->
+When making a larger editor, you can style the builtin widgets (like the builtin input widgets for nodes) by referencing their class names in your qss.
 
-## Customizing Connections
+## Class Customizations
 
-You can provide your own reimplementations of the connection classes, since this is an excellent point to add domain-specific additional functionality to your editor (like 'edge weights' for example). There are no detailed instructions on that in the docs yet, but you can take a look at the implementations, and then pass your implementations of the classes you want to enhance to the `Session`'s constructor, see [API](../api/#class-session).
+There is currently a (*very* alpha) option to provide your own reimplementations for internally defined classes to add functionality to your editor.
+
+> [!WARNING]
+> This system is most likely going to change a few times. Also be aware that future changes on those internal parts will most likely frequently break your code. The goal is to get an internal system running solid enough to not receive frequent changes anymore.
+
+There are no detailed instructions on that in the docs yet, but you can take a look at the implementations, and then pass your reimplementations of the classes you want to enhance to the `CLASSES` dict, **before** initializing a `Session`.
+
+<!-- ## Customizing Connections
+
+You can provide your own reimplementations of the connection classes, since this is an excellent point to add domain-specific additional functionality to your editor (like 'edge weights' for example).  -->
 
 ## Flow View Features
 
@@ -221,36 +272,14 @@ The `FlowView` class, which is a subclass of `QGraphicsView`, supports some spec
 
 - stylus support for adding simple handwritten notes
 - rendered images of the flow including high res for presentations
-<!-- - algorithm modes for the flow (data and exec) -->
-<!-- - touch events (needs improvement) -->
-<!-- - viewport update modes -->
-
-<!--
-!!! bug "Bug (help pls)"
-    After pasting drawings in the scene, when undoing (ctrl+z), it doesn't work and this seems so point to a bigger issue, which I described in the issues section on GitHub. I'm a bit lost about this, so please take a look if you think you could help with solving this.
--->
-
-<!--
-### Algorithm Mode
-
-Most flow-based visual scripting editors either support data flows or exec flows. In ryvencore I wanted to enable both, so there are two modes for that. A structure like the flow-based paradigm has most potential for pure data flows, I guess. But exec flows can be really useful too, as can be seen in UnrealEngine's blueprint editor for example.
-
-The technical differences only regard connections. In a data flow, you only have data connections, in an exec flow you can have both. In data flows any change of data (which is setting the value of a *data-output-port* of a NodeInstance) is *forward propagated* and leads to update events in all connected node instances. In an exec flow, contrary to exec connections (which just trigger NodeInstances to update, see `input_called` in `NodeInstance.update_event()`), data is not forward propagated, but requested, *backwards*. Meaning that the API call `NodeInstance.input(i)` calls the connected *output* and requests the data which causes *passive NodeInstances* (those without exec ports) to update/recompute completely.  That's the technical version... Usually, one just wants data flows. -->
-
-<!-- ### Viewport Update Mode
-
-There are two *viewport update modes*, `'sync'` and `'async'`. The only difference is that in `sync` mode, any update event that propagates through the flow is finished before the viewport is updated. `async` mode can sometimes be useful for larget data flows, in `async` mode, the flow first updates the scene rectangle of the *main-widgets* of NodeInstances before passing the update event to the next connected NodeInstance (so you can see your flow procedurally execute). -->
 
 ## Threading
 
-The internal communication between backend and frontend is done in a somewhat thread-safe way. This means, you can initialize the `Session` object in a separate thread, and provide a GUI parent for the flow view, which will then be initialized in this GUI component's thread. This generally speeds up the backend and makes sure it's not significantly affected by performance fluctuations of the frontend. Further parallelization of the tasks that your individual nodes perform is up to you.
-
-!!! note
-    Be careful with calling `Session.serialize()` from different threads simultaneously, as the serialization of the FlowView is currently "joined" with the session's thread by setting an attribute (see `Session.serialize()` implementation).
+The internal communication between backend (`ryvencore`) and frontend (`ryvencore-qt`) is done in a somewhat thread-safe way. This means, you can initialize the `Session` object in a separate thread, and provide a GUI parent for the `FlowView` which will then be initialized in this GUI component's thread. Of course, Python is very limited for threading due to the GIL. However, threading your components still improves concurrency, i.e. your session is not significantly slown down by the frontend. Further parallelization of the tasks that your individual nodes perform is up to you.
 
 ## GUI-less Deployment
 
-When you saved a project in your editor (via `Session.serialize()`), you can reload it using ryvencore (the backend) manually to deploy your flows anywhere. You have full access to the whole ryvencore API, so you can even perform modifications with the expected results. So, GUI-less deployment is like code generation but better, since you still have API access.
+You can deploy saved projects (`Session.serialize()`) directly on `ryvencore` without any frontend dependencies. You have full access to the whole `ryvencore` API, so you can even perform all modifications with the expected results. GUI-less deployment is like code generation but better, since you still have API access and `ryvencore` is lightweight.
 
 ```python
 if __name__ == '__main__':
@@ -273,20 +302,20 @@ if __name__ == '__main__':
     node1.update()
 ```
 
-Which of the API calls you use in ryvencore-qt are from ryvencore is indicated in the API reference. Of course, your nodes are not allowed to access ryvencore-qt API, as this API does not exist when running it on the backend, since there is no frontend then. To make your nodes compatible with this, you can check the `Session.no_gui` attribute to determine whether the session is having a frontend or not.
+Which of the API calls you use in `ryvencore-qt` don't come from `ryvencore` is indicated in the API reference (basically everything frontend/widgets-related). Of course, your nodes are not allowed to access `ryvencore-qt` API, as this API does not exist when running it on the backend, since there is no frontend then. To make your nodes compatible with this, you can check the boolean `Session.gui` attribute to determine whether the session is aware of a frontend or not.
 
 ``` python
 def update_event(self, input_called=-1):
 
     # doing some work
     
-    if not self.session.no_gui:
+    if self.session.gui:
         self.main_widget().update()
     
-    # setting some outputs
+    # some more work
 ```
 
-Currently, when running it in GUI mode, ryvencore uses Qt signals so the frontend is notified when events like placement of a node in a flow happen. When running ryvencore without frontend, these signals do nothing, so there is no Qt dependency then. This dualism is planned to get replaced in the future by something more scalable, possibly a brokerless message queue to easily enable network scaling.
+<!-- Currently, when running it in GUI mode, `ryvencore` uses Qt signals so the frontend is notified when events like placement of a node in a flow happen. When running ryvencore without frontend, these signals do nothing, so there is no Qt dependency then. This dualism is planned to get replaced in the future by something more scalable, possibly a brokerless message queue to easily enable network scaling. -->
 
 <!--
 ## Code Generation [idea]

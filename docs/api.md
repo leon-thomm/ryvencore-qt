@@ -331,26 +331,32 @@ Returns an image of the whole scene, scaled accordingly to current scale factor.
 
 Nodes are defined by subclasses of `Node`. The individual objects will be instances of the according class. The `Node` class contains the whole API for programming nodes.
 
-??? example
-    ``` python
-    class PrintNode(rc.Node):
-    
-        title = 'Print'
-        description = 'prints your data'
-        init_inputs = [
-            rc.NodeInput('data')
-        ]
-        init_outputs = []
-        color = '#A9D5EF'
-    
-        # we could also skip the constructor here
-        def __init__(self, params):
-            super().__init__(params)
-    
-        def update_event(self, input_called=-1):
-            data = self.input(0)  # get data from the first input
-            print(data)
-    ```
+<details>
+  <summary>Example</summary>
+  
+
+``` python
+class PrintNode(rc.Node):
+
+    title = 'Print'
+    description = 'prints your data'
+    init_inputs = [
+        rc.NodeInput('data')
+    ]
+    init_outputs = []
+    color = '#A9D5EF'
+
+    # we could also skip the constructor here
+    def __init__(self, params):
+        super().__init__(params)
+
+    def update_event(self, input_called=-1):
+        data = self.input(0)  # get data from the first input
+        print(data)
+```
+
+
+</details>
 
 ### Static Attributes
 
@@ -374,32 +380,33 @@ Use the following static attributes to define the basic properties of your node.
 
 ### Methods
 
-#### [override] `update_event(input_called=-1)`
+[override] `update_event(input_called=-1)`
 
 Triggered when the Node is activated, usually through `Node.update()`.
 
-??? example
-    An *arr get* Node's update event could look like this:
-    ``` python
-    def update_event(self, input_called=-1):
-        arr = self.input(0)
-        index = self.input(1)
-		self.set_output_val(0, arr[index])
-    ```
+> EXAMPLE
+> ``` python
+> def update_event(self, input_called=-1):
+>     arr = self.input(0)
+>     index = self.input(1)
+>     self.set_output_val(0, arr[index])
+> ```
 
-#### [override] `get_data() -> dict`
+[override] `get_data() -> dict`
 
 In this method, you need to provide all your internal data that defines your Node's current state (if there are different states). The dict will be encoded using `pickle` and `base64` when copying nodes (via ctrl+c) or when saving the project. You do the reverse in `Node.set_data(data)` (see below). 
 
-??? example
-    Example for a *+* Node with a dynamic number of inputs, which can be changed by the user.
-    ``` python
-    def get_data(self):
-        data = {'num inputs': self.num_inputs}
-        return data
-    ```
+> EXAMPLE
+>
+> Example for a *+* Node with a dynamic number of inputs, which can be changed by the user.
+> ``` python
+> def get_data(self):
+>     data = {'num inputs': self.num_inputs}
+>     return data
+> ```
 
-#### [override] `set_data(data: dict)`
+
+[override] `set_data(data: dict)`
 
 | Parameter             | Description                               |
 | --------------------- | ----------------------------------------- |
@@ -407,29 +414,37 @@ In this method, you need to provide all your internal data that defines your Nod
 
 Here you do the reverse of what you did in `Node.get_data()`.
 
-!!! important
-    Note that all ryvencore internal objects, such as the `special_actions` dict, **as well as inputs and outputs** get saved and restored automatically by ryvencore exactly as they were when the flow was saved. So, if you added some inputs for example, don't add them again manually in `set_data()` according to your attribute which indicates how many you added, this happens automatically. Just update your own internal variables.
+> [!NOTE]
+> All ryvencore internal objects, such as the `special_actions` dict, **as well as inputs and outputs** get saved and restored automatically by ryvencore exactly as they were when the flow was saved. So, if you added some inputs for example, don't add them again manually in `set_data()` according to your attribute which indicates how many you added, this happens automatically. Just update your own internal variables.
 
-??? example
-    ``` python
-    def set_data(self, data):
-        self.num_inputs = data['num inputs']
-    ```
 
-#### [override] `place_event()`
+> EXAMPLE
+> ``` python
+> def set_data(self, data):
+>     self.num_inputs = data['num inputs']
+> ```
+
+[override] `place_event()`
 
 Triggered when the Node has been added to the flow **and all GUI has been initialized**. Don't try to access GUI components in the constructor, they don't exist yet, use this method instead.
 
-#### [override] `remove_event()`
+[override] `remove_event()`
 
 Triggered when the Node is removed from the flow. You can use this method do stop threads and timers etc. Note that this action might be undone by an undo operation by the user, in this case the exact Node object will just be placed again resulting in a `place_event()`.
 
-??? example
-    Example from a *clock* Node running a timer.
-    ``` python
-    def remove_event(self):
-        self.timer.stop()
-    ```
+
+
+> EXAMPLE
+>
+> Example from a *clock* Node running a timer.
+> ``` python
+> def remove_event(self):
+>     self.timer.stop()
+> ```
+
+
+</details>
+
 
 `update(input_called=-1)`
 
@@ -543,13 +558,15 @@ Sets the value of a script variable and causes all registered receivers to updat
 
 Registers a method as receiver for changes of script variable with given name.
 
-??? example
-    ``` python
-    # connect to variable changes
-    # self.var_val_updated refers to the receiver method
-    self.register_var_receiver('x', self.var_val_updated)
-    self.used_variable_names.append('x')
-    ```
+
+
+> EXAMPLE
+> ``` python
+> # connect to variable changes
+> # self.var_val_updated refers to the receiver method
+> self.register_var_receiver('x', self.var_val_updated)
+> self.used_variable_names.append('x')
+> ```
 
 `unregister_var_receiver(name: str)`
 

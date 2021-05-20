@@ -80,6 +80,9 @@ And there we go, that's it. You can left click into the scene to see a node sele
 
 ### Nodes
 
+> [!NOTE]
+> Nodes (their classes) are defined the same way as in Ryven, so I won't go too much into the details here.
+
 In `ryvencore` the nodes system works like this:
 
 A node's blueprint is defined by its class, making heavy use of Pythons static attributes system. As the accessible nodes are managed by the session, you need to register the *classes* of the nodes you want to use like this:
@@ -94,7 +97,7 @@ session.register_nodes( list_of_nodes )
 > [!TIP]
 > You can register (and unregister) nodes at any time! This enables dynamic import mechanisms as implemented in Ryven for example.
 
-Now let's define a simple node. For a detailed description of the members, take a look into the [API reference](/api#class-node). We'll just create a very simple print node, which prints data from an input every time it receives some.
+Let's define a simple node. For a detailed description of the members, take a look into the [API reference](/api#class-node). We'll just create a very simple print node, which prints data from an input every time it receives some.
 
 ``` python
 class PrintNode(rc.Node):
@@ -182,7 +185,9 @@ You can also change the performance mode to *fast* which results in some changes
 session.design.set_performance_mode('fast')
 ```
 
-CODE
+<details><summary>CODE</summary>
+
+
 ``` python
 import ryvencore_qt as rc
 import sys
@@ -255,13 +260,19 @@ if __name__ == "__main__":
     mw.show()
     sys.exit(app.exec_())
 ```
+
+
+</details>
    
 
 ## Second Editor
 
 Here I will just throw at you the commented code for another editor that demonstrates how slightly larger ryvencore-qt editors might generally be structured. It was a first prototype I made for a software to simulate flows of logic gates.
 
-CODE
+
+<details><summary>CODE</summary>
+
+
 `main.py`
 ``` python
 import ryvencore_qt as rc
@@ -318,6 +329,7 @@ if __name__ == '__main__':
     mw.show()
 
     sys.exit(app.exec_())
+```
 `nodes.py`
 ``` python
 import ryvencore_qt as rc
@@ -525,11 +537,15 @@ class LEDNode(NodeBase):
         mw.potential_updated(bool(self.input(0)))
 
 ```
+
+
+</details>
+
 And now we have a basic little editor to play around with logic gates, yayy!
 ![](img/logic_editor_screenshot1.png)
 ![](img/logic_editor_screenshot2.png)
 ![](img/logic_editor_screenshot3.png) 
-The actual editor I made for this is a bit more sophisticated and beautiful, and might get its own repository soon.
+The actual editor I made for this is a bit more sophisticated and pretty, and might get its own repository soon.
 
 > [!TIP|label:Done]
-> Congrats, you are now good to go to create much more advanced and optimized editors. ryvencore-qt has much more features than I showed here. See the [Features](../features/) section where you will find more detailed descriptions of all the internal systems, from save&load over stylus-and touch-support to execution flows. The world is yours, have fun!
+> Congrats, you are now good to go to create much more advanced and optimized editors. ryvencore-qt has much more features than I showed here. See the [Features](/features) section where you will find more detailed descriptions of all the internal systems, from save&load over stylus-and touch-support to execution flows. The world is yours, have fun!

@@ -4,5 +4,5 @@
 * [Getting Started](getting_started.md)
 * [Features](features.md)
 * [API](api.md)
-* [GUI](gui.md)
+<!-- * [GUI](gui.md) -->
 * [Threading](threading.md)
