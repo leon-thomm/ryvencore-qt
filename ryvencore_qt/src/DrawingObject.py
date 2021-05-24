@@ -99,6 +99,8 @@ class DrawingObject(QGraphicsItem):
         """
 
         p: QPointF = (self.viewport_pos + posF_in_view) - self.pos()
+        p.setX(round(p.x(), 2))
+        p.setY(round(p.y(), 2))
 
         if len(self.points) > 0:
             line = QLineF(self.points[-1], p)

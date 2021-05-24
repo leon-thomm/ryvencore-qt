@@ -51,7 +51,7 @@ class NodeItemWidget(QGraphicsWidget):
             # self.header_widget.setContentsMargins(0, 0, 0, 0)
             self.header_widget.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
             self.header_layout = QGraphicsLinearLayout(Qt.Horizontal)
-            self.header_layout.setSpacing(0)
+            self.header_layout.setSpacing(5)
             self.header_layout.setContentsMargins(
                 *self.header_padding
             )

@@ -80,15 +80,15 @@ class Session(RC_Session, QObject):
             self.design.set_performance_mode(performance_mode)
 
 
-    def create_func_script(self, title: str = None, create_default_logs=True,
-                           config: dict = None,
-                           flow_view_size: list = None) -> Script:
-        """Creates and returns a new function script.
+    def create_macro(self, title: str = None, create_default_logs=True,
+                     config: dict = None,
+                     flow_view_size: list = None) -> Script:
+        """Creates and returns a new macro script.
         If a config is provided the title parameter will be ignored and the script will not be initialized,
-        which you need to do manually after you made sure that the config doesnt contain other function nodes
+        which you need to do manually after you made sure that the config doesnt contain other macro nodes
         that have not been loaded yet."""
 
-        script = RC_Session.create_func_script(self, title=title, create_default_logs=create_default_logs, config=config)
+        script = RC_Session.create_macro(self, title=title, create_default_logs=create_default_logs, config=config)
 
         self._build_flow_view(script, flow_view_size)
 
@@ -160,22 +160,22 @@ class Session(RC_Session, QObject):
 
         data = RC_Session.serialize(self)
 
-        # FUNCTION SCRIPTS
-        complete_function_scripts_data = []
-        for fs_cfg in data['function scripts']:
-            title = fs_cfg['name']  # script titles are unique!
-            function_script = self._script_from_title(title)
-            view = self.flow_views[function_script]
+        # MACRO SCRIPTS
+        complete_macro_scripts_data = []
+        for ms_cfg in data['macro scripts']:
+            title = ms_cfg['name']  # script titles are unique!
+            macro_script = self._script_from_title(title)
+            view = self.flow_views[macro_script]
 
             # complete script config in FlowView in GUI thread
             self.complete_flow_view_config.connect(view.generate_config_data)
             view._tmp_data = None
-            self.complete_flow_view_config.emit(fs_cfg)
+            self.complete_flow_view_config.emit(ms_cfg)
             while view._tmp_data is None:
                 time.sleep(0.001)
             self.complete_flow_view_config.disconnect(view.generate_config_data)
 
-            complete_function_scripts_data.append(view._tmp_data)
+            complete_macro_scripts_data.append(view._tmp_data)
 
         # SCRIPTS
         complete_scripts_data = []
@@ -195,14 +195,14 @@ class Session(RC_Session, QObject):
             complete_scripts_data.append(view._tmp_data)
 
         complete_data = {
-            'function scripts': complete_function_scripts_data,
+            'macro scripts': complete_macro_scripts_data,
             'scripts': complete_scripts_data,
         }
 
         return complete_data
 
     def _script_from_title(self, title: str) -> Script:
-        for s in self.all_scripts():
+        for s in self.scripts:  # all_scripts():
             if s.title == title:
                 return s
         return None

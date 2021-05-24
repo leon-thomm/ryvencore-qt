@@ -55,7 +55,7 @@ class SignalNode(NodeBase):
         self.signal_high = True if state == Qt.Checked else False
         self.update()
 
-    def update_event(self, input_called=-1):
+    def update_event(self, inp=-1):
         self.set_output_val(0, int(self.signal_high))
         # note that 1 and 0 can be interpreted as True and False
         # by all the logical operators that these nodes use
@@ -82,7 +82,7 @@ class ANDGateNode(NodeBase):
         rc.NodeOutputBP('data'),
     ]
 
-    def update_event(self, input_called=-1):
+    def update_event(self, inp=-1):
         self.set_output_val(0, int(self.input(0) and self.input(1)))
 
 
@@ -97,7 +97,7 @@ class ORGateNode(NodeBase):
         rc.NodeOutputBP('data'),
     ]
 
-    def update_event(self, input_called=-1):
+    def update_event(self, inp=-1):
         self.set_output_val(0, int(self.input(0) or self.input(1)))
 
 
@@ -112,7 +112,7 @@ class XORGateNode(NodeBase):
         rc.NodeOutputBP('data'),
     ]
 
-    def update_event(self, input_called=-1):
+    def update_event(self, inp=-1):
         self.set_output_val(0, int(self.input(0) != self.input(1)))
 
 
@@ -126,7 +126,7 @@ class NOTGateNode(NodeBase):
         rc.NodeOutputBP('data'),
     ]
 
-    def update_event(self, input_called=-1):
+    def update_event(self, inp=-1):
         self.set_output_val(0, int(not self.input(0)))
 
 
@@ -141,7 +141,7 @@ class NANDGateNode(NodeBase):
         rc.NodeOutputBP('data'),
     ]
 
-    def update_event(self, input_called=-1):
+    def update_event(self, inp=-1):
         self.set_output_val(0, int(not (self.input(0) and self.input(1))))
 
 
@@ -156,7 +156,7 @@ class NORGateNode(NodeBase):
         rc.NodeOutputBP('data'),
     ]
 
-    def update_event(self, input_called=-1):
+    def update_event(self, inp=-1):
         self.set_output_val(0, int(not (self.input(0) or self.input(1))))
 
 
@@ -195,7 +195,7 @@ class LEDNode(NodeBase):
     main_widget_class = LED_MainWidget
     main_widget_pos = 'between ports'
 
-    def update_event(self, input_called=-1):
+    def update_event(self, inp=-1):
         # note that such unchecked calls to GUI components are not allowed in nodes 
         # that are intended to run on ryvencore without GUI. But because this isn't
         # really a use case here, we can keep it simple for now

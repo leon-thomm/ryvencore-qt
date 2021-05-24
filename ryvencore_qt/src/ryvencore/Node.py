@@ -18,11 +18,11 @@ class Node(Base):
 
     title = ''
     type_ = ''
+    # keywords = []  TODO: add this with intelligent search in NodeSelectionWidget
     init_inputs: [NodeInputBP] = []
     init_outputs: [NodeOutputBP] = []
     identifier: str = None  # set by Session if None
     identifier_prefix: str = None
-    doc: str = ''
 
 
     @classmethod
@@ -123,7 +123,7 @@ class Node(Base):
 
     # -----------------------------------------------------------------------------------------------------------------
 
-    def update(self, input_called=-1):  # , output_called=-1):
+    def update(self, inp=-1):  # , output_called=-1):
         """'Activates' the node, causing an update_event(); prints an exception if something crashed, but prevents
         the application from crashing in such a case"""
 
@@ -131,15 +131,15 @@ class Node(Base):
             InfoMsgs.write('update blocked in', self.title, 'node')
             return
 
-        InfoMsgs.write('update in', self.title, 'node on input', input_called)
+        InfoMsgs.write('update in', self.title, 'node on input', inp)
 
         try:
-            self.update_event(input_called)
+            self.update_event(inp)
         except Exception as e:
             InfoMsgs.write_err('EXCEPTION in', self.title, 'Node:', e)
 
     # OVERRIDE
-    def update_event(self, input_called=-1):
+    def update_event(self, inp=-1):
         """Gets called when an input received a signal or some node requested data of an output in exec mode"""
 
         pass

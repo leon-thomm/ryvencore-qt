@@ -21,7 +21,7 @@ class PrintNode(rc.Node):
     def __init__(self, params):
         super().__init__(params)
 
-    def update_event(self, input_called=-1):
+    def update_event(self, inp=-1):
         data = self.input(0)  # get data from the first input
         print(data)
 
@@ -38,7 +38,7 @@ class RandNode(rc.Node):
     ]
     color = '#fcba03'
 
-    def update_event(self, input_called=-1):
+    def update_event(self, inp=-1):
         # random float between 0 and value at input
         val = random()*self.input(0)
 

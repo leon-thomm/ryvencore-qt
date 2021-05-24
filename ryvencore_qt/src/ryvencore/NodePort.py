@@ -68,7 +68,7 @@ class NodeInput(NodePort):
             self.val = data  # self.get_val()
             InfoMsgs.write('Data in input set to', data)
 
-        self.node.update(input_called=self.node.inputs.index(self))
+        self.node.update(inp=self.node.inputs.index(self))
 
     def config_data(self):
         data = super().config_data()
