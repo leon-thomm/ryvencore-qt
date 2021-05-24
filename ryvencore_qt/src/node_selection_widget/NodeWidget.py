@@ -61,7 +61,7 @@ class NodeWidget(QWidget):
         main_layout.setSpacing(0)
         self.setContentsMargins(-6, -6, -6, -6)
         main_layout.setContentsMargins(-6, -6, -6, -6)
-        self.setToolTip(node.doc)
+        self.setToolTip(node.__doc__)
         self.update_stylesheet()
         # self.setMinimumWidth(70)
 

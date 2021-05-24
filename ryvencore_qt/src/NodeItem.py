@@ -70,8 +70,8 @@ class NodeItem(QGraphicsItem, QObject):
         # TOOLTIP
         if self.node.description_html:
             self.setToolTip(self.node.description_html)
-        elif self.node.doc != '':
-            self.setToolTip('<html><head/><body><p>' + self.node.doc + '</p></body></html>')
+        elif self.node.__doc__:
+            self.setToolTip('<html><head/><body><p>' + self.node.__doc__ + '</p></body></html>')
         self.setCursor(Qt.SizeAllCursor)
 
         # DESIGN THEME

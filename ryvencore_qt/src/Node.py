@@ -38,9 +38,9 @@ class Node(RC_Node, QObject):
 
     @staticmethod
     def complete_default_node_classes():
-        func_node_icon = Location.PACKAGE_PATH + '/resources/pics/function_picture.png'
-        from .ryvencore.FunctionScript import FunctionScript
-        FunctionScript.FunctionScriptNode.icon = func_node_icon
+        func_node_icon = Location.PACKAGE_PATH + '/resources/pics/macro_node_icon.png'
+        from .ryvencore.MacroScript import MacroScript
+        MacroScript.MacroNode.icon = func_node_icon
 
     """actions"""
 
@@ -102,8 +102,8 @@ class Node(RC_Node, QObject):
     """
 
     # @override
-    def update(self, input_called=-1):
-        RC_Node.update(self, input_called)
+    def update(self, inp=-1):
+        RC_Node.update(self, inp)
         self.updated.emit()
 
     # @override

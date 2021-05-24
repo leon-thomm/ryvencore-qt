@@ -2,7 +2,7 @@ from .Base import Base
 
 
 from .Script import Script
-from .FunctionScript import FunctionScript
+from .MacroScript import MacroScript
 from .InfoMsgs import InfoMsgs
 from .RC import CLASSES
 from .Node import Node
@@ -10,7 +10,7 @@ from .Node import Node
 
 class Session(Base):
     """The Session is the top level interface to an editor, it represents a project and manages all project-wide
-    components, i.e. Scripts, FunctionScripts and Node blueprints."""
+    components, i.e. Scripts, MacroScripts and Node blueprints."""
 
     def __init__(
             self,
@@ -21,14 +21,14 @@ class Session(Base):
         # register classes
         self.register_default_classes()
 
-        # initialize node classes for FunctionScripts with correct Node base
-        FunctionScript.build_node_classes()
+        # initialize node classes for MacroScripts with correct Node base
+        MacroScript.build_node_classes()
 
         # ATTRIBUTES
         self.scripts: [Script] = []
-        self.function_scripts: [FunctionScript] = []
+        self.macro_scripts: [MacroScript] = []
         self.nodes = []  # list of node CLASSES
-        self.invisible_nodes = [FunctionScript.FunctionInputNode, FunctionScript.FunctionOutputNode]  # might change that system in the future
+        self.invisible_nodes = [MacroScript.MacroInputNode, MacroScript.MacroOutputNode]  # might change that system in the future
         self.gui: bool = gui
 
 
@@ -109,34 +109,35 @@ class Session(Base):
         return script
 
 
-    def create_func_script(self, title: str = None, create_default_logs=True,
-                           config: dict = None) -> Script:
+    def create_macro(self, title: str = None, create_default_logs=True,
+                     config: dict = None) -> MacroScript:
 
         """
-        Creates and returns a new function script.
+        Creates and returns a new macro script.
         If a config is provided the title parameter will be ignored and the script will not be initialized,
-        which you need to do manually after you made sure that the config doesnt contain other function nodes
+        which you need to do manually after you made sure that the config doesnt contain other macro nodes
         that have not been loaded yet.
         """
 
-        func_script = FunctionScript(
+        macro_script = MacroScript(
             session=self, title=title, create_default_logs=create_default_logs,
             config_data=config
         )
 
-        self.function_scripts.append(func_script)
+        self.scripts.append(macro_script)
+        self.macro_scripts.append(macro_script)
 
         # if config is provided, the script's flow contains content that might include
-        # functions nodes that are not loaded yet, so initialization is triggered manually from outside then
+        # macro nodes that are not loaded yet, so initialization is triggered manually from outside then
         if not config:
-            func_script.load_flow()
+            macro_script.load_flow()
 
-        return func_script
+        return macro_script
 
 
-    def all_scripts(self) -> list:
-        """Returns a list containing all scripts and function scripts"""
-        return self.function_scripts + self.scripts
+    # def all_scripts(self) -> list:
+    #     """Returns a list containing all scripts and macro scripts"""
+    #     return self.macro_scripts + self.scripts
 
 
     def rename_script(self, script: Script, title: str):
@@ -150,7 +151,7 @@ class Session(Base):
 
         if len(title) == 0:
             return False
-        for s in self.all_scripts():
+        for s in self.scripts:  # all_scripts():
             if s.title == title:
                 return False
 
@@ -158,11 +159,12 @@ class Session(Base):
 
 
     def delete_script(self, script: Script):
-        """Deletes an existing script"""
+        """Deletes an existing script. If the script is a macro script, the macro node is unregistered."""
 
-        if isinstance(script, FunctionScript):
-            self.unregister_node(script.function_node_class)
-            self.function_scripts.remove(script)
+        if isinstance(script, MacroScript):
+            self.unregister_node(script.macro_node_class)
+            self.macro_scripts.remove(script)
+            self.scripts.remove(script)
         else:
             self.scripts.remove(script)
 
@@ -172,27 +174,27 @@ class Session(Base):
         return InfoMsgs
 
 
-    def load(self, project: dict) -> ([Script], [FunctionScript]):
+    def load(self, project: dict) -> [Script]:
         """Loads a project and raises an exception if required nodes are missing"""
 
-        if 'scripts' not in project and 'function scripts' not in project:
+        if 'scripts' not in project and 'macro scripts' not in project:
             raise Exception('not a valid project dict')
 
-        new_func_scripts = []
-        if 'function scripts' in project:
-            for fsc in project['function scripts']:
-                new_func_scripts.append(self.create_func_script(config=fsc))
+        new_macro_scripts = []
+        if 'macro scripts' in project:
+            for msc in project['macro scripts']:
+                new_macro_scripts.append(self.create_macro(config=msc))
 
-            # now all func nodes have been registered, so we can initialize the scripts
+            # now all macro nodes have been registered, so we can initialize the scripts
 
-            for fs in new_func_scripts:
-                fs.load_flow()
+            for ms in new_macro_scripts:
+                ms.load_flow()
 
         new_scripts = []
         for sc in project['scripts']:
             new_scripts.append(self.create_script(config=sc))
 
-        return new_scripts, new_func_scripts
+        return new_scripts + new_macro_scripts
 
 
     def serialize(self) -> dict:
@@ -200,13 +202,13 @@ class Session(Base):
 
         data = {}
 
-        func_scripts_list = []
-        for fscript in self.function_scripts:
-            func_scripts_list.append(fscript.serialize())
-        data['function scripts'] = func_scripts_list
+        macro_scripts_list = []
+        for m_script in self.macro_scripts:
+            macro_scripts_list.append(m_script.serialize())
+        data['macro scripts'] = macro_scripts_list
 
         scripts_list = []
-        for script in self.scripts:
+        for script in set(self.scripts) - set(self.macro_scripts):  # exclude macro scripts
             scripts_list.append(script.serialize())
         data['scripts'] = scripts_list
 
@@ -217,7 +219,7 @@ class Session(Base):
         """Returns a list containing all Node objects used in any flow which is useful for advanced project analysis"""
 
         nodes = []
-        for s in self.all_scripts():
+        for s in self.scripts:  # all_scripts():
             for n in s.flow.nodes:
                 nodes.append(n)
         return nodes

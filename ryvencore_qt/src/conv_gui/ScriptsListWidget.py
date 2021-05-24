@@ -14,6 +14,7 @@ class ScriptsListWidget(QWidget):
 
         self.session = session
         self.session.script_flow_view_created.connect(self.add_new_script)
+        self.session.script_deleted.connect(self.recreate_list)
 
         self.list_widgets = []
         self.ignore_name_line_edit_signal = False  # because disabling causes firing twice otherwise
@@ -53,13 +54,13 @@ class ScriptsListWidget(QWidget):
 
         buttons_layout = QHBoxLayout()
 
-        create_function_button = QPushButton('func')
-        create_function_button.clicked.connect(self.on_create_function_clicked)
-        buttons_layout.addWidget(create_function_button)
+        self.create_macro_button = QPushButton('macro')
+        self.create_macro_button.clicked.connect(self.on_create_macro_clicked)
+        buttons_layout.addWidget(self.create_macro_button)
 
-        create_script_button = QPushButton('script')
-        create_script_button.clicked.connect(self.on_create_script_clicked)
-        buttons_layout.addWidget(create_script_button)
+        self.create_script_button = QPushButton('script')
+        self.create_script_button.clicked.connect(self.on_create_script_clicked)
+        buttons_layout.addWidget(self.create_script_button)
 
         main_layout.addLayout(buttons_layout)
 
@@ -78,7 +79,7 @@ class ScriptsListWidget(QWidget):
 
         self.list_widgets.clear()
 
-        for s in self.session.all_scripts():
+        for s in self.session.scripts:  # all_scripts():
             new_widget = ScriptsList_ScriptWidget(self, self.session, s)
             self.list_widgets.append(new_widget)
 
@@ -96,17 +97,17 @@ class ScriptsListWidget(QWidget):
     def new_script_LE_return_pressed(self):
         self.create_script()  # create normal scripts by default
 
-    def on_create_function_clicked(self):
-        self.create_function_script()
+    def on_create_macro_clicked(self):
+        self.create_macro_script()
 
     def on_create_script_clicked(self):
         self.create_script()
 
-    def create_function_script(self):
+    def create_macro_script(self):
         title = self.new_script_title_lineedit.text()
 
         if self.session.script_title_valid(title):
-            self.session.create_func_script(title=title)
+            self.session.create_macro(title=title)
 
     def create_script(self):
         title = self.new_script_title_lineedit.text()
@@ -131,4 +132,4 @@ class ScriptsListWidget(QWidget):
         self.list_widgets.remove(script_widget)
         script_widget.setParent(None)
         self.session.delete_script(script)
-        self.recreate_list()
+        # self.recreate_list()
