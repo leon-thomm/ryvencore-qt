@@ -19,6 +19,27 @@ class Session(Base):
         Base.__init__(self)
 
         # register classes
+        self.register_default_classes()
+
+        # initialize node classes for FunctionScripts with correct Node base
+        FunctionScript.build_node_classes()
+
+        # ATTRIBUTES
+        self.scripts: [Script] = []
+        self.function_scripts: [FunctionScript] = []
+        self.nodes = []  # list of node CLASSES
+        self.invisible_nodes = [FunctionScript.FunctionInputNode, FunctionScript.FunctionOutputNode]  # might change that system in the future
+        self.gui: bool = gui
+
+
+    def register_default_classes(self):
+        """
+        Registers the default ryvencore-internal implementations of all exposed classes that COULD have been
+        extended by the frontend, in which case we don't set the class.
+        So, if the frontend extended a class like Node, it will have set CLASSES['node base'] to its own subclass,
+        so we leave it as it is then. It is assumed that the frontend's extensions work properly and don't modify
+        the functionality to the backend.
+        """
 
         if not CLASSES['node base']:
             CLASSES['node base'] = Node
@@ -31,13 +52,13 @@ class Session(Base):
             from .Connection import ExecConnection
             CLASSES['exec conn'] = ExecConnection
 
+        if not CLASSES['logs manager']:
+            from .logging.LogsManager import LogsManager
+            CLASSES['logs manager'] = LogsManager
+
         if not CLASSES['logger']:
             from .logging.Logger import Logger
             CLASSES['logger'] = Logger
-
-        if not CLASSES['log']:
-            from .logging.Log import Log
-            CLASSES['log'] = Log
 
         if not CLASSES['vars manager']:
             from .script_variables.VarsManager import VarsManager
@@ -46,16 +67,6 @@ class Session(Base):
         if not CLASSES['flow']:
             from .Flow import Flow
             CLASSES['flow'] = Flow
-
-        # initialize node classes for FunctionScripts with correct Node base
-        FunctionScript.build_node_classes()
-
-        # ATTRIBUTES
-        self.scripts: [Script] = []
-        self.function_scripts: [FunctionScript] = []
-        self.nodes = []  # list of node CLASSES
-        self.invisible_nodes = [FunctionScript.FunctionInputNode, FunctionScript.FunctionOutputNode]  # might change that system in the future
-        self.gui: bool = gui
 
 
     def register_nodes(self, node_classes: list):
@@ -101,10 +112,12 @@ class Session(Base):
     def create_func_script(self, title: str = None, create_default_logs=True,
                            config: dict = None) -> Script:
 
-        """Creates and returns a new function script.
+        """
+        Creates and returns a new function script.
         If a config is provided the title parameter will be ignored and the script will not be initialized,
         which you need to do manually after you made sure that the config doesnt contain other function nodes
-        that have not been loaded yet."""
+        that have not been loaded yet.
+        """
 
         func_script = FunctionScript(
             session=self, title=title, create_default_logs=create_default_logs,
@@ -132,8 +145,8 @@ class Session(Base):
         script.title = title
 
 
-    def check_new_script_title_validity(self, title: str) -> bool:
-        """Checks whether a considered title for a new script (i.e. unique) is valid or not"""
+    def script_title_valid(self, title: str) -> bool:
+        """Checks whether a considered title for a new script is valid (unique) or not"""
 
         if len(title) == 0:
             return False
@@ -183,7 +196,7 @@ class Session(Base):
 
 
     def serialize(self) -> dict:
-        """Returns the project as dict to be saved and loaded again using load()"""
+        """Returns the project as JSON compatible dict to be saved and loaded again using load()"""
 
         data = {}
 

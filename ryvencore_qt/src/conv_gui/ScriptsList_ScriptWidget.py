@@ -112,7 +112,7 @@ class ScriptsList_ScriptWidget(QWidget):
 
         self.ignore_title_line_edit_signal = True
         # self.title_LE_editing_finished.emit()
-        if not self.session.check_new_script_title_validity(title):
+        if not self.session.script_title_valid(title):
             self.title_line_edit.setText(self.previous_script_title)
             return
 

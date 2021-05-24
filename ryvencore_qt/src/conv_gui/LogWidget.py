@@ -1,26 +1,25 @@
 from qtpy.QtGui import QFont
 from qtpy.QtWidgets import QWidget, QHBoxLayout, QVBoxLayout, QLabel, QPushButton, QPlainTextEdit
 
-from ..ryvencore.logging.Log import Log
+from ..WRAPPERS import Logger
+import logging
 
 
 class LogWidget(QWidget):
     """Convenience class for a QWidget representing a log."""
 
-    def __init__(self, log: Log):
+    def __init__(self, logger: Logger):
         super().__init__()
 
-        self.log = log
-        log.enabled.connect(self.enable)
-        log.disabled.connect(self.disable)
-        log.wrote.connect(self.write)
-        log.cleared.connect(self.clear)
-
+        self.logger = logger
+        self.logger.addHandler(logging.StreamHandler(self))
+        self.logger.sig_disabled.connect(self.disable)
+        self.logger.sig_enabled.connect(self.enable)
 
         self.main_layout = QVBoxLayout()
         self.header_layout = QHBoxLayout()
 
-        title_label = QLabel(self.log.title)
+        title_label = QLabel(self.logger.name)
         title_label.setFont(QFont('Poppins', 12))
         self.header_layout.addWidget(title_label)
 
@@ -40,8 +39,11 @@ class LogWidget(QWidget):
     def write(self, msg: str):
         self.text_edit.appendPlainText(msg)
 
-    def clear(self):
-        self.text_edit.clear()
+    def flush(self):
+        pass
+
+    # def clear(self):
+    #     self.text_edit.clear()
 
     def disable(self):
         self.remove_button.show()

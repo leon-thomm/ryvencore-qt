@@ -1,11 +1,12 @@
+import logging
 
 from .Base import Base
 
 from .NodePort import NodeInput, NodeOutput
 from .NodePortBP import NodeInputBP, NodeOutputBP
 from .dtypes import DType
-from .logging.Log import Log
 from .InfoMsgs import InfoMsgs
+from .logging.Logger import Logger
 from .tools import serialize, deserialize
 
 
@@ -42,7 +43,8 @@ class Node(Base):
         self.script = self.flow.script
         self.inputs: [NodeInputBP] = []
         self.outputs: [NodeOutputBP] = []
-        self.logs = []
+        self.loggers = []
+        # self.global_logger, self.errors_logger = self.script.logs_manager.default_loggers.values()
 
         self.initialized = False
 
@@ -64,7 +66,7 @@ class Node(Base):
         else:
             self.setup_ports()
 
-        self.enable_logs()
+        self.enable_loggers()
         self._initialized()
         self.initialized = True
 
@@ -232,29 +234,26 @@ class Node(Base):
     #   LOGGING
 
 
-    def new_log(self, title) -> Log:
+    def new_logger(self, title) -> Logger:
         """Requesting a new custom Log"""
 
-        new_log = self.script.logger.new_log(title)
-        self.logs.append(new_log)
-        return new_log
+        logger = self.script.logs_manager.new_logger(title)
+        self.loggers.append(logger)
+        return logger
 
-    def disable_logs(self):
+    def disable_loggers(self):
         """Disables custom logs"""
 
-        for log in self.logs:
-            log.disable()
+        for logger in self.loggers:
+            logger.disable()
+            # logger.disabled = True
 
-    def enable_logs(self):
+    def enable_loggers(self):
         """Enables custom logs"""
 
-        for log in self.logs:
-            log.enable()
-
-    def log_message(self, msg: str, target: str):
-        """Writes a message string to a default script log with title target"""
-
-        self.script.logger.log_message(msg, target)
+        for logger in self.loggers:
+            logger.enable()
+            # logger.enabled = True
 
 
     #   PORTS
@@ -367,12 +366,18 @@ class Node(Base):
     # -----------------------------------------------------------------------------------------------------------------
 
 
+    def prepare_placement(self):
+        """Called from Flow when the nodes gets added"""
+
+        self.enable_loggers()
+        self.place_event()
+
 
     def prepare_removal(self):
         """Called from Flow when the node gets removed"""
 
         self.remove_event()
-        self.disable_logs()
+        self.disable_loggers()
 
 
     def is_active(self):

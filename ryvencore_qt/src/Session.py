@@ -11,7 +11,7 @@ from .ConnectionItem import DataConnectionItem, ExecConnectionItem
 from .SessionThreadingBridge import SessionThreadingBridge
 from .Node import Node
 from .FlowView import FlowView
-from .WRAPPERS import VarsManager, Logger, Log, DataConnection, Flow
+from .WRAPPERS import VarsManager, LogsManager, DataConnection, Flow, Logger
 
 
 class Session(RC_Session, QObject):
@@ -41,8 +41,8 @@ class Session(RC_Session, QObject):
         # custom WRAPPERS
         CLASSES['node base'] = Node if not node_class else node_class
         CLASSES['data conn'] = DataConnection if not data_conn_class else data_conn_class
+        CLASSES['logs manager'] = LogsManager
         CLASSES['logger'] = Logger
-        CLASSES['log'] = Log
         CLASSES['vars manager'] = VarsManager
         CLASSES['flow'] = Flow
 
@@ -55,7 +55,7 @@ class Session(RC_Session, QObject):
 
         RC_Session.__init__(self, gui=True)
 
-        # general
+        # flow views
         self.flow_views = {}  # {Script : FlowView}
 
         # nodes
@@ -154,7 +154,9 @@ class Session(RC_Session, QObject):
         return flow_view
 
     def serialize(self) -> dict:
-        """Returns the project as dict to be saved and loaded again using load()"""
+        """Returns the project as JSON compatible dict to be saved and loaded again using load()"""
+
+        # adds the frontend related data to the abstract project data by the ryvencore Session
 
         data = RC_Session.serialize(self)
 
@@ -162,7 +164,7 @@ class Session(RC_Session, QObject):
         complete_function_scripts_data = []
         for fs_cfg in data['function scripts']:
             title = fs_cfg['name']  # script titles are unique!
-            function_script = self._get_script_from_title(title)
+            function_script = self._script_from_title(title)
             view = self.flow_views[function_script]
 
             # complete script config in FlowView in GUI thread
@@ -179,7 +181,7 @@ class Session(RC_Session, QObject):
         complete_scripts_data = []
         for s_cfg in data['scripts']:
             title = s_cfg['name']  # script title are unique!
-            script = self._get_script_from_title(title)
+            script = self._script_from_title(title)
             view = self.flow_views[script]
 
             # complete script config in FlowView in GUI thread
@@ -199,15 +201,8 @@ class Session(RC_Session, QObject):
 
         return complete_data
 
-    def _get_script_from_title(self, title: str):
+    def _script_from_title(self, title: str) -> Script:
         for s in self.all_scripts():
             if s.title == title:
                 return s
         return None
-
-    # def set_stylesheet(self, s: str):
-    #     """Sets the session's stylesheet which can be accessed by NodeItems.
-    #     You usually want this to be the same as your window's stylesheet."""
-    #
-    #     self.design.global_stylesheet = s
-

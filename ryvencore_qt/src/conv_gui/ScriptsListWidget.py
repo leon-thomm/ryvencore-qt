@@ -86,8 +86,8 @@ class ScriptsListWidget(QWidget):
 
 
     def rebuild_list(self):
-        for i in range(self.layout().count()):
-            self.list_layout.removeItem(self.layout().itemAt(0))
+        # for i in range(self.layout().count()):
+        #     self.list_layout.removeItem(self.layout().itemAt(0))
 
         for w in self.list_widgets:
             self.list_layout.addWidget(w)
@@ -105,13 +105,13 @@ class ScriptsListWidget(QWidget):
     def create_function_script(self):
         title = self.new_script_title_lineedit.text()
 
-        if self.session.check_new_script_title_validity(title):
+        if self.session.script_title_valid(title):
             self.session.create_func_script(title=title)
 
     def create_script(self):
         title = self.new_script_title_lineedit.text()
 
-        if self.session.check_new_script_title_validity(title):
+        if self.session.script_title_valid(title):
             self.session.create_script(title=title)
 
 

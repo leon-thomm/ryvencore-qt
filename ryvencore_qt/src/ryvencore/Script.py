@@ -10,7 +10,7 @@ class Script(Base):
         Base.__init__(self)
 
         self.session = session
-        self.logger = None
+        self.logs_manager = None
         self._create_default_logs = create_default_logs
         self.vars_manager = None
         self.title = title if not config_data else config_data['name']
@@ -26,7 +26,7 @@ class Script(Base):
             self.init_vars_manager_config = config_data['variables']
 
         # logging
-        self.logger = CLASSES['logger'](self, self._create_default_logs)
+        self.logs_manager = CLASSES['logs manager'](self, self._create_default_logs)
 
         # vars manager
         self.vars_manager = CLASSES['vars manager'](self, self.init_vars_manager_config)

@@ -1,7 +1,7 @@
 import ryvencore_qt as rc
 
 # some Qt imports...
-from PySide2.QtGui import Qt
+from PySide2.QtCore import Qt
 from PySide2.QtWidgets import QCheckBox, QPushButton
 
 

@@ -1,11 +1,11 @@
-"""These classes wrap the default ryvencore classes by adding Qt signals used by the front end.
-Notice also the Node subclass in Node.py which, besides other things, also adds that to the default implementation.
-Same for Session."""
+"""
+These classes wrap the default ryvencore classes by adding Qt signals to the API calls which are used by the front end.
+Same goes for Node and Session which are not part of this file.
+"""
 
 from qtpy.QtCore import QObject, Signal
 
-from .ryvencore.logging.Log import Log as RC_Log
-from .ryvencore.logging.Logger import Logger as RC_Logger
+from .ryvencore.logging.LogsManager import LogsManager as RC_LogsManager, Logger as RC_Logger
 
 from .ryvencore.Flow import Flow as RC_Flow
 from .ryvencore.Node import Node
@@ -16,46 +16,37 @@ from .ryvencore.script_variables.Variable import Variable
 from .ryvencore.script_variables.VarsManager import VarsManager as RC_VarsManager
 
 
-class Log(RC_Log, QObject):
+class LogsManager(RC_LogsManager, QObject):
 
-    enabled = Signal()
-    disabled = Signal()
-    wrote = Signal(str)
-    cleared = Signal()
+    new_logger_created = Signal(object)
 
-    def __init__(self, title: str):
+    def __init__(self, script, create_default_logs=True):
         QObject.__init__(self)
-        RC_Log.__init__(self, title=title)
+        RC_LogsManager.__init__(self, script=script, create_default_logs=create_default_logs)
 
-    def write(self, *args):
-        RC_Log.write(self, args)
-        self.wrote.emit(self.current_lines[-1])
-
-    def clear(self):
-        RC_Log.clear(self)
-        self.cleared.emit()
-
-    def disable(self):
-        RC_Log.disable(self)
-        self.disabled.emit()
-
-    def enable(self):
-        RC_Log.enable(self)
-        self.enabled.emit()
+    def new_logger(self, title: str):
+        logger = RC_LogsManager.new_logger(self, title=title)
+        self.new_logger_created.emit(logger)
+        return logger
 
 
 class Logger(RC_Logger, QObject):
 
-    new_log_created = Signal(Log)
+    # 'enabled' and 'disabled' are attributes of logging.Logger
+    sig_enabled = Signal()
+    sig_disabled = Signal()
 
-    def __init__(self, script, create_default_logs=True):
+    def __init__(self, name):
         QObject.__init__(self)
-        RC_Logger.__init__(self, script=script, create_default_logs=create_default_logs)
+        RC_Logger.__init__(self, name=name)
 
-    def new_log(self, title: str) -> Log:
-        log = RC_Logger.new_log(self, title=title)
-        self.new_log_created.emit(log)
-        return log
+    def enable(self):
+        super().enable()
+        self.sig_enabled.emit()
+
+    def disable(self):
+        super().disable()
+        self.sig_disabled.emit()
 
 
 class VarsManager(RC_VarsManager, QObject):
