@@ -1,17 +1,20 @@
 from qtpy.QtGui import QFont
 from qtpy.QtWidgets import QWidget, QHBoxLayout, QVBoxLayout, QLabel, QPushButton, QPlainTextEdit
 
+from ..WRAPPERS import Logger
 import logging
 
 
 class LogWidget(QWidget):
     """Convenience class for a QWidget representing a log."""
 
-    def __init__(self, log: logging.Logger):
+    def __init__(self, logger: Logger):
         super().__init__()
 
-        self.logger = log
+        self.logger = logger
         self.logger.addHandler(logging.StreamHandler(self))
+        self.logger.sig_disabled.connect(self.disable)
+        self.logger.sig_enabled.connect(self.enable)
 
         self.main_layout = QVBoxLayout()
         self.header_layout = QHBoxLayout()

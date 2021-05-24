@@ -10,7 +10,7 @@ class FlowAlg(IntEnum):
     EXEC = 2
 
     @staticmethod
-    def stringify(mode):
+    def str(mode):
         if mode == FlowAlg.DATA:
             return 'data'
         elif mode == FlowAlg.EXEC:
@@ -26,13 +26,13 @@ class PortObjPos(IntEnum):
 
 # registry for customizable classes
 CLASSES = {
-    'node base': None,
-    'data conn': None,
-    'exec conn': None,
+    'node base':    None,
+    'data conn':    None,
+    'exec conn':    None,
     'logs manager': None,
-    # 'log': None,
+    'logger':       None,
     'vars manager': None,
-    'flow': None,
+    'flow':         None,
 }
 
 

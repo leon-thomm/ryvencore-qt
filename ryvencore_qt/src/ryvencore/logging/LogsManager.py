@@ -1,12 +1,13 @@
 from ..Base import Base
 
-# from ..RC import CLASSES
+from ..RC import CLASSES
 
-from logging import Logger
+# from logging import Logger
+from .Logger import Logger
 
 
 class LogsManager(Base):
-    """Manages all logs that belong to the script."""
+    """Manages all logs/loggers that belong to the script."""
 
     def __init__(self, script, create_default_logs=True):
         Base.__init__(self)
@@ -26,6 +27,6 @@ class LogsManager(Base):
             self.default_loggers[name] = self.new_logger(title=name.title())
 
     def new_logger(self, title: str) -> Logger:
-        loger = Logger(name=title)
-        self.loggers.append(loger)
-        return loger
+        logger = CLASSES['logger'](name=title)
+        self.loggers.append(logger)
+        return logger

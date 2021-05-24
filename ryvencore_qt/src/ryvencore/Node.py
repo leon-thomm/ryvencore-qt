@@ -6,6 +6,7 @@ from .NodePort import NodeInput, NodeOutput
 from .NodePortBP import NodeInputBP, NodeOutputBP
 from .dtypes import DType
 from .InfoMsgs import InfoMsgs
+from .logging.Logger import Logger
 from .tools import serialize, deserialize
 
 
@@ -43,7 +44,7 @@ class Node(Base):
         self.inputs: [NodeInputBP] = []
         self.outputs: [NodeOutputBP] = []
         self.loggers = []
-        self.log_global, self.log_errors = self.script.logs_manager.default_loggers.values()
+        # self.global_logger, self.errors_logger = self.script.logs_manager.default_loggers.values()
 
         self.initialized = False
 
@@ -233,7 +234,7 @@ class Node(Base):
     #   LOGGING
 
 
-    def new_logger(self, title) -> logging.Logger:
+    def new_logger(self, title) -> Logger:
         """Requesting a new custom Log"""
 
         logger = self.script.logs_manager.new_logger(title)
@@ -244,13 +245,15 @@ class Node(Base):
         """Disables custom logs"""
 
         for logger in self.loggers:
-            logger.disabled = True
+            logger.disable()
+            # logger.disabled = True
 
     def enable_loggers(self):
         """Enables custom logs"""
 
         for logger in self.loggers:
-            logger.enabled = True
+            logger.enable()
+            # logger.enabled = True
 
 
     #   PORTS
@@ -362,6 +365,12 @@ class Node(Base):
 
     # -----------------------------------------------------------------------------------------------------------------
 
+
+    def prepare_placement(self):
+        """Called from Flow when the nodes gets added"""
+
+        self.enable_loggers()
+        self.place_event()
 
 
     def prepare_removal(self):

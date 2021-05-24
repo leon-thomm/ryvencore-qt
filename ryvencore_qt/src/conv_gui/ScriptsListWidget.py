@@ -105,13 +105,13 @@ class ScriptsListWidget(QWidget):
     def create_function_script(self):
         title = self.new_script_title_lineedit.text()
 
-        if self.session.check_new_script_title_validity(title):
+        if self.session.script_title_valid(title):
             self.session.create_func_script(title=title)
 
     def create_script(self):
         title = self.new_script_title_lineedit.text()
 
-        if self.session.check_new_script_title_validity(title):
+        if self.session.script_title_valid(title):
             self.session.create_script(title=title)
 
 

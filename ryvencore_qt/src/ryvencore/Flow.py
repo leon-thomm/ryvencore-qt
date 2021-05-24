@@ -92,7 +92,7 @@ class Flow(Base):
 
         self.nodes.append(node)
 
-        node.place_event()
+        node.prepare_placement()
 
 
     def node_view_placed(self, node: Node):
@@ -205,7 +205,7 @@ class Flow(Base):
     def algorithm_mode(self) -> str:
         """Returns the current algorithm mode of the flow as string"""
 
-        return FlowAlg.stringify(self.alg_mode)
+        return FlowAlg.str(self.alg_mode)
 
 
     def set_algorithm_mode(self, mode: str):
@@ -223,7 +223,7 @@ class Flow(Base):
         (flow config, nodes config, connections config)
         """
 
-        cfg = {'algorithm mode': FlowAlg.stringify(self.alg_mode)}, \
+        cfg = {'algorithm mode': FlowAlg.str(self.alg_mode)}, \
             self.generate_nodes_config(self.nodes), \
             self.generate_connections_config(self.nodes)
 
