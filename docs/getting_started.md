@@ -35,7 +35,7 @@ Your main interface to the current project is the **Session**, which basically r
 my_session = rc.Session()
 ```
 
-Now let's create a flow, which is part of a **Script**. Scripts are managed by the session and contain the **flow**, **script variables** and the **logs**.
+Now let's create a flow, which is part of a **Script**. Scripts are managed by the session and contain the **flow**, **script variables** and **logs**.
 
 ``` python
 script = my_session.create_script('hello world', flow_view_size=[800, 500])
@@ -117,7 +117,7 @@ class PrintNode(rc.Node):
     def __init__(self, params):
         super().__init__(params)
 
-    def update_event(self, input_called=-1):
+    def update_event(self, inp=-1):
         data = self.input(0)  # get data from the first input
         print(data)
 ```
@@ -128,7 +128,7 @@ Make your class derive from `rc.Node` and then enhance it the way you like. The 
 > While most flow-based visual scripting software out there implements either the approach of *execution-flows* or *data-flows*, ryvencore implements them both. Generally, data flows are more flexible and powerful, so the focus is on them, but there are cases where exec flows make more sense, so I wanted to leave it as an option.
 
 > [!TIP|label:Custom Node Base Class]
-> In more sophisticated editors, you may want to define your custom `NodeBase` class to add functionality to all your nodes. If you want ryvencore-internal nodes (like function nodes) to be children of this class too, you can provide your base class when initializing the `Session` object.
+> In more sophisticated editors, you may want to define your custom `NodeBase` class to add functionality to all your nodes. If you want ryvencore-internal nodes (like macro nodes) to be children of this class too, you can provide your base class when initializing the `Session` object.
 
 And let's add another node which generates a random number in a given range, so we have something to print.
 
@@ -147,7 +147,7 @@ class RandNode(rc.Node):
     ]
     color = '#fcba03'
 
-    def update_event(self, input_called=-1):
+    def update_event(self, inp=-1):
         # random float between 0 and value at input
         val = random()*self.input(0)
 
@@ -177,9 +177,9 @@ Of course there is much more you can do. For example you can change the flow the
 session.design.set_flow_theme(name='Samuel 1l')
 ```
 
-Currently available flow themes are `Samuel 1d`, `Samuel 1l`, `Samuel 2d`, `Samuel 2l`, `Ueli`, `Blender`, `Simple`, `Toy` and `Tron`. And if that's not enough, you can configure the theme colors for those using a json config file, so you'll definitely be able to give your flows a look that fits in the application environment it's going to be a part of. 
+There are a few different themes and you can configure the their colors using a json config file, so you'll definitely be able to give your flows a look that fits in the application environment it's going to be a part of. 
 
-You can also change the performance mode to *fast* which results in some changes in rendering.
+You can also change the performance mode to *fast* which results in some less pretty simplifications in rendering.
 
 ``` python
 session.design.set_performance_mode('fast')
@@ -212,7 +212,7 @@ class PrintNode(rc.Node):
     def __init__(self, params):
         super().__init__(params)
 
-    def update_event(self, input_called=-1):
+    def update_event(self, inp=-1):
         data = self.input(0)  # get data from the first input
         print(data)
 
@@ -229,7 +229,7 @@ class RandNode(rc.Node):
     ]
     color = '#fcba03'
 
-    def update_event(self, input_called=-1):
+    def update_event(self, inp=-1):
         # random float between 0 and value at input
         val = random()*self.input(0)
 
@@ -289,7 +289,7 @@ class MainWindow(QMainWindow):
         super().__init__()
 
         # if I wanted to make all ryvencore-internally defined nodes 
-        # (like function nodes) also inherit from our NodeBase, I'd provide 
+        # (like macro nodes) also inherit from our NodeBase, I'd provide 
         # it as node_class parameter here, but I dont want that in this case
         self.session = rc.Session()
 
@@ -389,7 +389,7 @@ class SignalNode(NodeBase):
         self.signal_high = True if state == Qt.Checked else False
         self.update()
 
-    def update_event(self, input_called=-1):
+    def update_event(self, inp=-1):
         self.set_output_val(0, int(self.signal_high))
         # note that 1 and 0 can be interpreted as True and False
         # by all the logical operators that these nodes use
@@ -416,7 +416,7 @@ class ANDGateNode(NodeBase):
         rc.NodeOutputBP('data'),
     ]
 
-    def update_event(self, input_called=-1):
+    def update_event(self, inp=-1):
         self.set_output_val(0, int(self.input(0) and self.input(1)))
 
 
@@ -431,7 +431,7 @@ class ORGateNode(NodeBase):
         rc.NodeOutputBP('data'),
     ]
 
-    def update_event(self, input_called=-1):
+    def update_event(self, inp=-1):
         self.set_output_val(0, int(self.input(0) or self.input(1)))
 
 
@@ -446,7 +446,7 @@ class XORGateNode(NodeBase):
         rc.NodeOutputBP('data'),
     ]
 
-    def update_event(self, input_called=-1):
+    def update_event(self, inp=-1):
         self.set_output_val(0, int(self.input(0) != self.input(1)))
 
 
@@ -460,7 +460,7 @@ class NOTGateNode(NodeBase):
         rc.NodeOutputBP('data'),
     ]
 
-    def update_event(self, input_called=-1):
+    def update_event(self, inp=-1):
         self.set_output_val(0, int(not self.input(0)))
 
 
@@ -475,7 +475,7 @@ class NANDGateNode(NodeBase):
         rc.NodeOutputBP('data'),
     ]
 
-    def update_event(self, input_called=-1):
+    def update_event(self, inp=-1):
         self.set_output_val(0, int(not (self.input(0) and self.input(1))))
 
 
@@ -490,7 +490,7 @@ class NORGateNode(NodeBase):
         rc.NodeOutputBP('data'),
     ]
 
-    def update_event(self, input_called=-1):
+    def update_event(self, inp=-1):
         self.set_output_val(0, int(not (self.input(0) or self.input(1))))
 
 
@@ -529,7 +529,7 @@ class LEDNode(NodeBase):
     main_widget_class = LED_MainWidget
     main_widget_pos = 'between ports'
 
-    def update_event(self, input_called=-1):
+    def update_event(self, inp=-1):
         # note that such unchecked calls to GUI components are not allowed in nodes 
         # that are intended to run on ryvencore without GUI. But because this isn't
         # really a use case here, we can keep it simple for now

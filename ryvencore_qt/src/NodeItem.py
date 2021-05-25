@@ -219,7 +219,7 @@ class NodeItem(QGraphicsItem, QObject):
         else:
             self.setGraphicsEffect(None)
 
-        self.widget.update()
+        self.widget.update_shape()
         self.animator.reload_values()
 
         QGraphicsItem.update(self)

@@ -34,7 +34,7 @@ The fundamental difference is that in contrast to *data* mode, data is not forwa
 
 The mode of a flow (*data* or *exec*) can be set at any time using `Flow.set_algorithm_mode`, default is *data*.
 
-In both cases the `input_called` parameter in `Node.update_event` represents the input index that received data or a signal respectively.
+In both cases the `inp` parameter in `Node.update_event` represents the input index that received data or a signal respectively.
 
 ## Nodes System
 
@@ -292,7 +292,7 @@ if __name__ == '__main__':
     # creating session and loading the contents
     session = Session(no_gui=True)
     session.register_nodes([ <your_used_nodes_here> ])
-    function_scripts, scripts = session.load(project_dict)
+    scripts = session.load(project_dict)
 
     # now you have manual access like this...
     myscript = scripts[0]
@@ -305,7 +305,7 @@ if __name__ == '__main__':
 Which of the API calls you use in `ryvencore-qt` don't come from `ryvencore` is indicated in the API reference (basically everything frontend/widgets-related). Of course, your nodes are not allowed to access `ryvencore-qt` API, as this API does not exist when running it on the backend, since there is no frontend then. To make your nodes compatible with this, you can check the boolean `Session.gui` attribute to determine whether the session is aware of a frontend or not.
 
 ``` python
-def update_event(self, input_called=-1):
+def update_event(self, inp=-1):
 
     # doing some work
     
@@ -314,19 +314,3 @@ def update_event(self, input_called=-1):
     
     # some more work
 ```
-
-<!-- Currently, when running it in GUI mode, `ryvencore` uses Qt signals so the frontend is notified when events like placement of a node in a flow happen. When running ryvencore without frontend, these signals do nothing, so there is no Qt dependency then. This dualism is planned to get replaced in the future by something more scalable, possibly a brokerless message queue to easily enable network scaling. -->
-
-<!--
-## Code Generation [idea]
-
-Now, there currently isn't a code generation mechanism for ryvencore, however I already implemented a prototype for Ryven once and Ryven 3 will probably receive this as an official feature at some point. I think the requirements for something like this only regard the file structure of your node definitions. If you are coming from Ryven and want to contribute to the development, this would be something that I'm sure some people using the software are much more capable of implementing than I am. On the dev branch in the Ryven repo you can find the basic idea that I followed for creating the source code implemented, there are just still a few (quite solvable) issues regarding the recursive module imports.
-
-Continuing is some thoughts for people who want to work on this:
-
-!!! note
-    **Files might get large!** Because the resulting code has to include implementations of the basic abstract components (ideally just the ryvencore classes) as well as the definitions of all used nodes, the resulting code might quickly reach 1000 lines.
-
-The resulting code should be completely independent without Qt dependencies. When generating the code, Ryven runs a dependency analysis of all nodes' sources. Some nodes might just use standard packages and modules (like numpy), while others might include external sources that one wants to have included in the generated code, like some functions or classes used by many of your nodes which are therefore kept in their own modules. Ryven analyzes normal (module-wide) import statements recursively and includes all sources that are not builtin modules or installed packages or part of an ignore list.
-
--->
