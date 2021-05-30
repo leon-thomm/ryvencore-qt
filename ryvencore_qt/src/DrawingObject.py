@@ -14,6 +14,7 @@ class DrawingObject(QGraphicsItem):
         self.setFlags(QGraphicsItem.ItemIsSelectable | QGraphicsItem.ItemIsMovable |
                       QGraphicsItem.ItemSendsScenePositionChanges)
         self.setAcceptHoverEvents(True)
+        self.setCacheMode(QGraphicsItem.DeviceCoordinateCache)  # for rendering flow pictures
 
         self.flow_view = flow_view
         self.color = None

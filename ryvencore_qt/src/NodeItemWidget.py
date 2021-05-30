@@ -144,7 +144,12 @@ class NodeItemWidget(QGraphicsWidget):
         mw = self.node_item.main_widget
         if mw is not None:  # maybe the main_widget got resized
             # self.main_widget_proxy.setMaximumSize(mw.size())
-            self.main_widget_proxy.setMaximumSize(mw.maximumSize())
+
+            # self.main_widget_proxy.setMaximumSize(mw.maximumSize())
+
+            self.main_widget_proxy.setMaximumSize(mw.size())
+            self.main_widget_proxy.setMinimumSize(mw.size())
+
             self.adjustSize()
             self.adjustSize()
 

@@ -58,7 +58,7 @@ You can register and unregister nodes at any time. Registered nodes can be place
     my_session.register_nodes( [ your_nodes ] )
     ```
 - **macros aka subgraphs**  
-You can define *function scripts*, which have their own flow plus input and output node, to define functions which you can then use as nodes, just like this
+You can define *macros* which have their own flow plus input and output node, which get registered as nodes themselves, just like this
 
     ![](./docs/img/macro.png)
     Macros are like all other scripts (graphs) plus input and output node

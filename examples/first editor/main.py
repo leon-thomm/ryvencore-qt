@@ -6,9 +6,9 @@ from random import random
 
 class PrintNode(rc.Node):
 
+    """prints your data"""
     # all basic properties
     title = 'Print'
-    doc = 'prints your data'
     # there is also description_html
     init_inputs = [
         rc.NodeInputBP('data')
@@ -27,9 +27,9 @@ class PrintNode(rc.Node):
 
 
 class RandNode(rc.Node):
-    
+    """generates random float"""
+
     title = 'Rand'
-    doc = 'generates random float'
     init_inputs = [
         rc.NodeInputBP('data', '', {'widget name': 'std line edit', 'widget pos': 'besides'})
     ]

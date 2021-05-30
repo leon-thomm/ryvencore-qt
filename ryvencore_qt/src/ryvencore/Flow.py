@@ -79,6 +79,7 @@ class Flow(Base):
         """Creates, adds and returns a new node object"""
 
         node = node_class((self, self.session, config))
+        node.finish_initialization()
         node.load_user_config()  # --> Node.set_state()
         self.add_node(node)
         return node
@@ -87,8 +88,12 @@ class Flow(Base):
     def add_node(self, node: Node):
         """Stores a node object and causes the node's place_event()"""
 
-        if not node.initialized:
-            node.finish_initialization()
+        # IMPORTANT: I moved this to create_node(), I am not sure why I put it here in the first place
+        #            but it should definitely happen before node.load_user_config(), otherwise the ports
+        #            ports are not yet initialized which of course leads to error when loading config
+        #
+        # if not node.initialized:
+        #     node.finish_initialization()
 
         self.nodes.append(node)
 
