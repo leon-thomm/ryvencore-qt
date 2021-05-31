@@ -55,16 +55,16 @@ All information of a node is part of its class. A minimal node definition can be
 - **dynamic nodes registration mechanism**  
 You can register and unregister nodes at any time. Registered nodes can be placed in a flow.
     ```python
-    my_session.register_nodes( [ your_nodes ] )
+    my_session.register_nodes( [ <your_nodes> ] )
     ```
-- **macros aka subgraphs**  
+- **macros / subgraphs**  
 You can define *macros* which have their own flow plus input and output node, which get registered as nodes themselves, just like this
 
     ![](./docs/img/macro.png)
-    Macros are like all other scripts (graphs) plus input and output node
+    Macros are like normal scripts plus input and output node
     ![](./docs/img/macro2.png)
 - **right click operations system for nodes**  
-Which can be edited through the API at any time.
+which can be edited through the API at any time
     ```python
     self.special_actions[f'remove input {i}'] = {
         'method': self.rem_input,
@@ -74,11 +74,10 @@ Which can be edited through the API at any time.
     # with some method...
     def rem_input(self, index):
         self.delete_input(index)
-        self.my_log.write(f'input {index} removed')
         del self.special_actions[f'remove input {len(self.inputs)}']
     ```
 - **Qt widgets**  
-You can add custom QWidgets for your nodes, so you can also easily integrate your existing Python-Qt widgets.
+You can add custom QWidgets for your nodes.
     ```python
     class MyNode(rc.Node):
         main_widget_class = MyNodeMainWidget
@@ -89,25 +88,25 @@ You can add custom QWidgets for your nodes, so you can also easily integrate you
 - **many different modifiable themes**  
 See [Features](https://leon-thomm.github.io/ryvencore-qt/features/).
 - **exec flow support**  
-While data flows should be the most common use case, exec flows (like UnrealEngine BluePrints) are also supported.
+While data flows should be the most common use case, exec flows (like [UnrealEngine BluePrints](https://docs.unrealengine.com/4.26/en-US/ProgrammingAndScripting/Blueprints/)) are also supported.
 - **stylus support for adding handwritten notes**  
 ![](./docs/img/stylus.png)
 - **rendering flow images**  
 - **logging support**  
     ```python
     import logging
+
     class MyNode(rc.Node):
-        # ...
         def __init__(self, params):
             super().__init__(params)
 
-            self.my_logger = self.new_log(title='nice log')
+            self.my_logger = self.new_logger(title='nice log')
         
         def update_event(self, inp=-1):
             self.my_logger.log(logging.INFO, 'updated!')
     ```
 - **variables system**  
-With an update mechanism to build nodes that automatically adapt to change of variables.
+with an update mechanism to build nodes that automatically adapt to change of variables
 
     ```python
     import logging
@@ -123,7 +122,7 @@ With an update mechanism to build nodes that automatically adapt to change of va
             self.my_logger.log(logging.INFO, f'received msg: {msgs[-1]}')
     ```
 - **threading compatibility**  
-All internal communication between the abstract components and the GUI of the flows is implemented in a somewhat thread-save way, so with ryvencore-qt you can keep the backend in a separate thread. While this is currently very experimental, first successful tests have been made, and I think it's of crucial importance as this opens the door to the world of realtime data processing.
+All communication between frontend (`ryvencore-qt`) and backend (`ryvencore`) is based on Qt signals. Therefore, there exists rudimentary threading compatibility, i.e. you can keep your session object in a separate thread to improve concurrency and prevent the backend from being slown down signicantly by the frontend, and all changes you perform directly on the backend are automatically noticed by the frontend. While this is currently extremely experimental and far from production ready, it opens the door to the world of realtime data processing and first successful tests have been made.
 
 ### Usage
 
@@ -132,7 +131,7 @@ import sys
 import os
 from random import random
 
-os.environ['QT_API'] = 'pyside2'  # tells qtpy to use PyQt5
+os.environ['QT_API'] = 'pyside2'  # tells qtpy to use PySide2
 import ryvencore_qt as rc
 from qtpy.QtWidgets import QMainWindow, QApplication
 
