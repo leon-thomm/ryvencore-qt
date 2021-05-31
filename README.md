@@ -213,3 +213,9 @@ I am currently investigating on options for a more scalable replacement for the 
 Due to my study, I myself will not be able to work on this a lot during the next months. I did my best to provide an internal structure that is a good foundation for further development. For discussing general ideas and suggestions, notice the *Discussions* section. I'd be very happy to see people contribute.
 
 -->
+
+### Development
+
+To give a quick overview over the most important class relations, see the below class diagram. The DrawIO diagram file is in the repository.
+
+![](./docs/img/ryvencore-drawio_.png)
