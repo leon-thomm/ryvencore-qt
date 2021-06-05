@@ -52,9 +52,11 @@ Special actions are a very simple way to define right click operations for your 
 # creating a new entry
 self.special_actions['add some input'] = {'method': self.add_some_input_action}
 
+
 # with a corresponding method
 def add_some_input_action(self):
-  self.create_input(type_='data', label='new input')
+    self.create_input(label='new input', type_='data')
+
 
 # removing an entry
 del self.special_actions['add some input']
@@ -62,16 +64,17 @@ del self.special_actions['add some input']
 # storing individual data for multiple actions pointing to the same target method
 # which enables dynamic, current state dependent actions
 self.special_actions['add some input at index 0'] = {
-  'method': self.add_some_input_at,
-  'data': 0
+    'method': self.add_some_input_at,
+    'data': 0
 }
 self.special_actions['add some input at index 1'] = {
-  'method': self.add_some_input_at,
-  'data': 1
+    'method': self.add_some_input_at,
+    'data': 1
 }
 
+
 def add_some_input_at(self, index):
-  self.create_input(type_='data', label='inserted input', index=index)
+    self.create_input(label='inserted input', type_='data')
 ```
 
 Special actions are saved and reloaded automatically.
@@ -116,10 +119,10 @@ Of course, design splays a huge role when talking about *visual* scripting. Ther
 
 There is a list of available flow themes (which will hopefully grow). You can choose one via `Session.design.set_flow_theme()`. Currently available flow themes are
 
-- `Samuel 1d`
-- `Samuel 1l`
-- `Samuel 2d`
-- `Samuel 2l`
+- `pure dark`
+- `pure light`
+- `colorful dark`
+- `colorful light`
 - `Ueli`
 - `Blender`
 - `Simple`
@@ -134,7 +137,7 @@ To make sure you can create a look that fits in nicely wherever you might integr
 You can also specify the initial flow theme, the performance mode (`'pretty'` or `'fast'`) and animations (which currently don't work I think). You can just copy the following json, save it in a file and specify.
 ```python
 {
-  "init flow theme": "Samuel 1l",
+  "init flow theme": "pure light",
   "init performance mode": "pretty",
   "init animations enabled": true,
   "flow themes": {
@@ -203,7 +206,7 @@ You can also specify the initial flow theme, the performance mode (`'pretty'` or
       "nodes background color": "default",
       "small nodes background color": "default"
     },
-    "Samuel 1d": {
+    "pure dark": {
       "exec connection color": "default",
       "exec connection width": "default",
       "exec connection pen style": "default",
@@ -217,7 +220,7 @@ You can also specify the initial flow theme, the performance mode (`'pretty'` or
       "node title color": "default",
       "port pin pen color": "default"
     },
-    "Samuel 1l": {
+    "pure light": {
       "exec connection color": "default",
       "exec connection width": "default",
       "exec connection pen style": "default",

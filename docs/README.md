@@ -2,11 +2,10 @@
   <img src="img/logo.png" height="200"/>
 </p>
 
-<h1 align="center"> Welcome to the ryvencore-qt documentation! </h1>
+<h1 align="center"> Welcome to the ryvencore-qt documentation </h1>
 
-<!-- ![](img/ryvencore_screenshot1.png) -->
-
-<!-- Looking for a quick start? Visit the [Getting Started](/getting_started.md) section. -->
+> [!WARNING]
+> All this is in the making and some information and examples might not be 100% up to date. This documentation is generated using [Docsify](https://github.com/docsifyjs/docsify/), so feel free to fork the project and improve it by simply editing the markdown.
 
 ## Project Idea
 
@@ -18,8 +17,6 @@ Technically, `ryvencore-qt` is a Qt frontend for `ryvencore`, the backend, which
 
 > [!WARNING]
 > `ryvencore-qt` is not a professional piece of software and sometimes there are major changes. It is in very early stage, and be aware that future versions might not be fully backwards compatible. If you have suggestions for improvement of the software, feel free to open discussions.
-> 
-> Also notice that this documentation might not always be 100% up to date.
 
 Besides essential GUI classes, `ryvencore-qt` also provides a few convenience GUI classes which only use `ryvencore`'s public API, making it a little easier to get started.
 

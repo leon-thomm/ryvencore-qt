@@ -20,7 +20,7 @@ class VarsManager(Base):
             for name in config.keys():  # variables
                 self.create_new_var(name, val=config[name])
 
-    def check_new_var_name_validity(self, name: str) -> bool:
+    def var_name_valid(self, name: str) -> bool:
         """Checks if a var name candidate is empty or already used"""
 
         if len(name) == 0:
@@ -36,9 +36,13 @@ class VarsManager(Base):
     def create_new_var(self, name: str, val=None) -> Variable:
         """Creates and returns a new script variable"""
 
-        v = Variable(name, val)
-        self.variables.append(v)
-        return v
+        if self.var_name_valid(name):
+            v = Variable(name, val)
+            self.variables.append(v)
+            self.var_receivers[name] = {}
+            return v
+        else:
+            return None
 
     def get_var(self, name) -> Variable:
         """Returns script variable with given name or None if it couldn't be found."""
@@ -68,9 +72,13 @@ class VarsManager(Base):
         var.val = val
 
         # update all variable usages by calling all registered object's methods on updated variable with the new val
-        for receiver, var_name in self.var_receivers.keys():
-            if var_name == name:
-                self.var_receivers[receiver, var_name](var_name, val)  # calling the slot method
+        for receiver, methods in self.var_receivers[name].items():
+            for m in methods:
+                m(name, val)
+
+        # for receiver, var_name in self.var_receivers.keys():
+        #     if var_name == name:
+        #         self.var_receivers[receiver, var_name](var_name, val)  # calling the slot method
 
         return True
 
@@ -82,7 +90,7 @@ class VarsManager(Base):
 
         return None
 
-    def delete_variable(self, var: Variable):
+    def delete_var(self, var: Variable):
         """Deletes a variable."""
 
         self.variables.remove(var)
@@ -91,16 +99,29 @@ class VarsManager(Base):
         """A registered receiver (method) gets triggered every time the
         value of a variable with the given name changes (also when it gets created)."""
 
-        self.var_receivers[(receiver, var_name)] = method
+        # self.var_receivers[(receiver, var_name)] = method
 
-    def unregister_receiver(self, receiver, var_name: str) -> bool:
+        if receiver in self.var_receivers[var_name]:
+            self.var_receivers[var_name][receiver].append(method)
+        else:
+            self.var_receivers[var_name][receiver] = [method]
+
+
+
+    def unregister_receiver(self, receiver, var_name: str, method) -> bool:
         """Unregisters a method and returns true in case of success. See also register_receiver()."""
 
-        try:
-            del self.var_receivers[(receiver, var_name)]
+        if receiver in self.var_receivers[var_name]:
+            self.var_receivers[var_name][receiver].remove(method)
             return True
-        except Exception:
+        else:
             return False
+
+        # try:
+        #     del self.var_receivers[(receiver, var_name)]
+        #     return True
+        # except Exception:
+        #     return False
 
     def config_data(self) -> dict:
         """Returns the config data of the script variables."""

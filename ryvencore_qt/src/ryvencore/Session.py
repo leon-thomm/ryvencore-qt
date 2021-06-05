@@ -140,10 +140,14 @@ class Session(Base):
     #     return self.macro_scripts + self.scripts
 
 
-    def rename_script(self, script: Script, title: str):
+    def rename_script(self, script: Script, title: str) -> bool:
         """Renames an existing script"""
 
-        script.title = title
+        if self.script_title_valid(title):
+            script.title = title
+            return True
+        else:
+            return False
 
 
     def script_title_valid(self, title: str) -> bool:

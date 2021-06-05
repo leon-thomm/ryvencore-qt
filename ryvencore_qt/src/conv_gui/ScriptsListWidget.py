@@ -13,7 +13,7 @@ class ScriptsListWidget(QWidget):
         super(ScriptsListWidget, self).__init__(parent=parent)
 
         self.session = session
-        self.session.script_flow_view_created.connect(self.add_new_script)
+        self.session.flow_view_created.connect(self.add_new_script)
         self.session.script_deleted.connect(self.recreate_list)
 
         self.list_widgets = []

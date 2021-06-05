@@ -4,8 +4,8 @@ from qtpy.QtCore import QObject, Signal
 from qtpy.QtGui import QFontDatabase
 
 from .FlowTheme import FlowTheme_Toy, FlowTheme_DarkTron, FlowTheme_Ghost, FlowTheme_Blender, \
-    FlowTheme_Simple, FlowTheme_Ueli, FlowTheme_Samuel1, FlowTheme, FlowTheme_Samuel1_Light, \
-    FlowTheme_Samuel2, FlowTheme_Samuel2_Light
+    FlowTheme_Simple, FlowTheme_Ueli, FlowTheme_PureDark, FlowTheme, FlowTheme_PureLight, \
+    FlowTheme_Colorful, FlowTheme_ColorfulLight
 from .GlobalAttributes import Location
 
 
@@ -16,6 +16,7 @@ class Design(QObject):
     global_stylesheet = ''
 
     flow_theme_changed = Signal(str)
+    performance_mode_changed = Signal(str)
 
     def __init__(self):
         super().__init__()
@@ -57,10 +58,10 @@ class Design(QObject):
             FlowTheme_Blender(),
             FlowTheme_Simple(),
             FlowTheme_Ueli(),
-            FlowTheme_Samuel1(),
-            FlowTheme_Samuel2(),
-            FlowTheme_Samuel1_Light(),
-            FlowTheme_Samuel2_Light()
+            FlowTheme_PureDark(),
+            FlowTheme_Colorful(),
+            FlowTheme_PureLight(),
+            FlowTheme_ColorfulLight()
         ]
 
     def load_from_config(self, filepath: str):
@@ -84,6 +85,9 @@ class Design(QObject):
 
         if 'init performance mode' in IMPORT_DATA:
             self.set_performance_mode(IMPORT_DATA['init performance mode'])
+
+        if 'init animations enabled' in IMPORT_DATA:
+            self.set_animations_enabled(IMPORT_DATA['init animations enabled'])
 
         if 'default flow size' in IMPORT_DATA:
             self.default_flow_size = IMPORT_DATA['default flow size']
@@ -118,7 +122,7 @@ class Design(QObject):
         else:
             self.node_item_shadows_enabled = True
 
-        self.flow_theme_changed.emit(self.flow_theme)
+        self.performance_mode_changed.emit(self.performance_mode)
 
     def set_animations_enabled(self, b: bool):
         self.animations_enabled = b

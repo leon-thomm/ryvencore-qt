@@ -85,7 +85,7 @@ class VariablesListWidget(QWidget):
     def new_var_LE_return_pressed(self):
         name = self.new_var_name_lineedit.text()
 
-        if not self.vars_manager.check_new_var_name_validity(name=name):
+        if not self.vars_manager.var_name_valid(name=name):
             return
 
         self.vars_manager.create_new_var(name=name)
@@ -112,6 +112,6 @@ class VariablesListWidget(QWidget):
     def del_variable(self, var, var_widget):
         self.widgets.remove(var_widget)
         var_widget.setParent(None)
-        self.vars_manager.delete_variable(var)
+        self.vars_manager.delete_var(var)
         # del self.vars_manager.variables[self.vars_manager.variables.index(var)]
         self.recreate_list()

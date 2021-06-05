@@ -17,7 +17,7 @@ class MainWindow(QMainWindow):
         self.session = rc.Session()
 
         # some design specs
-        self.session.design.set_flow_theme(name='Samuel 1l')
+        self.session.design.set_flow_theme(name='pure light')
         self.session.design.set_performance_mode('pretty')
 
         # registering the nodes

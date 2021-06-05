@@ -84,7 +84,7 @@ class MacroScript(Script):
         self.parameters.append({'type': type_, 'label': label})
 
         for mn in self.macro_node_class.instances:
-            mn.create_input(type_, label)
+            mn.create_input(label=label, type_=type_)
 
     def remove_parameter(self, index):
         self.parameters.remove(self.parameters[index])
@@ -96,7 +96,7 @@ class MacroScript(Script):
         self.returns.append({'type': type_, 'label': label})
 
         for mn in self.macro_node_class.instances:
-            mn.create_output(type_, label)
+            mn.create_output(label, type_)
 
     def remove_return(self, index):
         self.returns.remove(self.returns[index])

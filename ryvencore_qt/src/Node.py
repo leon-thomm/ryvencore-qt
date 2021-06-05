@@ -107,8 +107,8 @@ class Node(RC_Node, QObject):
         self.updated.emit()
 
     # @override
-    def create_input(self, type_: str = 'data', label: str = '', add_config={}, insert: int = None):
-        RC_Node.create_input(self, type_=type_, label=label, add_config=add_config, insert=insert)
+    def create_input(self, label: str = '', type_: str = 'data', add_config={}, insert: int = None):
+        RC_Node.create_input(self, label=label, type_=type_, add_config=add_config, insert=insert)
 
         if insert is not None:
 
@@ -123,8 +123,8 @@ class Node(RC_Node, QObject):
             self.input_added.emit(self.inputs[-1], None)
 
     # @override
-    def create_input_dt(self, dtype: DType, label: str = '', add_config={}, insert: int = None):
-        RC_Node.create_input_dt(self, dtype=dtype, label=label, add_config=add_config, insert=insert)
+    def create_input_dt(self, label: str, dtype: DType, add_config={}, insert: int = None):
+        RC_Node.create_input_dt(self, label=label, dtype=dtype, add_config=add_config, insert=insert)
 
         if insert is not None:
 
@@ -138,8 +138,8 @@ class Node(RC_Node, QObject):
             self.input_added.emit(self.inputs[-1], None)
 
     # @override
-    def create_output(self, type_: str = 'data', label: str = '', insert: int = None):
-        RC_Node.create_output(self, type_=type_, label=label, insert=insert)
+    def create_output(self, label: str = '', type_: str = 'data', insert: int = None):
+        RC_Node.create_output(self, label=label, type_=type_, insert=insert)
 
         if insert is not None:
 

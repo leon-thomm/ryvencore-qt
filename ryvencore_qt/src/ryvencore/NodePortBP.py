@@ -8,9 +8,7 @@ class NodePortBP:
     An instantiated Node's actual inputs and outputs will be of type NodeObjPort (NodeObjInput, NodeObjOutput).
     """
 
-    def __init__(self,
-                 type_: str = 'data',
-                 label: str = ''):
+    def __init__(self, label: str = '', type_: str = 'data'):
         """
         :type_: 'data' or 'exec'
         """
@@ -20,20 +18,14 @@ class NodePortBP:
 
 
 class NodeInputBP(NodePortBP):
-    def __init__(self,
-                 type_: str = 'data',
-                 label: str = '',
-                 dtype: DType = None,
-                 add_config={}):
+    def __init__(self, label: str = '', type_: str = 'data', dtype: DType = None, add_config={}):
 
-        super().__init__(type_, label)
+        super().__init__(label, type_)
 
         self.dtype = dtype
         self.add_config = add_config
 
 
 class NodeOutputBP(NodePortBP):
-    def __init__(self,
-                 type_: str = 'data',
-                 label: str = ''):
-        super().__init__(type_, label)
+    def __init__(self, label: str = '', type_: str = 'data'):
+        super().__init__(label, type_)

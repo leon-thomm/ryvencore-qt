@@ -5,7 +5,7 @@ from qtpy.QtGui import QFontMetricsF, QFont
 
 from .PortItemInputWidgets import RCIW_BUILTIN_SpinBox, RCIW_BUILTIN_LineEdit, RCIW_BUILTIN_LineEdit_small, \
     Data_IW_S, Data_IW_M, Data_IW_L, Float_IW, Integer_IW, Choice_IW, Boolean_IW, String_IW_S, String_IW_M, String_IW_L
-from .ryvencore import dtypes
+from .ryvencore import dtypes, FlowAlg
 from .ryvencore.tools import deserialize
 from .tools import get_longest_line, shorten
 
@@ -60,10 +60,18 @@ class InputPortItem(PortItem):
     def __init__(self, node, node_item, port):
         super().__init__(node, node_item, port, node.flow)
 
-        self.widget = None
-        self.proxy: FlowViewProxyWidget = None
+        self.proxy = None  # widget proxy
+        self.widget = self.create_widget()
 
-        self.create_widget()
+        if self.widget:
+            self.proxy = FlowViewProxyWidget(self.flow_view, parent=self.node_item)
+            self.proxy.setWidget(self.widget)
+
+        self.update_widget_value = self.widget is not None  # modified by FlowView when performance mode changes
+
+        # catch up to missed connections
+        if len(self.port.connections) > 0:
+            self.port_connected()
 
         if self.port.add_config:
 
@@ -110,46 +118,40 @@ class InputPortItem(PortItem):
 
             if isinstance(dtype, dtypes.Data):
                 if dtype.size == 's':
-                    self.widget = Data_IW_S(params)
+                    return Data_IW_S(params)
                 elif dtype.size == 'm':
-                    self.widget = Data_IW_M(params)
+                    return Data_IW_M(params)
                 elif dtype.size == 'l':
-                    self.widget = Data_IW_L(params)
+                    return Data_IW_L(params)
 
             elif isinstance(dtype, dtypes.String):
                 if dtype.size == 's':
-                    self.widget = String_IW_S(params)
+                    return String_IW_S(params)
                 elif dtype.size == 'm':
-                    self.widget = String_IW_M(params)
+                    return String_IW_M(params)
                 elif dtype.size == 'l':
-                    self.widget = String_IW_L(params)
+                    return String_IW_L(params)
 
             elif isinstance(dtype, dtypes.Integer):
-                self.widget = Integer_IW(params)
+                return Integer_IW(params)
 
             elif isinstance(dtype, dtypes.Float):
-                self.widget = Float_IW(params)
+                return Float_IW(params)
 
             elif isinstance(dtype, dtypes.Boolean):
-                self.widget = Boolean_IW(params)
+                return Boolean_IW(params)
 
             elif isinstance(dtype, dtypes.Choice):
-                self.widget = Choice_IW(params)
+                return Choice_IW(params)
 
         elif self.port.type_ == 'data' and self.port.add_config and 'widget name' in self.port.add_config:
 
             # custom input widget
-            self.widget = self.get_input_widget_class(self.port.add_config['widget name'])(params)
+            return self.get_input_widget_class(self.port.add_config['widget name'])(params)
 
         else:
-            return
+            return None
 
-        # catch up to missed connections
-        if len(self.port.connections) > 0:
-            self.port_connected()
-
-        self.proxy = FlowViewProxyWidget(self.flow_view, parent=self.node_item)
-        self.proxy.setWidget(self.widget)
 
     def get_input_widget_class(self, widget_name):
         """Returns the CLASS of a defined custom input widget"""
@@ -172,7 +174,8 @@ class InputPortItem(PortItem):
 
     def _port_val_updated(self, val):
         """Called from output port"""
-        if self.widget:
+
+        if self.update_widget_value:  # this might be quite slow
             self.widget.val_update_event(val)
 
 

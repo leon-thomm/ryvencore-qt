@@ -66,10 +66,10 @@ class VarsManager(RC_VarsManager, QObject):
         self.new_var_created.emit(v)
         return v
 
-    def delete_variable(self, var: Variable):
+    def delete_var(self, var: Variable):
         """Deletes a variable and triggers the var_deleted signal."""
 
-        RC_VarsManager.delete_variable(self, var=var)
+        RC_VarsManager.delete_var(self, var=var)
         self.var_deleted.emit(var)
 
     def set_var(self, name, val) -> bool:
@@ -89,6 +89,7 @@ class Flow(RC_Flow, QObject):
     node_removed = Signal(Node)
     connection_added = Signal(Connection)
     connection_removed = Signal(Connection)
+
     connection_request_valid = Signal(bool)
     nodes_created_from_config = Signal(list)
     connections_created_from_config = Signal(list)

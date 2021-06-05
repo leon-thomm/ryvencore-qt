@@ -96,11 +96,11 @@ NodeWidget {
         painter.setRenderHint(QPainter.Antialiasing)
 
         if node_style == 'normal':
-            self.draw_NI_extended(node, painter, color, w, h, bounding_rect, title_rect)
+            self.draw_NI_normal(node, painter, color, w, h, bounding_rect, title_rect)
         elif node_style == 'small':
             self.draw_NI_small(node, painter, color, w, h, bounding_rect)
 
-    def draw_NI_extended(self, node, painter: QPainter, c: QColor, w, h, bounding_rect, title_rect):
+    def draw_NI_normal(self, node, painter: QPainter, c: QColor, w, h, bounding_rect, title_rect):
         pass
 
     def draw_NI_small(self, node, painter: QPainter, c: QColor, w, h, bounding_rect, background_color=None):
@@ -258,7 +258,7 @@ class FlowTheme_Toy(FlowTheme):
         painter.drawEllipse(QRectF(padding, padding, w, h))
 
 
-    def draw_NI_extended(self, node, painter: QPainter, c: QColor, w, h, bounding_rect, title_rect):
+    def draw_NI_normal(self, node, painter: QPainter, c: QColor, w, h, bounding_rect, title_rect):
 
         # main rect
         body_gradient = QRadialGradient(bounding_rect.topLeft(), pythagoras(h, w))
@@ -386,7 +386,7 @@ class FlowTheme_DarkTron(FlowTheme):
         painter.setRenderHint(QPainter.Antialiasing)
 
         if node_style == 'normal':
-            self.draw_NI_extended(node, painter, color, w, h, bounding_rect, title_rect)
+            self.draw_NI_normal(node, painter, color, w, h, bounding_rect, title_rect)
         elif node_style == 'small':
             if option.state & QStyle.State_MouseOver:  # use special dark background color when mouse hovers
                 self.draw_NI_small(node, painter, color, w, h, bounding_rect, color.darker())
@@ -394,7 +394,7 @@ class FlowTheme_DarkTron(FlowTheme):
                 self.draw_NI_small(node, painter, color, w, h, bounding_rect, QColor('#212429'))
 
 
-    def draw_NI_extended(self, node, painter, c: QColor, w: int, h: int, bounding_rect, title_rect):
+    def draw_NI_normal(self, node, painter, c: QColor, w: int, h: int, bounding_rect, title_rect):
 
         background_color = QColor('#212224')
         painter.setBrush(background_color)
@@ -587,7 +587,7 @@ class FlowTheme_Ghost(FlowTheme):
         painter.setRenderHint(QPainter.Antialiasing)
 
         if node_style == 'normal':
-            self.draw_NI_extended(node, painter, color, w, h, bounding_rect, title_rect)
+            self.draw_NI_normal(node, painter, color, w, h, bounding_rect, title_rect)
         elif node_style == 'small':
             if option.state & QStyle.State_MouseOver:  # use special dark background color when mouse hovers
                 self.draw_NI_small(node, painter, color, w, h, bounding_rect, background_color=color.darker())
@@ -595,7 +595,7 @@ class FlowTheme_Ghost(FlowTheme):
                 self.draw_NI_small(node, painter, color, w, h, bounding_rect)
 
 
-    def draw_NI_extended(self, node, painter, c, w, h, bounding_rect, title_rect):
+    def draw_NI_normal(self, node, painter, c, w, h, bounding_rect, title_rect):
 
         background_color = self.node_color
 
@@ -747,7 +747,7 @@ class FlowTheme_Blender(FlowTheme):
         painter.drawEllipse(QRectF(padding + w / 4, padding + h / 4, w / 2, h / 2))
 
     
-    def draw_NI_extended(self, node, painter, c, w, h, bounding_rect, title_rect):
+    def draw_NI_normal(self, node, painter, c, w, h, bounding_rect, title_rect):
 
         background_color = self.node_color
         header_color = QColor(c.red(), c.green(), c.blue(), 180)
@@ -889,7 +889,7 @@ class FlowTheme_Simple(FlowTheme):
         painter.drawEllipse(QRectF(padding+w/8, padding+h/8, 3*w/4, 3*h/4))
 
 
-    def draw_NI_extended(self, node, painter, c, w, h, bounding_rect, title_rect):
+    def draw_NI_normal(self, node, painter, c, w, h, bounding_rect, title_rect):
 
         background_color = self.node_background_color
         header_color = c
@@ -1026,7 +1026,7 @@ class FlowTheme_Ueli(FlowTheme):
         painter.drawEllipse(QRectF(padding+w/8, padding+h/8, 3*w/4, 3*h/4))
 
     
-    def draw_NI_extended(self, node, painter, c, w, h, bounding_rect: QRectF, title_rect):
+    def draw_NI_normal(self, node, painter, c, w, h, bounding_rect: QRectF, title_rect):
 
         background_color = self.nodes_background_color
         header_color = c
@@ -1055,9 +1055,9 @@ class FlowTheme_Ueli(FlowTheme):
         painter.drawRoundedRect(bounding_rect, c_s, c_s)
 
 
-class FlowTheme_Samuel1(FlowTheme):
+class FlowTheme_PureDark(FlowTheme):
 
-    name = 'Samuel 1d'
+    name = 'pure dark'
 
     node_selection_stylesheet = ''
 
@@ -1147,7 +1147,7 @@ class FlowTheme_Samuel1(FlowTheme):
         painter.drawEllipse(rect)
 
 
-    def draw_NI_extended(self, node, painter, c, w, h, bounding_rect: QRectF, title_rect):
+    def draw_NI_normal(self, node, painter, c, w, h, bounding_rect: QRectF, title_rect):
 
         background_color = self.node_ext_background_color
 
@@ -1176,9 +1176,9 @@ class FlowTheme_Samuel1(FlowTheme):
         painter.drawRoundedRect(bounding_rect, 4, 4)
 
 
-class FlowTheme_Samuel1_Light(FlowTheme_Samuel1):
+class FlowTheme_PureLight(FlowTheme_PureDark):
 
-    name = 'Samuel 1l'
+    name = 'pure light'
     type_ = 'light'
 
     header_padding = (2, 2, 2, 2)
@@ -1208,9 +1208,9 @@ NodeWidget {
     node_item_shadow_color = QColor('#cccccc')
 
 
-class FlowTheme_Samuel2(FlowTheme):
+class FlowTheme_Colorful(FlowTheme):
 
-    name = 'Samuel 2d'
+    name = 'colorful dark'
 
     header_padding = (12, 0, 2, 2)
 
@@ -1289,9 +1289,11 @@ class FlowTheme_Samuel2(FlowTheme):
         painter.drawEllipse(QRectF(padding + w / 8, padding + h / 8, 3 * w / 4, 3 * h / 4))
 
 
-    def draw_NI_extended(self, node, painter, c, w, h, bounding_rect: QRectF, title_rect):
+    def draw_NI_normal(self, node, painter, c, w, h, bounding_rect: QRectF, title_rect):
 
-        background_color = QColor(c.red(), c.green(), c.blue(), 90)
+        background_color = c
+        background_color.setAlpha(150)
+
         header_color = QColor(c.red(), c.green(), c.blue(), 130).darker()
 
         rel_header_height = self.get_header_rect(w, h, title_rect).height() / h
@@ -1312,9 +1314,9 @@ class FlowTheme_Samuel2(FlowTheme):
         painter.drawRoundedRect(bounding_rect, 8, 8)
 
 
-class FlowTheme_Samuel2_Light(FlowTheme_Samuel2):
+class FlowTheme_ColorfulLight(FlowTheme_Colorful):
 
-    name = 'Samuel 2l'
+    name = 'colorful light'
     type_ = 'light'
 
     header_padding = (12, 0, 2, 2)
@@ -1328,6 +1330,8 @@ class FlowTheme_Samuel2_Light(FlowTheme_Samuel2):
 
     node_title_color = QColor('#1f1f1f')
     port_pin_pen_color = QColor('#1f1f1f')
+
+    node_item_shadow_color = QColor('#cccccc')
 
 
     def paint_PI_label(self, node, painter, option, type_, connected, label_str, node_color, bounding_rect):
@@ -1343,9 +1347,11 @@ class FlowTheme_Samuel2_Light(FlowTheme_Samuel2):
         self.paint_PI_label_default(painter, label_str, c, QFont("Segoe UI", 10), bounding_rect)
 
 
-    def draw_NI_extended(self, node, painter, c, w, h, bounding_rect: QRectF, title_rect):
+    def draw_NI_normal(self, node, painter, c, w, h, bounding_rect: QRectF, title_rect):
 
-        background_color = QColor(c.red(), c.green(), c.blue(), 90)
+        background_color = c.lighter()
+        background_color.setAlpha(150)
+
         header_color = QColor(c.red(), c.green(), c.blue(), 130).darker()
 
         rel_header_height = self.get_header_rect(w, h, title_rect).height() / h

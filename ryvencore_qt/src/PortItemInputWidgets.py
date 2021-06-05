@@ -230,10 +230,8 @@ class String_IW(QLineEdit, DType_IW_Base):  # virtual
 
     def val_update_event(self, val):
         self.block = True
-        try:
-            self.setText(val)
-        finally:
-            self.block = False
+        self.setText(str(val))
+        self.block = False
 
     def get_state(self) -> dict:
         return {'text': self.text()}

@@ -64,7 +64,6 @@ class NodeItem(QGraphicsItem, QObject):
         if self.node.main_widget_class is not None:
             self.main_widget = self.node.main_widget_class((self.node, self))
         self.widget = NodeItemWidget(self.node, self)  # QGraphicsWidget(self)
-
         self.animator = NodeItemAnimator(self)  # needs self.title_label
 
         # TOOLTIP
@@ -76,6 +75,7 @@ class NodeItem(QGraphicsItem, QObject):
 
         # DESIGN THEME
         self.session_design.flow_theme_changed.connect(self.update_design)
+        self.session_design.performance_mode_changed.connect(self.update_design)
 
     def initialize(self):
         """All ports and the main widget get finally created here."""
@@ -117,9 +117,11 @@ class NodeItem(QGraphicsItem, QObject):
 
     def node_updated(self):
         if self.session_design.animations_enabled:
-            if self.animator.running():
-                self.animator.stop()
-            self.animator.start()
+            if not self.animator.running():
+                self.animator.start()
+            elif self.animator.fading_out():
+                self.animator.set_animation_max()
+
         self.update()
 
     def add_new_input(self, inp: NodeInput, insert: int = None):

@@ -170,6 +170,7 @@ class FlowView(QGraphicsView):
 
         # DESIGN
         self.session.design.flow_theme_changed.connect(self._theme_changed)
+        self.session.design.performance_mode_changed.connect(self._perf_mode_changed)
 
         # FRAMERATE TRACKING
         self.num_frames = 0
@@ -244,6 +245,17 @@ class FlowView(QGraphicsView):
             ni.widget.rebuild_ui()
 
         # TODO: repaint background. how?
+        self.viewport().update()
+        self.scene().update(self.sceneRect())
+
+    def _perf_mode_changed(self, mode):
+
+        # set widget value update rule for port inputs, because this takes up quite a bit of performance
+        update_widget_value = (mode == 'pretty')
+        for n, ni in self.node_items.items():
+            for inp in ni.inputs:
+                inp.update_widget_value = (update_widget_value and inp.widget)
+
         self.viewport().update()
         self.scene().update(self.sceneRect())
 

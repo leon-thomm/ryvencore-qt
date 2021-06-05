@@ -1,4 +1,5 @@
 import logging
+import traceback
 
 from .Base import Base
 
@@ -94,23 +95,22 @@ class Node(Base):
                 inp = self.init_inputs[i]
 
                 if inp.dtype:
-                    self.create_input_dt(dtype=inp.dtype, label=inp.label, add_config=inp.add_config)
+                    self.create_input_dt(label=inp.label, dtype=inp.dtype, add_config=inp.add_config)
 
                 else:
-                    self.create_input(inp.type_, inp.label, add_config=self.init_inputs[i].add_config)
+                    self.create_input(inp.label, inp.type_, add_config=self.init_inputs[i].add_config)
 
             for o in range(len(self.init_outputs)):
                 out = self.init_outputs[o]
-                self.create_output(out.type_, out.label)
+                self.create_output(out.label, out.type_)
 
         else:  # when loading saved nodes, the init_inputs and init_outputs are irrelevant
             for inp in inputs_config:
                 if 'dtype' in inp:
-                    self.create_input_dt(
-                        dtype=DType.from_str(inp['dtype'])(_load_state=deserialize(inp['dtype state'])),
-                        label=inp['label'], add_config=inp)
+                    self.create_input_dt(label=inp['label'], dtype=DType.from_str(inp['dtype'])(
+                        _load_state=deserialize(inp['dtype state'])), add_config=inp)
                 else:
-                    self.create_input(type_=inp['type'], label=inp['label'], add_config=inp)
+                    self.create_input(label=inp['label'], type_=inp['type'], add_config=inp)
 
                 if 'val' in inp:
                     # this means the input is 'data' and did not have any connections,
@@ -119,7 +119,7 @@ class Node(Base):
                     self.inputs[-1].val = deserialize(inp['val'])
 
             for out in outputs_config:
-                self.create_output(out['type'], out['label'])
+                self.create_output(out['label'], out['type'])
 
     # -----------------------------------------------------------------------------------------------------------------
 
@@ -136,7 +136,8 @@ class Node(Base):
         try:
             self.update_event(inp)
         except Exception as e:
-            InfoMsgs.write_err('EXCEPTION in', self.title, 'Node:', e)
+
+            InfoMsgs.write_err('EXCEPTION in', self.title, '\n', traceback.format_exc())
 
     # OVERRIDE
     def update_event(self, inp=-1):
@@ -165,9 +166,9 @@ class Node(Base):
     # OVERRIDE
     def place_event(self):
         """
-        place_event() is called once the node object has been fully initialized and placed in the Flow.
+        place_event() is called once the node object has been fully initialized and placed in the flow.
         When loading content, place_event() is executed *before* the connections are built,
-        which is important for nodes that need to update once and, during this process set output data values,
+        which is important for nodes that need to update once and, during this process, set output data values,
         to prevent other (later connected) nodes from receiving updates because of that.
         Notice that this method gets executed *every time* the node is added to the flow, which can happen
         multiple times, due to undo/redo operations for example.
@@ -193,7 +194,8 @@ class Node(Base):
         pass
 
     # OVERRIDE
-    def _initialized(self):
+    def _initialized(self):  # not used currently
+
         """Called once all the node's components (including inputs, outputs) have been initialized"""
 
         pass
@@ -259,7 +261,7 @@ class Node(Base):
     #   PORTS
 
 
-    def create_input(self, type_: str = 'data', label: str = '', add_config={}, insert: int = None):
+    def create_input(self, label: str = '', type_: str = 'data', add_config={}, insert: int = None):
         """Creates and adds a new input at index pos"""
         # InfoMsgs.write('create_input called')
 
@@ -276,7 +278,7 @@ class Node(Base):
             self.inputs.append(inp)
 
 
-    def create_input_dt(self, dtype: DType, label: str = '', add_config={}, insert: int = None):
+    def create_input_dt(self, label: str, dtype: DType, add_config={}, insert: int = None):
         """Creates and adds a new data input with a DType"""
         # InfoMsgs.write('create_input called')
 
@@ -294,7 +296,7 @@ class Node(Base):
             self.inputs.append(inp)
 
 
-    def delete_input(self, index):
+    def delete_input(self, index: int):
         """Disconnects and removes input"""
 
         inp: NodeInput = self.inputs[index]
@@ -306,7 +308,7 @@ class Node(Base):
         self.inputs.remove(inp)
 
 
-    def create_output(self, type_: str = 'data', label: str = '', insert: int = None):
+    def create_output(self, label: str = '', type_: str = 'data', insert: int = None):
         """Creates and adds a new output"""
 
         out = NodeOutput(
@@ -321,7 +323,7 @@ class Node(Base):
             self.outputs.append(out)
 
 
-    def delete_output(self, index):
+    def delete_output(self, index: int):
         """Disconnects and removes output"""
 
         out: NodeOutput = self.outputs[index]
@@ -357,10 +359,10 @@ class Node(Base):
 
         self.get_vars_manager().register_receiver(self, name, method)
 
-    def unregister_var_receiver(self, name: str):
+    def unregister_var_receiver(self, name: str, method):
         """Unregisters previously registered node as receiver for value changes of script variables with given name"""
 
-        self.get_vars_manager().unregister_receiver(self, name)
+        self.get_vars_manager().unregister_receiver(self, name, method)
 
 
     # -----------------------------------------------------------------------------------------------------------------

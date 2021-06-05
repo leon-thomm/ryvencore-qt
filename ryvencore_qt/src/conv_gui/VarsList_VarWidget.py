@@ -133,7 +133,7 @@ class VarsList_VarWidget(QWidget):
 
         self.ignore_name_line_edit_signal = True
         # self.name_LE_editing_finished.emit()
-        if not self.vars_manager.check_new_var_name_validity(name):
+        if not self.vars_manager.var_name_valid(name):
             self.name_line_edit.setText(self.previous_var_name)
             return
 

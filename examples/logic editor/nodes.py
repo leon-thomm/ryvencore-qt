@@ -41,7 +41,7 @@ class SignalNode(NodeBase):
     doc = 'creates a signal, 1 or 0'
     init_inputs = []
     init_outputs = [
-        rc.NodeOutputBP('data')
+        rc.NodeOutputBP(type_='data')
     ]
     main_widget_class = SignalNode_MainWidget
     main_widget_pos = 'between ports'  # alternatively 'below ports'
@@ -75,11 +75,11 @@ class ANDGateNode(NodeBase):
     title = 'AND'
     doc = '1 <=> both inputs are 1'
     init_inputs = [
-        rc.NodeInputBP('data'),
-        rc.NodeInputBP('data'),
+        rc.NodeInputBP(type_='data'),
+        rc.NodeInputBP(type_='data'),
     ]
     init_outputs = [
-        rc.NodeOutputBP('data'),
+        rc.NodeOutputBP(type_='data'),
     ]
 
     def update_event(self, inp=-1):
@@ -90,11 +90,11 @@ class ORGateNode(NodeBase):
     title = 'OR'
     doc = '1 <=> at least one input is 1'
     init_inputs = [
-        rc.NodeInputBP('data'),
-        rc.NodeInputBP('data'),
+        rc.NodeInputBP(type_='data'),
+        rc.NodeInputBP(type_='data'),
     ]
     init_outputs = [
-        rc.NodeOutputBP('data'),
+        rc.NodeOutputBP(type_='data'),
     ]
 
     def update_event(self, inp=-1):
@@ -105,11 +105,11 @@ class XORGateNode(NodeBase):
     title = 'XOR'
     doc = '1 <=> odd number of inputs is 1'
     init_inputs = [
-        rc.NodeInputBP('data'),
-        rc.NodeInputBP('data'),
+        rc.NodeInputBP(type_='data'),
+        rc.NodeInputBP(type_='data'),
     ]
     init_outputs = [
-        rc.NodeOutputBP('data'),
+        rc.NodeOutputBP(type_='data'),
     ]
 
     def update_event(self, inp=-1):
@@ -120,10 +120,10 @@ class NOTGateNode(NodeBase):
     title = 'NOT'
     doc = 'negates the signal'
     init_inputs = [
-        rc.NodeInputBP('data'),
+        rc.NodeInputBP(type_='data'),
     ]
     init_outputs = [
-        rc.NodeOutputBP('data'),
+        rc.NodeOutputBP(type_='data'),
     ]
 
     def update_event(self, inp=-1):
@@ -134,11 +134,11 @@ class NANDGateNode(NodeBase):
     title = 'NAND'
     doc = 'NOT AND'
     init_inputs = [
-        rc.NodeInputBP('data'),
-        rc.NodeInputBP('data'),
+        rc.NodeInputBP(type_='data'),
+        rc.NodeInputBP(type_='data'),
     ]
     init_outputs = [
-        rc.NodeOutputBP('data'),
+        rc.NodeOutputBP(type_='data'),
     ]
 
     def update_event(self, inp=-1):
@@ -149,11 +149,11 @@ class NORGateNode(NodeBase):
     title = 'NOR'
     doc = 'NOT OR'
     init_inputs = [
-        rc.NodeInputBP('data'),
-        rc.NodeInputBP('data'),
+        rc.NodeInputBP(type_='data'),
+        rc.NodeInputBP(type_='data'),
     ]
     init_outputs = [
-        rc.NodeOutputBP('data'),
+        rc.NodeOutputBP(type_='data'),
     ]
 
     def update_event(self, inp=-1):
@@ -189,7 +189,7 @@ class LEDNode(NodeBase):
     title = 'LED'
     doc = 'shows red if signal is 1, black if it is 0'
     init_inputs = [
-        rc.NodeInputBP('data')
+        rc.NodeInputBP(type_='data')
     ]
     init_outputs = []
     main_widget_class = LED_MainWidget

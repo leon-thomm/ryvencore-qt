@@ -11,7 +11,7 @@ class PrintNode(rc.Node):
     title = 'Print'
     # there is also description_html
     init_inputs = [
-        rc.NodeInputBP('data')
+        rc.NodeInputBP(type_='data')
     ]
     init_outputs = []
     color = '#A9D5EF'
@@ -31,10 +31,10 @@ class RandNode(rc.Node):
 
     title = 'Rand'
     init_inputs = [
-        rc.NodeInputBP('data', '', {'widget name': 'std line edit', 'widget pos': 'besides'})
+        rc.NodeInputBP('', 'data', {'widget name': 'std line edit', 'widget pos': 'besides'})
     ]
     init_outputs = [
-        rc.NodeOutputBP('data')
+        rc.NodeOutputBP(type_='data')
     ]
     color = '#fcba03'
 
@@ -55,7 +55,7 @@ if __name__ == "__main__":
 
     # creating the session
     session = rc.Session()
-    session.design.set_flow_theme(name='Samuel 1l')
+    session.design.set_flow_theme(name='pure light')
 
     # registering the nodes
     session.register_nodes([PrintNode, RandNode])

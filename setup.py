@@ -6,7 +6,7 @@ setup(
     name='ryvencore-qt',
     version='0.0.0',
     license='LGPLv3',
-    description='Python Library for building Visual Scripting Editors with Qt',
+    description='Library for building Visual Scripting Editors with Qt',
     author='Leon Thomm',
     author_email='l.thomm@mailbox.org',
     packages=[
@@ -27,9 +27,8 @@ setup(
         "Development Status :: 2 - Pre-Alpha",
         "License :: OSI Approved :: GNU Lesser General Public License v3 or later (LGPLv3+)",
         "Programming Language :: Python :: 3",
-        "Programming Language :: Python :: 3.8",
         "Programming Language :: Python :: 3.9",
     ],
-    python_requires='>=3.8',
-    install_requires=['PySide2'],
+    python_requires='>=3.9',
+    install_requires=['PySide2', 'QtPy', 'Jinja2', 'Pygments'],
 )

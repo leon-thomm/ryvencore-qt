@@ -159,11 +159,12 @@ class Flow(Base):
         return valid
 
 
-    def connect_nodes(self, p1: NodePort, p2: NodePort):
+    def connect_nodes(self, p1: NodePort, p2: NodePort) -> Connection:
         """Connects nodes or disconnects them if they are already connected"""
 
         if not self.check_connection_validity(p1, p2):
-            raise Exception('Illegal connection request. Use check_connection_validity to check if a request is legal.')
+            return None
+            # raise Exception('Illegal connection request. Use check_connection_validity to check if a request is legal.')
 
         out = p1
         inp = p2
@@ -174,7 +175,7 @@ class Flow(Base):
             if c.inp == inp:
                 # DISCONNECT
                 self.remove_connection(c)
-                return
+                return None
 
         # if inp.type_ == 'data':
         #     for c in inp.connections:

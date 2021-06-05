@@ -4,6 +4,7 @@ from qtpy.QtWidgets import QWidget, QApplication
 from qtpy.QtCore import QObject, Signal, Qt
 
 from .ryvencore import Session as RC_Session, Script
+from .ryvencore.MacroScript import MacroScript
 from .ryvencore.RC import CLASSES
 
 from .Design import Design
@@ -16,13 +17,13 @@ from .WRAPPERS import VarsManager, LogsManager, DataConnection, Flow, Logger
 
 class Session(RC_Session, QObject):
 
-    # new_script_created = Signal(Script)
+    new_script_created = Signal(object)
+    flow_view_created = Signal(object, object)
     script_renamed = Signal(object)
     script_deleted = Signal(object)
 
     build_flow_view_request = Signal(object, tuple)
     complete_flow_view_config = Signal(dict)
-    script_flow_view_created = Signal(object, object)
 
     def __init__(
             self,
@@ -82,13 +83,15 @@ class Session(RC_Session, QObject):
 
     def create_macro(self, title: str = None, create_default_logs=True,
                      config: dict = None,
-                     flow_view_size: list = None) -> Script:
+                     flow_view_size: list = None) -> MacroScript:
         """Creates and returns a new macro script.
         If a config is provided the title parameter will be ignored and the script will not be initialized,
         which you need to do manually after you made sure that the config doesnt contain other macro nodes
         that have not been loaded yet."""
 
         script = RC_Session.create_macro(self, title=title, create_default_logs=create_default_logs, config=config)
+
+        self.new_script_created.emit(script)
 
         self._build_flow_view(script, flow_view_size)
 
@@ -102,15 +105,21 @@ class Session(RC_Session, QObject):
 
         script = RC_Session.create_script(self, title=title, create_default_logs=create_default_logs, config=config)
 
+        self.new_script_created.emit(script)
+
         self._build_flow_view(script, flow_view_size)
 
         return script
 
-    def rename_script(self, script: Script, title: str):
+    def rename_script(self, script: Script, title: str) -> bool:
         """Renames an existing script; emits script_renamed"""
 
-        RC_Session.rename_script(self, script=script, title=title)
-        self.script_renamed.emit(script)
+        success = RC_Session.rename_script(self, script=script, title=title)
+
+        if success:
+            self.script_renamed.emit(script)
+
+        return success
 
     def delete_script(self, script: Script):
         """Deletes an existing script; emits script_deleted"""
@@ -149,7 +158,7 @@ class Session(RC_Session, QObject):
         flow_view = self.tmp_data
 
         self.flow_views[script] = flow_view
-        self.script_flow_view_created.emit(script, flow_view)
+        self.flow_view_created.emit(script, flow_view)
 
         return flow_view
 

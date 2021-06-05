@@ -1,5 +1,5 @@
 # import math
-
+from qtpy.QtCore import QMarginsF
 from qtpy.QtCore import QRectF, QPointF, Qt
 from qtpy.QtGui import QPainter, QColor, QRadialGradient, QPainterPath, QPen
 from qtpy.QtWidgets import QGraphicsItem, QStyleOptionGraphicsItem
@@ -42,7 +42,7 @@ class ConnectionItem(QGraphicsItem):
 
     def boundingRect(self):
         if self.path:
-            return self.path.boundingRect()
+            return self.path.boundingRect().marginsAdded(QMarginsF(3, 3, 3, 3))
         else:
             op = self.out_pos()
             ip = self.inp_pos()

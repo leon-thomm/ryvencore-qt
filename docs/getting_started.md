@@ -61,7 +61,7 @@ if __name__ == "__main__":
 
     # creating the session
     session = rc.Session()
-    session.design.set_flow_theme(name='Samuel 1l')
+    session.design.set_flow_theme(name='pure light')
 
     # registering the nodes
     session.register_nodes([PrintNode, RandNode])
@@ -101,15 +101,13 @@ Let's define a simple node. For a detailed description of the members, take a lo
 
 ``` python
 class PrintNode(rc.Node):
+    """Prints your data"""
 
     # all basic properties
     title = 'Print'
-    description = 'prints your data'
-    # there is also description_html
     init_inputs = [
-        rc.NodeInputBP('data')
+        rc.NodeInputBP()
     ]
-    init_outputs = []
     color = '#A9D5EF'
     # see API doc for a full list of all properties
 
@@ -122,10 +120,10 @@ class PrintNode(rc.Node):
         print(data)
 ```
 
-Make your class derive from `rc.Node` and then enhance it the way you like. The `update_event` is the important part, it gets triggered every time the node is supposed to update.
+Make your class derive from `rc.Node` and then enhance it the way you like. The `update_event` is the important part, it gets triggered every time the node is updated.
 
 > [!NOTE]
-> While most flow-based visual scripting software out there implements either the approach of *execution-flows* or *data-flows*, ryvencore implements them both. Generally, data flows are more flexible and powerful, so the focus is on them, but there are cases where exec flows make more sense, so I wanted to leave it as an option.
+> While most flow-based visual scripting software out there implements either the approach of *execution-flows* or *data-flows*, `ryvencore` implements them both. Generally, data flows are more flexible and powerful, so the focus is on them, but there are cases where exec flows make more sense, so I wanted to leave it as an option.
 
 > [!TIP|label:Custom Node Base Class]
 > In more sophisticated editors, you may want to define your custom `NodeBase` class to add functionality to all your nodes. If you want ryvencore-internal nodes (like macro nodes) to be children of this class too, you can provide your base class when initializing the `Session` object.
@@ -136,14 +134,14 @@ And let's add another node which generates a random number in a given range, so 
 from random import random
 
 class RandNode(rc.Node):
+    """Generates random float"""
     
     title = 'Rand'
-    description = 'generates random float'
     init_inputs = [
-        rc.NodeInputBP('data', '', {'widget name': 'std line edit', 'widget pos': 'besides'})
+        rc.NodeInputBP(dtype=rc.dtypes.Integer(default=1, bounds=(1, 100)))
     ]
     init_outputs = [
-        rc.NodeOutputBP('data')
+        rc.NodeOutputBP())
     ]
     color = '#fcba03'
 
@@ -155,17 +153,11 @@ class RandNode(rc.Node):
         self.set_output_val(0, val)
 ```
 
-Note the `widget`-related specs in the NodePort which I will explain in the following section.
+Notice, instead of a `dtype`, we could also provide a more sophisticated custom widget via `NodeInputBP(add_config={'widget name': 'some_registered_widget', 'widget pos': 'besides'})` which is explained below.
 
 #### Input Widgets
 
-Data inputs can have widgets, more specifically a *QWidget* (which is a GUI class of Qt) or a subclass. Custom input widget classes can be registered for a node by listing them in the Node's static field `input_widget_classes` (see [API](/api#class-node)). However, ryvencore-qt also provides a few builtin convenience classes. The following code creates an input with an input field of the builtin type *std line edit*.
-
-``` python
-    init_inputs = [
-        rc.NodeInputBP('data', '', {'widget name': 'std line edit', 'widget pos': 'besides'})
-    ]
-```
+Data inputs can have widgets, more specifically a *QWidget* (which is a GUI class of Qt) or any subclass. Custom input widget classes can be registered for a node by listing them in the Node's static field `input_widget_classes` (see [API](/api#class-node)). However, `ryvencore-qt` also provides a few built-in convenience widgets that are automatically added when using `dtypes`.
 
 ### Finishing
 
@@ -174,7 +166,7 @@ Now you can run this and if everything works fine you already have a small edito
 Of course there is much more you can do. For example you can change the flow theme.
 
 ``` python
-session.design.set_flow_theme(name='Samuel 1l')
+session.design.set_flow_theme(name='pure light')
 ```
 
 There are a few different themes and you can configure the their colors using a json config file, so you'll definitely be able to give your flows a look that fits in the application environment it's going to be a part of. 
@@ -196,15 +188,13 @@ from random import random
 
 
 class PrintNode(rc.Node):
+    """Prints your data"""
 
     # all basic properties
     title = 'Print'
-    description = 'prints your data'
-    # there is also description_html
     init_inputs = [
-        rc.NodeInputBP('data')
+        rc.NodeInputBP()
     ]
-    init_outputs = []
     color = '#A9D5EF'
     # see API doc for a full list of all properties
 
@@ -218,14 +208,14 @@ class PrintNode(rc.Node):
 
 
 class RandNode(rc.Node):
+    """Generates random float"""
     
     title = 'Rand'
-    description = 'generates random float'
     init_inputs = [
-        rc.NodeInputBP('data', '', {'widget name': 'std line edit', 'widget pos': 'besides'})
+        rc.NodeInputBP(dtype=rc.dtypes.Integer(default=1, bounds=(1, 100)))
     ]
     init_outputs = [
-        rc.NodeOutputBP('data')
+        rc.NodeOutputBP())
     ]
     color = '#fcba03'
 
@@ -246,7 +236,7 @@ if __name__ == "__main__":
 
     # creating the session
     session = rc.Session()
-    session.design.set_flow_theme(name='Samuel 1l')
+    session.design.set_flow_theme(name='pure light')
 
     # registering the nodes
     session.register_nodes([PrintNode, RandNode])
@@ -267,7 +257,7 @@ if __name__ == "__main__":
 
 ## Second Editor
 
-Here I will just throw at you the commented code for another editor that demonstrates how slightly larger ryvencore-qt editors might generally be structured. It was a first prototype I made for a software to simulate flows of logic gates.
+Here I will just throw at you the commented code for another editor that demonstrates how slightly larger `ryvencore-qt` editors might generally be structured. It was a first prototype I made for a software to simulate flows of logic gates.
 
 
 <details><summary>CODE</summary>
@@ -290,11 +280,11 @@ class MainWindow(QMainWindow):
 
         # if I wanted to make all ryvencore-internally defined nodes 
         # (like macro nodes) also inherit from our NodeBase, I'd provide 
-        # it as node_class parameter here, but I dont want that in this case
+        # it as node_class parameter here, but I don't need it here
         self.session = rc.Session()
 
         # some design specs
-        self.session.design.set_flow_theme(name='Samuel 1l')
+        self.session.design.set_flow_theme(name='pure light')
         self.session.design.set_performance_mode('pretty')
 
         # registering the nodes
@@ -541,11 +531,11 @@ class LEDNode(NodeBase):
 
 </details>
 
-And now we have a basic little editor to play around with logic gates, yayy!
+And now we have a basic little editor to play around with logic gates, yay!
 ![](img/logic_editor_screenshot1.png)
 ![](img/logic_editor_screenshot2.png)
 ![](img/logic_editor_screenshot3.png) 
 The actual editor I made for this is a bit more sophisticated and pretty, and might get its own repository soon.
 
 > [!TIP|label:Done]
-> Congrats, you are now good to go to create much more advanced and optimized editors. ryvencore-qt has much more features than I showed here. See the [Features](/features) section where you will find more detailed descriptions of all the internal systems, from save&load over stylus-and touch-support to execution flows. The world is yours, have fun!
+> `ryvencore-qt` has much more features than I showed here, and there are lots of things that might be added in the future. See the [Features](/features) section where you will find more detailed descriptions of all the internal systems, from save&load over stylus-and touch-support to execution flows. The world is yours, have fun!

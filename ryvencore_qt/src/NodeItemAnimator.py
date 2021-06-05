@@ -50,6 +50,13 @@ class NodeItemAnimator(QObject):
         self.body_activation_animation.setKeyValueAt(0.3, self.get_body_color().lighter())
         self.body_activation_animation.setKeyValueAt(1, self.get_body_color())
 
+    def fading_out(self):
+        return self.title_activation_animation.currentTime()/self.title_activation_animation.duration() >= 0.3
+
+    def set_animation_max(self):
+        self.title_activation_animation.setCurrentTime(0.3*self.title_activation_animation.duration())
+        self.body_activation_animation.setCurrentTime(0.3*self.body_activation_animation.duration())
+
     def get_body_color(self):
         return self.node_item.color
 
