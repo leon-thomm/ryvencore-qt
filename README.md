@@ -96,7 +96,7 @@ See [Features](https://leon-thomm.github.io/ryvencore-qt/features/).
 While data flows should be the most common use case, exec flows (like [UnrealEngine BluePrints](https://docs.unrealengine.com/4.26/en-US/ProgrammingAndScripting/Blueprints/)) are also supported.
 
 #### stylus support for adding handwritten notes  
-![](./docs/img/stylus.png)
+![](./docs/img/stylus_light.png)
 
 #### rendering flow images  
 
