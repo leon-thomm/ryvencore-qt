@@ -12,7 +12,7 @@ class NodeItem_CollapseButton(QGraphicsWidget):
         self.node = node
         self.node_item = node_item
 
-        self.size = QSize(14, 7)
+        self.size = QSizeF(14, 7)
 
         self.setGraphicsItem(self)
         self.setCursor(Qt.PointingHandCursor)

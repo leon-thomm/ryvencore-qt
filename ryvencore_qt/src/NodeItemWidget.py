@@ -1,4 +1,4 @@
-from qtpy.QtCore import QPointF, QRectF, Qt
+from qtpy.QtCore import QPointF, QRectF, Qt, QSizeF
 from qtpy.QtWidgets import QGraphicsWidget, QGraphicsLinearLayout, QSizePolicy
 
 from .NodeItem_CollapseButton import NodeItem_CollapseButton
@@ -147,8 +147,8 @@ class NodeItemWidget(QGraphicsWidget):
 
             # self.main_widget_proxy.setMaximumSize(mw.maximumSize())
 
-            self.main_widget_proxy.setMaximumSize(mw.size())
-            self.main_widget_proxy.setMinimumSize(mw.size())
+            self.main_widget_proxy.setMaximumSize(QSizeF(mw.size()))
+            self.main_widget_proxy.setMinimumSize(QSizeF(mw.size()))
 
             self.adjustSize()
             self.adjustSize()

@@ -20,50 +20,53 @@ python setup.py install
 
 ### Dependencies
 
-`ryvencore-qt` currently uses [QtPy](https://github.com/spyder-ide/qtpy), which is a wrapper for Qt enabling you to choose between Pyside2 and PyQt5. *(I think it's bugged with PyQt5 right now, but it should run soon)*
+`ryvencore-qt` currently uses [QtPy](https://github.com/spyder-ide/qtpy), which is a wrapper for Qt enabling you to choose between different bindings. *(However, due to some really bad inheritance restrictions in PyQt5, you cannot run  `ryvencore-qt` with PyQt5. I plan to use QtPy to enable seamless switching between PySide2 and PySide6.)*
 
 Saved flows can be deployed directly on the backend (`ryvencore`) which does not have a single dependency so far!
 
 ### Features
 
-- **load & save**  
+#### load & save  
 All serialization and loading of projects. Data is stored using `json`, and for some parts `pickle`.
-    ```python
-    project: dict = my_session.serialize()
-    with open(filepath, 'w') as f:
-        f.write(json.dumps(project))
-    ```
-- **simple nodes system**  
+```python
+project: dict = my_session.serialize()
+with open(filepath, 'w') as f:
+    f.write(json.dumps(project))
+```
+
+#### simple nodes system  
 All information of a node is part of its class. A minimal node definition can be as simple as this
 
-    ```python
-    import ryvencore_qt as rc
-    
-    class PrintNode(rc.Node):
-        """Prints your data."""
+```python
+import ryvencore_qt as rc
 
-        title = 'Print'
-        init_inputs = [
-            rc.NodeInputBP()
-        ]
-        color = '#A9D5EF'
-    
-        def update_event(self, inp=-1):
-            print(self.input(0))
-    ```
-    see also example below.
-- **dynamic nodes registration mechanism**  
+class PrintNode(rc.Node):
+    """Prints your data."""
+
+    title = 'Print'
+    init_inputs = [
+        rc.NodeInputBP()
+    ]
+    color = '#A9D5EF'
+
+    def update_event(self, inp=-1):
+        print(self.input(0))
+```
+see also example below.
+
+#### dynamic nodes registration mechanism  
 You can register and unregister nodes at any time. Registered nodes can be placed in a flow.
     ```python
     my_session.register_nodes( [ <your_nodes> ] )
     ```
-- **macros / subgraphs**  
+#### macros / subgraphs  
 You can define *macros* which have their own flow plus input and output node, which get registered as nodes themselves, just like this
 
-    ![](./docs/img/macro.png)
-    Macros are like normal scripts plus input and output node
-    ![](./docs/img/macro2.png)
-- **right click operations system for nodes**  
+![](./docs/img/macro.png)
+Macros are like normal scripts plus input and output node
+![](./docs/img/macro2.png)
+
+#### right click operations system for nodes  
 which can be edited through the API at any time
     ```python
     self.special_actions[f'remove input {i}'] = {
@@ -76,52 +79,59 @@ which can be edited through the API at any time
         self.delete_input(index)
         del self.special_actions[f'remove input {len(self.inputs)}']
     ```
-- **Qt widgets**  
+#### Qt widgets  
 You can add custom QWidgets for your nodes.
-    ```python
-    class MyNode(rc.Node):
-        main_widget_class = MyNodeMainWidget
-        main_widget_pos = 'below ports'  # alternatively 'between ports'
-        # ...
-    ```
-<!-- - **convenience GUI classes** -->
-- **many different modifiable themes**  
+
+```python
+class MyNode(rc.Node):
+    main_widget_class = MyNodeMainWidget
+    main_widget_pos = 'below ports'  # alternatively 'between ports'
+    # ...
+```
+
+#### many different modifiable themes  
 See [Features](https://leon-thomm.github.io/ryvencore-qt/features/).
-- **exec flow support**  
+
+#### exec flow support  
 While data flows should be the most common use case, exec flows (like [UnrealEngine BluePrints](https://docs.unrealengine.com/4.26/en-US/ProgrammingAndScripting/Blueprints/)) are also supported.
-- **stylus support for adding handwritten notes**  
+
+#### stylus support for adding handwritten notes  
 ![](./docs/img/stylus.png)
-- **rendering flow images**  
-- **logging support**  
-    ```python
-    import logging
 
-    class MyNode(rc.Node):
-        def __init__(self, params):
-            super().__init__(params)
+#### rendering flow images  
 
-            self.my_logger = self.new_logger(title='nice log')
-        
-        def update_event(self, inp=-1):
-            self.my_logger.log(logging.INFO, 'updated!')
-    ```
-- **variables system**  
+#### logging support  
+```python
+import logging
+
+class MyNode(rc.Node):
+    def __init__(self, params):
+        super().__init__(params)
+
+        self.my_logger = self.new_logger(title='nice log')
+    
+    def update_event(self, inp=-1):
+        self.my_logger.log(logging.INFO, 'updated!')
+```
+
+#### variables system  
 with an update mechanism to build nodes that automatically adapt to change of variables
 
-    ```python
-    import logging
-    class MyNode(rc.Node):
-        # ...
-        def __init__(self, params):
-            super().__init__(params)
-            self.my_logger = self.new_log(title='nice log')
-            # assuming a 'messages' var had been created in the flow's script
-            self.register_var_receiver(name='messages', method=self.new_msg)
-        
-        def new_msg(self, msgs: list):
-            self.my_logger.log(logging.INFO, f'received msg: {msgs[-1]}')
-    ```
-- **threading compatibility**  
+```python
+import logging
+class MyNode(rc.Node):
+    # ...
+    def __init__(self, params):
+        super().__init__(params)
+        self.my_logger = self.new_log(title='nice log')
+        # assuming a 'messages' var had been created in the flow's script
+        self.register_var_receiver(name='messages', method=self.new_msg)
+    
+    def new_msg(self, msgs: list):
+        self.my_logger.log(logging.INFO, f'received msg: {msgs[-1]}')
+```
+
+#### threading compatibility  
 All communication between frontend (`ryvencore-qt`) and backend (`ryvencore`) is based on Qt signals. Therefore, there exists rudimentary threading compatibility, i.e. you can keep your session object in a separate thread to improve concurrency and prevent the backend from being slown down signicantly by the frontend, and all changes you perform directly on the backend are automatically noticed by the frontend. While this is currently extremely experimental and far from production ready, it opens the door to the world of realtime data processing and first successful tests have been made.
 
 ### Usage

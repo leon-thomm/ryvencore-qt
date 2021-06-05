@@ -25,7 +25,7 @@ from .NodeItem import NodeItem
 from .ryvencore.NodePort import NodePort
 
 
-class FlowUndoCommand(QUndoCommand, QObject):
+class FlowUndoCommand(QObject, QUndoCommand):
     """
     The main difference to normal QUndoCommands is the activation feature. This allows the flow widget to add the
     undo command to the undo stack before redo() is called. This is important since some of these commands can cause
@@ -39,8 +39,8 @@ class FlowUndoCommand(QUndoCommand, QObject):
         self.flow = flow_view.flow
         self._activated = False
 
-        QUndoCommand.__init__(self)
         QObject.__init__(self)
+        QUndoCommand.__init__(self)
 
     def activate(self):
         self._activated = True

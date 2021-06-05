@@ -75,8 +75,8 @@ class VariablesListWidget(QWidget):
 
 
     def rebuild_list(self):
-        for i in range(self.layout().count()):
-            self.list_layout.removeItem(self.layout().itemAt(0))
+        for i in range(self.list_layout.count()):
+            self.list_layout.removeItem(self.list_layout.itemAt(0))
 
         for w in self.widgets:
             self.list_layout.addWidget(w)

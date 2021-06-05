@@ -560,7 +560,7 @@ class FlowView(QGraphicsView):
 
         # DRAW CURRENTLY DRAGGED CONNECTION
         if self._dragging_connection:
-            pen = QPen('#101520')
+            pen = QPen(QColor('#101520'))
             pen.setWidth(3)
             pen.setStyle(Qt.DotLine)
             painter.setPen(pen)

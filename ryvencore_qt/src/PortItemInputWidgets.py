@@ -7,14 +7,14 @@ from .WidgetBaseClasses import IWB
 from .retain import M
 
 
-class RCIW_BUILTIN_SpinBox(QSpinBox, IWB):
+class RCIW_BUILTIN_SpinBox(IWB, QSpinBox):
     """Convenience class for using a spin box widget as data input for nodes."""
 
     trigger_update = Signal(int)
 
     def __init__(self, params):
-        QSpinBox.__init__(self)
         IWB.__init__(self, params)
+        QSpinBox.__init__(self)
 
         self.trigger_update.connect(self.node.update)
 
@@ -44,7 +44,7 @@ class RCIW_BUILTIN_SpinBox(QSpinBox, IWB):
             self.setValue(data)
 
 
-class RCIW_BUILTIN_LineEdit(QLineEdit, IWB):
+class RCIW_BUILTIN_LineEdit(IWB, QLineEdit):
     """Convenience class for using input fields (i.e. QLineEdits) as widgets for data inputs of nodes."""
 
     trigger_update = Signal(object)
@@ -129,13 +129,13 @@ class DType_IW_Base(IWB):
 
 
 
-class Data_IW(QLineEdit, DType_IW_Base):  # virtual
+class Data_IW(DType_IW_Base, QLineEdit):  # virtual
 
     base_width = None  # specified by subclasses
 
     def __init__(self, params):
-        QLineEdit.__init__(self)
         DType_IW_Base.__init__(self, params)
+        QLineEdit.__init__(self)
 
         dtype = self.input.dtype
 
@@ -203,13 +203,13 @@ class Data_IW_L(Data_IW):
 # -----------------------------------
 
 
-class String_IW(QLineEdit, DType_IW_Base):  # virtual
+class String_IW(DType_IW_Base, QLineEdit):  # virtual
 
     width = None  # specified by subclasses
 
     def __init__(self, params):
-        QLineEdit.__init__(self)
         DType_IW_Base.__init__(self, params)
+        QLineEdit.__init__(self)
 
         dtype = self.input.dtype
 
@@ -257,10 +257,10 @@ class String_IW_L(String_IW):
 # -----------------------------------
 
 
-class Integer_IW(QSpinBox, DType_IW_Base):
+class Integer_IW(DType_IW_Base, QSpinBox):
     def __init__(self, params):
-        QSpinBox.__init__(self)
         DType_IW_Base.__init__(self, params)
+        QSpinBox.__init__(self)
 
         dtype = self.input.dtype
 
@@ -293,10 +293,10 @@ class Integer_IW(QSpinBox, DType_IW_Base):
         self.setValue(data['val'])
 
 
-class Float_IW(QLineEdit, DType_IW_Base):
+class Float_IW(DType_IW_Base, QLineEdit):
     def __init__(self, params):
-        QLineEdit.__init__(self)
         DType_IW_Base.__init__(self, params)
+        QLineEdit.__init__(self)
 
         dtype = self.input.dtype
 
@@ -330,10 +330,10 @@ class Float_IW(QLineEdit, DType_IW_Base):
         self.setText(data['text'])
 
 
-class Boolean_IW(QCheckBox, DType_IW_Base):
+class Boolean_IW(DType_IW_Base, QCheckBox):
     def __init__(self, params):
-        QCheckBox.__init__(self)
         DType_IW_Base.__init__(self, params)
+        QCheckBox.__init__(self)
 
         dtype = self.input.dtype
 
@@ -365,10 +365,10 @@ class Boolean_IW(QCheckBox, DType_IW_Base):
         self.setChecked(data['checked'])
 
 
-class Choice_IW(QComboBox, DType_IW_Base):
+class Choice_IW(DType_IW_Base, QComboBox):
     def __init__(self, params):
-        QComboBox.__init__(self)
         DType_IW_Base.__init__(self, params)
+        QComboBox.__init__(self)
 
         dtype = self.input.dtype
 

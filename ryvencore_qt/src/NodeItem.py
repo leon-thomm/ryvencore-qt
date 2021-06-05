@@ -1,4 +1,4 @@
-from qtpy.QtWidgets import QGraphicsItem, QMenu, QGraphicsDropShadowEffect
+from qtpy.QtWidgets import QGraphicsItem, QGraphicsObject, QMenu, QGraphicsDropShadowEffect
 from qtpy.QtCore import Qt, QRectF, QObject, QPointF
 from qtpy.QtGui import QColor
 
@@ -11,13 +11,14 @@ from .ryvencore.tools import serialize, deserialize
 from .tools import MovementEnum
 
 
-class NodeItem(QGraphicsItem, QObject):
+class NodeItem(QGraphicsObject):  # QGraphicsItem, QObject):
     """The GUI representative for nodes. Unlike the Node class, this class is not subclassed individually and works
     the same for every node."""
 
     def __init__(self, node, params):
-        QGraphicsItem.__init__(self)
-        QObject.__init__(self)
+        # QGraphicsItem.__init__(self)
+        # QObject.__init__(self)
+        QGraphicsObject.__init__(self)
 
         self.node = node
         flow_view, design, config = params
@@ -53,8 +54,11 @@ class NodeItem(QGraphicsItem, QObject):
         self.node.output_removed.connect(self.remove_output)
 
         # FLAGS
-        self.setFlags(QGraphicsItem.ItemIsSelectable | QGraphicsItem.ItemIsMovable |
-                      QGraphicsItem.ItemSendsScenePositionChanges)
+        self.setFlags(
+            QGraphicsItem.ItemIsSelectable |
+            QGraphicsItem.ItemIsMovable |
+            QGraphicsItem.ItemSendsScenePositionChanges
+        )
         self.setAcceptHoverEvents(True)
         self.setCacheMode(QGraphicsItem.DeviceCoordinateCache)
 
