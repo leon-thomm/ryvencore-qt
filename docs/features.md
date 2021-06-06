@@ -50,7 +50,7 @@ Special actions are a very simple way to define right click operations for your 
 
 ```python
 # creating a new entry
-self.special_actions['add some input'] = {'method': self.add_some_input_action}
+self.actions['add some input'] = {'method': self.add_some_input_action}
 
 
 # with a corresponding method
@@ -59,15 +59,15 @@ def add_some_input_action(self):
 
 
 # removing an entry
-del self.special_actions['add some input']
+del self.actions['add some input']
 
 # storing individual data for multiple actions pointing to the same target method
 # which enables dynamic, current state dependent actions
-self.special_actions['add some input at index 0'] = {
+self.actions['add some input at index 0'] = {
     'method': self.add_some_input_at,
     'data': 0
 }
-self.special_actions['add some input at index 1'] = {
+self.actions['add some input at index 1'] = {
     'method': self.add_some_input_at,
     'data': 1
 }

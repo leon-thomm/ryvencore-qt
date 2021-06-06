@@ -346,7 +346,7 @@ class NodeItem(QGraphicsObject):  # QGraphicsItem, QObject):
 
         menu.addSeparator()
 
-        actions = self.get_actions(self.node.special_actions, menu)
+        actions = self.get_actions(self.node.actions, menu)
         for a in actions:  # menu needed for 'parent'
             if type(a) == NodeItemAction:
                 menu.addAction(a)

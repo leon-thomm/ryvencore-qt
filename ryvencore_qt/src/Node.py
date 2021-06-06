@@ -31,7 +31,7 @@ class Node(RC_Node, QObject):
         RC_Node.__init__(self, params)
 
         self.default_actions = self.init_default_actions()
-        self.special_actions = {}
+        self.actions = {}
         self.display_title = self.title
 
         self.item = None  # set by the flow view
@@ -167,13 +167,13 @@ class Node(RC_Node, QObject):
     # @override
     def custom_config_data(self) -> dict:
         return {
-            'special actions': self.get_special_actions_data(self.special_actions),
+            'special actions': self.get_special_actions_data(self.actions),
             'display title': self.display_title,
         }
 
     # @override
     def load_custom_config(self, data: dict):
-        self.special_actions = self.set_special_actions_data(data['special actions'])
+        self.actions = self.set_special_actions_data(data['special actions'])
         self.display_title = data['display title']
 
     # @override
