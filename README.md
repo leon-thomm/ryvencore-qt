@@ -56,9 +56,10 @@ see also example below.
 
 #### dynamic nodes registration mechanism  
 You can register and unregister nodes at any time. Registered nodes can be placed in a flow.
-    ```python
-    my_session.register_nodes( [ <your_nodes> ] )
-    ```
+```python
+my_session.register_nodes( [ <your_nodes> ] )
+```
+
 #### macros / subgraphs  
 You can define *macros* which have their own flow plus input and output node, which get registered as nodes themselves, just like this
 
@@ -68,17 +69,18 @@ Macros are like normal scripts plus input and output node
 
 #### right click operations system for nodes  
 which can be edited through the API at any time
-    ```python
-    self.special_actions[f'remove input {i}'] = {
-        'method': self.rem_input,
-        'data': i,
-    }
+```python
+self.actions[f'remove input {i}'] = {
+    'method': self.rem_input,
+    'data': i,
+}
 
-    # with some method...
-    def rem_input(self, index):
-        self.delete_input(index)
-        del self.special_actions[f'remove input {len(self.inputs)}']
-    ```
+# with some method...
+def rem_input(self, index):
+    self.delete_input(index)
+    del self.actions[f'remove input {len(self.inputs)}']
+```
+
 #### Qt widgets  
 You can add custom QWidgets for your nodes.
 
