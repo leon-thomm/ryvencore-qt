@@ -6,3 +6,4 @@ build/
 dist/
 ryvencore_qt.egg-info/
 site/
+reinstall.bat
