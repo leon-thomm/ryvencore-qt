@@ -8,7 +8,7 @@ long_descr_content = """
 
 setup(
     name='ryvencore-qt',
-    version='0.0.2.1',
+    version='0.0.2.2',
     license='LGPLv2.1',
     description='Library for building Visual Scripting Editors with Qt',
     long_description=long_descr_content,
@@ -33,6 +33,8 @@ setup(
         "Development Status :: 2 - Pre-Alpha",
         "License :: OSI Approved :: GNU Lesser General Public License v2 or later (LGPLv2+)",
         "Programming Language :: Python :: 3",
+        "Programming Language :: Python :: 3.6",
+        "Programming Language :: Python :: 3.7",
         "Programming Language :: Python :: 3.8",
         "Programming Language :: Python :: 3.9",
     ],
