@@ -15,7 +15,7 @@ def build_macro_classes(BaseClass):
         def __init__(self, params):
             super().__init__(params)
 
-            self.special_actions = {
+            self.actions = {
                 'add parameter': {
                     'data': {'method': self.add_macro_param, 'data': 'data'},
                     'exec': {'method': self.add_macro_param, 'data': 'exec'}
@@ -26,10 +26,10 @@ def build_macro_classes(BaseClass):
             }
 
         def add_macro_param(self, type_):
-            self.create_output(type_, '')
+            self.create_output(type_=type_, label='')
 
             i = len(self.outputs)-1
-            self.special_actions['remove parameter'][str(i)] = {
+            self.actions['remove parameter'][str(i)] = {
                 'method': self.remove_macro_param,
                 'data': i
             }
@@ -39,12 +39,12 @@ def build_macro_classes(BaseClass):
         def remove_macro_param(self, index):
             self.delete_output(index)
             # self.rebuild_remove_actions()
-            del self.special_actions['remove parameter'][str(index)]
+            del self.actions['remove parameter'][str(index)]
             self.script.remove_parameter(index)
 
         # def rebuild_remove_actions(self):
-        #     del self.special_actions['remove parameter']
-        #     self.special_actions['remove parameter'] = {
+        #     del self.actions['remove parameter']
+        #     self.actions['remove parameter'] = {
         #         str(o+1): {'method': self.remove_macro_param, 'data': o} for o in range(len(self.outputs))
         #     }
 
@@ -78,7 +78,7 @@ def build_macro_classes(BaseClass):
         def __init__(self, params):
             super().__init__(params)
 
-            self.special_actions = {
+            self.actions = {
                 'add return': {
                     'data': {'method': self.add_macro_return, 'data': 'data'},
                     'exec': {'method': self.add_macro_return, 'data': 'exec'}
@@ -100,10 +100,10 @@ def build_macro_classes(BaseClass):
             # It is coordinated by the input node above.
 
         def add_macro_return(self, type_):
-            self.create_input(type_)
+            self.create_input(type_=type_, label='')
 
             i = len(self.inputs)-1
-            self.special_actions['remove return'][str(i)] = {
+            self.actions['remove return'][str(i)] = {
                 'method': self.remove_macro_return,
                 'data': i
             }
@@ -113,12 +113,12 @@ def build_macro_classes(BaseClass):
         def remove_macro_return(self, index):
             self.delete_input(index)
             # self.rebuild_remove_actions()
-            del self.special_actions['remove return'][str(index)]
+            del self.actions['remove return'][str(index)]
             self.script.remove_return(index)
 
         # def rebuild_remove_actions(self):
-        #     del self.special_actions['remove return']
-        #     self.special_actions['remove return'] = {
+        #     del self.actions['remove return']
+        #     self.actions['remove return'] = {
         #         str(i+1): {'method': self.remove_macro_return, 'data': i} for i in range(len(self.inputs))
         #     }
 
@@ -174,9 +174,9 @@ def build_macro_classes(BaseClass):
             if not self.init_config:
                 # catch up on params and returns
                 for p in self.macro_script.parameters:
-                    self.create_input(p['type'], p['label'])
+                    self.create_input(type_=p['type'], label=p['label'])
                 for r in self.macro_script.returns:
-                    self.create_output(r['type'], r['label'])
+                    self.create_output(type_=r['type'], label=r['label'])
 
         def update_event(self, inp=-1):
 
