@@ -95,7 +95,7 @@ class Node(Base):
                 inp = self.init_inputs[i]
 
                 if inp.dtype:
-                    self.create_input_dt(label=inp.label, dtype=inp.dtype, add_config=inp.add_config)
+                    self.create_input_dt(dtype=inp.dtype, label=inp.label, add_config=inp.add_config)
 
                 else:
                     self.create_input(inp.label, inp.type_, add_config=self.init_inputs[i].add_config)
@@ -107,8 +107,8 @@ class Node(Base):
         else:  # when loading saved nodes, the init_inputs and init_outputs are irrelevant
             for inp in inputs_config:
                 if 'dtype' in inp:
-                    self.create_input_dt(label=inp['label'], dtype=DType.from_str(inp['dtype'])(
-                        _load_state=deserialize(inp['dtype state'])), add_config=inp)
+                    self.create_input_dt(dtype=DType.from_str(inp['dtype'])(
+                        _load_state=deserialize(inp['dtype state'])), label=inp['label'], add_config=inp)
                 else:
                     self.create_input(label=inp['label'], type_=inp['type'], add_config=inp)
 
@@ -278,7 +278,7 @@ class Node(Base):
             self.inputs.append(inp)
 
 
-    def create_input_dt(self, label: str, dtype: DType, add_config={}, insert: int = None):
+    def create_input_dt(self, dtype: DType, label: str = '', add_config={}, insert: int = None):
         """Creates and adds a new data input with a DType"""
         # InfoMsgs.write('create_input called')
 

@@ -123,8 +123,8 @@ class Node(RC_Node, QObject):
             self.input_added.emit(self.inputs[-1], None)
 
     # @override
-    def create_input_dt(self, label: str, dtype: DType, add_config={}, insert: int = None):
-        RC_Node.create_input_dt(self, label=label, dtype=dtype, add_config=add_config, insert=insert)
+    def create_input_dt(self, dtype: DType, label: str = '', add_config={}, insert: int = None):
+        RC_Node.create_input_dt(self, dtype=dtype, label=label, add_config=add_config, insert=insert)
 
         if insert is not None:
 

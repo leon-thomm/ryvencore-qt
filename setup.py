@@ -8,7 +8,7 @@ long_descr_content = """
 
 setup(
     name='ryvencore-qt',
-    version='0.0.2.4',
+    version='0.0.2.6',
     license='LGPLv2.1',
     description='Library for building Visual Scripting Editors with Qt',
     long_description=long_descr_content,
