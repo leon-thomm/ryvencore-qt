@@ -2,19 +2,21 @@
 from qtpy.QtCore import QMarginsF
 from qtpy.QtCore import QRectF, QPointF, Qt
 from qtpy.QtGui import QPainter, QColor, QRadialGradient, QPainterPath, QPen
-from qtpy.QtWidgets import QGraphicsItem, QStyleOptionGraphicsItem
+from qtpy.QtWidgets import QGraphicsPathItem, QGraphicsItem, QStyleOptionGraphicsItem
 
 from .tools import sqrt
 from .tools import pythagoras
 
 
-class ConnectionItem(QGraphicsItem):
+class ConnectionItem(QGraphicsPathItem):
     """The GUI representative for a connection. The classes ExecConnectionItem and DataConnectionItem will be ready
     for reimplementation later, so users can add GUI for the enhancements of DataConnection and ExecConnection,
     like input fields for weights."""
 
     def __init__(self, connection, session_design):
         super().__init__()
+
+        self.setAcceptHoverEvents(True)
 
         self.connection = connection
 
@@ -25,42 +27,75 @@ class ConnectionItem(QGraphicsItem):
         self.out_item = out_node.port_item(out)
         self.inp_item = inp_node.port_item(inp)
 
-        # self.out = self.connection.out
-        # self.out_item = self.connection.out.node.port_item()
-        # self.inp = self.connection.inp
-
-        # self.type_ = type_
         self.session_design = session_design
-        self.changed = False
-        self.path: QPainterPath = None
-        self.gradient = None
+        self.session_design.flow_theme_changed.connect(self.recompute)
+        self.session_design.performance_mode_changed.connect(self.recompute)
 
         # for rendering flow pictures
         self.setCacheMode(QGraphicsItem.DeviceCoordinateCache)
 
         self.recompute()
 
-    def boundingRect(self):
-        if self.path:
-            return self.path.boundingRect().marginsAdded(QMarginsF(3, 3, 3, 3))
-        else:
-            op = self.out_pos()
-            ip = self.inp_pos()
-            return QRectF(
-                0 if op.x() < ip.x() else (ip.x()-op.x()),
-                0 if op.y() < ip.y() else (ip.y()-op.y()),
-                abs(ip.x()-op.x()),
-                abs(ip.y()-op.y())
+    def recompute(self):
+        """Updates scene position and recomputes path, pen and gradient"""
+
+        # position
+        self.setPos(self.out_pos())
+
+        # path
+        self.setPath(
+            self.connection_path(
+                QPointF(0, 0),
+                self.inp_pos()-self.scenePos()
+            )
+        )
+
+        # pen
+        pen = self.get_pen()
+
+        # brush
+        self.setBrush(Qt.NoBrush)
+
+        #   gradient
+        if self.session_design.performance_mode == 'pretty':
+            c = pen.color()
+            w = self.path().boundingRect().width()
+            h = self.path().boundingRect().height()
+            gradient = QRadialGradient(
+                self.boundingRect().center(),
+                pythagoras(w, h) / 2
             )
 
+            c_r = c.red()
+            c_g = c.green()
+            c_b = c.blue()
 
-    def recompute(self):
-        """Updated scene position and recomputes the path"""
+            # this offset will be 1 if inp.x >> out.x and 0 if inp.x < out.x
+            # hence, no fade for the gradient if the connection goes backwards
+            offset_mult: float = max(
+                0,
+                min(
+                    (self.inp_pos().x() - self.out_pos().x()) / 200,
+                    1
+                )
+            )
 
-        self.setPos(self.out_pos())
-        self.changed = True
-        self.update()
-    
+            # and if the input is very far away from the output, decrease the gradient fade so the connection
+            # doesn't fully disappear at the ends and stays visible
+            if self.inp_pos().x() > self.out_pos().x():
+                offset_mult = min(
+                    offset_mult,
+                    2000 / (self.dist(self.inp_pos(), self.out_pos()))
+                )
+                # zucker.
+
+            gradient.setColorAt(0.0, QColor(c_r, c_g, c_b, 255))
+            gradient.setColorAt(0.75, QColor(c_r, c_g, c_b, 255 - round(55 * offset_mult)))
+            gradient.setColorAt(0.95, QColor(c_r, c_g, c_b, 255 - round(255 * offset_mult)))
+
+            pen.setBrush(gradient)
+
+        self.setPen(pen)
     
     def out_pos(self) -> QPointF:
         """The current global scene position of the pin of the output port"""
@@ -71,6 +106,34 @@ class ConnectionItem(QGraphicsItem):
         """The current global scene position of the pin of the input port"""
 
         return self.inp_item.pin.get_scene_center_pos()
+
+    def set_highlighted(self, b: bool):
+        pen: QPen = self.pen()
+
+        if b:
+            pen.setWidthF(self.pen_width() * 2)
+        else:
+            pen.setWidthF(self.pen_width())
+            self.recompute()
+
+        self.setPen(pen)
+
+    def get_pen(self) -> QPen:
+        pass
+
+    def pen_width(self) -> int:
+        pass
+
+    def flow_theme(self):
+        return self.session_design.flow_theme
+
+    def hoverEnterEvent(self, event):
+        self.set_highlighted(True)
+        super().hoverEnterEvent(event)
+
+    def hoverLeaveEvent(self, event):
+        self.set_highlighted(False)
+        super().hoverLeaveEvent(event)
 
     @staticmethod
     def dist(p1: QPointF, p2: QPointF) -> float:
@@ -88,132 +151,30 @@ class ConnectionItem(QGraphicsItem):
         return default_cubic_connection_path(p1, p2)
 
 
-
 class ExecConnectionItem(ConnectionItem):
 
+    def pen_width(self):
+        return self.flow_theme().exec_conn_width
 
-    def paint(self, painter: QPainter, option: QStyleOptionGraphicsItem, widget=...) -> None:
-
-        theme = self.session_design.flow_theme
-
+    def get_pen(self):
+        theme = self.flow_theme()
         pen = QPen(theme.exec_conn_color, theme.exec_conn_width)
         pen.setStyle(theme.exec_conn_pen_style)
         pen.setCapStyle(Qt.RoundCap)
-
-        c = pen.color()
-
-        # highlight hovered connections
-        if self.out_item.pin.hovered or self.inp_item.pin.hovered:
-            c = QColor('#c5c5c5')
-            pen.setWidth(theme.exec_conn_width*2)
-
-        if self.changed or not self.path:
-            self.changed = False
-
-            self.path = self.connection_path(
-                QPointF(0, 0),
-                self.inp_pos()-self.scenePos()
-            )
-
-            w = self.path.boundingRect().width()
-            h = self.path.boundingRect().height()
-            self.gradient = QRadialGradient(self.path.boundingRect().center(),
-                                            pythagoras(w, h) / 2)
-
-            c_r = c.red()
-            c_g = c.green()
-            c_b = c.blue()
-
-            # this offset will be 1 if inp.x >> out.x and 0 if inp.x < out.x
-            # hence, no fade for the gradient if the connection goes backwards
-            offset_mult: float = max(
-                0,
-                min(
-                    (self.inp_pos().x() - self.out_pos().x())/200,
-                    1
-                )
-            )
-
-            # and if the input is very far away from the output, decrease the gradient fade so the connection
-            # doesn't fully disappear at the ends and stays visible
-            if self.inp_pos().x() > self.out_pos().x():
-                offset_mult = min(
-                    offset_mult,
-                    2000/(self.dist(self.inp_pos(), self.out_pos()))
-                )
-                # zucker.
-
-            self.gradient.setColorAt(0.0, QColor(c_r, c_g, c_b, 255))
-            self.gradient.setColorAt(0.75, QColor(c_r, c_g, c_b, 255 - round(55 * offset_mult)))
-            self.gradient.setColorAt(0.95, QColor(c_r, c_g, c_b, 255 - round(255 * offset_mult)))
-
-        pen.setBrush(self.gradient)
-        painter.setPen(pen)
-
-        painter.drawPath(self.path)
+        return pen
 
 
 class DataConnectionItem(ConnectionItem):
 
-    def paint(self, painter: QPainter, option: QStyleOptionGraphicsItem, widget=...) -> None:
+    def pen_width(self):
+        return self.flow_theme().data_conn_width
 
-        theme = self.session_design.flow_theme
-
+    def get_pen(self):
+        theme = self.flow_theme()
         pen = QPen(theme.data_conn_color, theme.data_conn_width)
         pen.setStyle(theme.data_conn_pen_style)
         pen.setCapStyle(Qt.RoundCap)
-
-        c = pen.color()
-
-        # highlight hovered connections
-        if self.out_item.pin.hovered or self.inp_item.pin.hovered:
-            c = QColor('#c5c5c5')
-            pen.setWidth(theme.exec_conn_width*2)
-
-
-        if self.changed or not self.path:
-            self.changed = False
-
-            self.path = self.connection_path(
-                QPointF(0, 0),
-                self.inp_pos() - self.scenePos()
-            )
-
-            w = self.path.boundingRect().width()
-            h = self.path.boundingRect().height()
-            self.gradient = QRadialGradient(self.path.boundingRect().center(),
-                                            pythagoras(w, h) / 2)
-
-            c_r = c.red()
-            c_g = c.green()
-            c_b = c.blue()
-
-            # this offset will be 1 if inp.x >> out.x and 0 if inp.x < out.x
-            # hence, no fade for the gradient if the connection goes backwards
-            offset_mult: float = max(
-                0,
-                min(
-                    (self.inp_pos().x() - self.out_pos().x())/200,
-                    1
-                )
-            )
-
-            # and if the input is very far away from the output, decrease the gradient fade so the connection
-            # doesn't fully disappear at the ends and stays visible
-            if self.inp_pos().x() > self.out_pos().x():
-                offset_mult = min(
-                    offset_mult,
-                    2000/(self.dist(self.inp_pos(), self.out_pos()))
-                )
-                # zucker.
-
-            self.gradient.setColorAt(0.0, QColor(c_r, c_g, c_b, 255))
-            self.gradient.setColorAt(0.75, QColor(c_r, c_g, c_b, 255 - round(55 * offset_mult)))
-            self.gradient.setColorAt(0.95, QColor(c_r, c_g, c_b, 255 - round(255 * offset_mult)))
-
-        pen.setBrush(self.gradient)
-        painter.setPen(pen)
-        painter.drawPath(self.path)
+        return pen
 
 
 def default_cubic_connection_path(p1: QPointF, p2: QPointF):

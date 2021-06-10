@@ -5,7 +5,7 @@ from qtpy.QtGui import QFontDatabase
 
 from .FlowTheme import FlowTheme_Toy, FlowTheme_DarkTron, FlowTheme_Ghost, FlowTheme_Blender, \
     FlowTheme_Simple, FlowTheme_Ueli, FlowTheme_PureDark, FlowTheme, FlowTheme_PureLight, \
-    FlowTheme_Colorful, FlowTheme_ColorfulLight
+    FlowTheme_Colorful, FlowTheme_ColorfulLight, FlowTheme_Industrial
 from .GlobalAttributes import Location
 
 
@@ -61,7 +61,8 @@ class Design(QObject):
             FlowTheme_PureDark(),
             FlowTheme_Colorful(),
             FlowTheme_PureLight(),
-            FlowTheme_ColorfulLight()
+            FlowTheme_ColorfulLight(),
+            FlowTheme_Industrial(),
         ]
 
     def load_from_config(self, filepath: str):

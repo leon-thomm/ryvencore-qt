@@ -194,3 +194,52 @@ class DrawingObject(QGraphicsItem):
             points_list.append([p.x(), p.y(), self.stroke_weights[i]])
         drawing_dict['points'] = points_list
         return drawing_dict
+
+
+
+
+
+
+
+
+
+
+
+
+
+# ALTERNATIVE QGRAPHICSPATHITEM-BASED IMPLEMENTATION:
+
+#   ...
+#     def paint(self, painter, option, widget=None):
+#
+#         self.setBrush(Qt.NoBrush)
+#
+#         if self.finished:
+#             super().paint(painter, option,widget)
+#         else:
+#             if len(self.stroke_weights) == 0:
+#                 return
+#
+#             # pen
+#             pen = QPen(self.color)
+#             pen.setWidthF(self.stroke_weights[-1])
+#             pen.setCapStyle(Qt.RoundCap)
+#             self.setPen(pen)
+#
+#             # path
+#             path = QPainterPath(self.points[0])
+#             for i, p in enumerate(self.points, start=1):
+#                 path.lineTo(p)
+#             self.setPath(path)
+#             self.path_generated = True
+#
+#             super().paint(painter, option, widget)
+#
+#   ...
+#
+#     def finish(self):
+#
+#         self.finished = True
+#         self.update()
+
+# it is a bit worse in appearance but might be a lot faster

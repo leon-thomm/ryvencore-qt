@@ -52,6 +52,8 @@ class FlowViewStylusModesWidget(QWidget):
         self.hide_stylus_buttons()
         self.hide_pen_style_widgets()
 
+    def pen_width(self):
+        return self.pen_width_slider.value()/20
 
     def hide_stylus_buttons(self):
         self.set_stylus_mode_edit_button.hide()

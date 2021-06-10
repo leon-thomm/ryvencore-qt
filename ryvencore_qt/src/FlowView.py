@@ -463,7 +463,7 @@ class FlowView(QGraphicsView):
                             break
             elif self.stylus_mode == 'comment' and self._drawing:
                 if self._current_drawing.append_point(scaled_event_pos):
-                    self._current_drawing.stroke_weights.append(event.pressure())
+                    self._current_drawing.stroke_weights.append(event.pressure()*self._stylus_modes_widget.pen_width())
                 self._current_drawing.update()
                 self.viewport().update()
 

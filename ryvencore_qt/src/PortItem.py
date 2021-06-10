@@ -217,10 +217,12 @@ class PortItemPin(QGraphicsWidget):
         self.tool_tip_pos = None
 
         self.padding = 2
-        self.painting_width = 15
-        self.painting_height = 15
-        self.width = self.painting_width+2*self.padding
-        self.height = self.painting_height+2*self.padding
+        # self.painting_width = 17
+        # self.painting_height = 17
+        # self.width = self.painting_width+2*self.padding
+        # self.height = self.painting_height+2*self.padding
+        self.width = 17
+        self.height = 17
         self.port_local_pos = None
 
     def boundingRect(self):
@@ -242,9 +244,7 @@ class PortItemPin(QGraphicsWidget):
             node_color=self.node_item.color,
             type_=self.port.type_,
             connected=len(self.port.connections) > 0,
-            padding=self.padding,
-            w=self.painting_width,
-            h=self.painting_height
+            rect=QRectF(self.padding, self.padding, self.width-2*self.padding, self.height-2*self.padding)
         )
 
     def mousePressEvent(self, event):
@@ -257,14 +257,27 @@ class PortItemPin(QGraphicsWidget):
             return QGraphicsWidget.mousePressEvent(self, event)
 
 
+    def moveEvent(self, event):
+        super().moveEvent(event)
+
+        # update connections
+        conn_items = self.flow_view.connection_items
+        for c in self.port.connections:
+            i = conn_items[c]
+
+            # if the items are grouped (which means they move together), don't recompute
+            if i.out.group() is None or i.out.group() != i.inp.group():  # not entirely sure if this is working
+                i.recompute()
+
+
     def hoverEnterEvent(self, event):
         if self.port.type_ == 'data':  # and self.parent_port_instance.io_pos == PortPos.OUTPUT:
             self.setToolTip(shorten(str(self.port.val), 1000, line_break=True))
 
-        # update all connections
+        # highlight connections
+        items = self.flow_view.connection_items
         for c in self.port.connections:
-            conn_item = self.flow_view.connection_items[c]
-            conn_item.update()
+            items[c].set_highlighted(True)
 
         self.hovered = True
 
@@ -272,10 +285,11 @@ class PortItemPin(QGraphicsWidget):
 
     def hoverLeaveEvent(self, event):
 
-        # turn connection highlighting off
+        # un-highlight connections
+        items = self.flow_view.connection_items
         for c in self.port.connections:
-            conn_item = self.flow_view.connection_items[c]
-            conn_item.update()
+            items[c].set_highlighted(False)
+
         self.hovered = False
 
         QGraphicsWidget.hoverLeaveEvent(self, event)
