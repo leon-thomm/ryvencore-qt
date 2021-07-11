@@ -113,4 +113,5 @@ class Color(DType):
 class Range(DType):
     ...
 
+
 dtypes = [Data, Integer, Float, Boolean, Char, String, Choice, List]

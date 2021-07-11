@@ -1,8 +1,5 @@
 from ..Base import Base
-
 from ..RC import CLASSES
-
-# from logging import Logger
 from .Logger import Logger
 
 

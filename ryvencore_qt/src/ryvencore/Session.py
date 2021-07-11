@@ -35,7 +35,7 @@ class Session(Base):
     def register_default_classes(self):
         """
         Registers the default ryvencore-internal implementations of all exposed classes that COULD have been
-        extended by the frontend, in which case we don't set the class.
+        extended by the frontend, in which case it won't set the class.
         So, if the frontend extended a class like Node, it will have set CLASSES['node base'] to its own subclass,
         so we leave it as it is then. It is assumed that the frontend's extensions work properly and don't modify
         the functionality to the backend.
@@ -92,6 +92,16 @@ class Session(Base):
         self.nodes.remove(node_class)
 
 
+    def all_node_objects(self) -> list:
+        """Returns a list containing all Node objects used in any flow which is useful for advanced project analysis"""
+
+        nodes = []
+        for s in self.scripts:
+            for n in s.flow.nodes:
+                nodes.append(n)
+        return nodes
+
+
     def create_script(self, title: str = None, create_default_logs=True,
                       config: dict = None) -> Script:
 
@@ -133,11 +143,6 @@ class Session(Base):
             macro_script.load_flow()
 
         return macro_script
-
-
-    # def all_scripts(self) -> list:
-    #     """Returns a list containing all scripts and macro scripts"""
-    #     return self.macro_scripts + self.scripts
 
 
     def rename_script(self, script: Script, title: str) -> bool:
@@ -217,18 +222,3 @@ class Session(Base):
         data['scripts'] = scripts_list
 
         return data
-
-
-    def all_node_objects(self) -> list:
-        """Returns a list containing all Node objects used in any flow which is useful for advanced project analysis"""
-
-        nodes = []
-        for s in self.scripts:  # all_scripts():
-            for n in s.flow.nodes:
-                nodes.append(n)
-        return nodes
-
-
-    # def save_as_project(self, fpath: str):
-    #     """Convenience method for directly saving the the all content as project to a file"""
-    #     pass

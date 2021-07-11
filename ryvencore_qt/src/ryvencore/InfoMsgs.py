@@ -3,7 +3,7 @@ import traceback
 
 
 class InfoMsgs:
-    """A few handy static methods for writing different kinds of messages to the output console only if they are
+    """A few handy static methods for writing different kinds of messages to the output console only if info msgs are
     enabled."""
 
     enabled = False

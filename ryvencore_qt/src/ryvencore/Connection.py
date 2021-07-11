@@ -5,10 +5,8 @@ from .InfoMsgs import InfoMsgs
 
 class Connection(Base):
     """
-    The base class for both types of abstract connections. All data is transmitted through a connection from an output
-    port to some connected input port. The classes ExecConnection and DataConnection are ready for reimplementation,
-    so users can add additional functionality to connections (like "weights").
-    Custom reimplementations must be provided in the RC.CLASSES dict.
+    The base class for both types of connections. All data is transmitted through a connection from an output
+    port to some connected input port.
     """
 
     def __init__(self, params):

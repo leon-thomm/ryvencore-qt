@@ -7,13 +7,8 @@ class Variable:
     def __init__(self, name='', val=None):
         self.name = name
         self.val = None
-        if type(val) != dict:  # backwards compatibility
-            try:
-                self.val = deserialize(val)
-            except Exception:
-                self.val = val
 
-        elif 'serialized' in val.keys():
+        if val and 'serialized' in val.keys():
             self.val = deserialize(val['serialized'])
 
     def serialize(self):

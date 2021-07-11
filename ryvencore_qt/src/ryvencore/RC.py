@@ -1,4 +1,4 @@
-"""Namespace for enum types and stuff"""
+"""Namespace for enum types etc."""
 
 from enum import IntEnum
 
@@ -11,10 +11,23 @@ class FlowAlg(IntEnum):
 
     @staticmethod
     def str(mode):
+        # not using __str__ here because FlowAlg only serves as an enum,
+        # so there won't be any objects instantiated
         if mode == FlowAlg.DATA:
             return 'data'
         elif mode == FlowAlg.EXEC:
             return 'exec'
+
+        return None
+
+    @staticmethod
+    def from_str(mode):
+        if mode == 'data':
+            return FlowAlg.DATA
+        elif mode == 'exec':
+            return FlowAlg.EXEC
+
+        return None
 
 
 class PortObjPos(IntEnum):
@@ -34,17 +47,3 @@ CLASSES = {
     'vars manager': None,
     'flow':         None,
 }
-
-
-# class FlowVPUpdateMode(IntEnum):
-#     """Used for performance"""
-#
-#     SYNC = 1
-#     ASYNC = 2
-#
-#     @staticmethod
-#     def stringify(mode):
-#         if mode == FlowVPUpdateMode.SYNC:
-#             return 'sync'
-#         elif mode == FlowVPUpdateMode.ASYNC:
-#             return 'async'

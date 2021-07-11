@@ -1,4 +1,8 @@
 class Base:
+    """
+    Base class for all abstract components. Provides functionality for ID counting.
+    Assigns a global ID to every object and provides an optional custom ID counter for additional custom counting.
+    """
 
     class IDCtr:
         def __init__(self):
@@ -20,6 +24,8 @@ class Base:
 
     # optional custom ID counter
     id_ctr = None
+    # notice that the attribute is static, but a subclass changing it will not change it for Base
+    # and hence not for other Base subclasses, only for itself
 
     def __init__(self):
         self.GLOBAL_ID = self.global_id_ctr.count()

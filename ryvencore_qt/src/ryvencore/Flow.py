@@ -89,8 +89,8 @@ class Flow(Base):
         """Stores a node object and causes the node's place_event()"""
 
         # IMPORTANT: I moved this to create_node(), I am not sure why I put it here in the first place
-        #            but it should definitely happen before node.load_user_config(), otherwise the ports
-        #            ports are not yet initialized which of course leads to error when loading config
+        #            but it should definitely happen before node.load_user_config(), otherwise the
+        #            ports are not yet initialized which of course leads to errors when loading configs
         #
         # if not node.initialized:
         #     node.finish_initialization()
@@ -217,19 +217,17 @@ class Flow(Base):
     def set_algorithm_mode(self, mode: str):
         """Sets the algorithm mode of the flow, possible values are 'data' and 'exec'"""
 
-        if mode == 'data':
-            self.alg_mode = FlowAlg.DATA
-        elif mode == 'exec':
-            self.alg_mode = FlowAlg.EXEC
+        self.alg_mode = FlowAlg.from_str(mode)
 
 
     def generate_config_data(self):
         """
-        Generates the abstract config data and saves it before returning it as tuple in format
+        Generates the abstract config data and returns it as tuple in format
         (flow config, nodes config, connections config)
         """
 
-        cfg = {'algorithm mode': FlowAlg.str(self.alg_mode)}, \
+        cfg = \
+            {'algorithm mode': FlowAlg.str(self.alg_mode)}, \
             self.generate_nodes_config(self.nodes), \
             self.generate_connections_config(self.nodes)
 

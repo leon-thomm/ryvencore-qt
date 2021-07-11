@@ -5,32 +5,48 @@ from .MacroNodeTypes import build_macro_classes
 
 
 class MacroScript(Script):
-    """Besides all the properties of a Script, a MacroScript automatically create an input node and an output node
-    in the Flow, and locally defines a new Node class and registers it in the session."""
+    """Besides all the properties of a Script, a MacroScript automatically adds input and output nodes to the flow,
+    and locally defines a new Node class and registers it in the session."""
 
     id_ctr = Base.IDCtr()  # using custom ID to count MacroScripts
-    # this ensures that I don't need to change the macro node class's identifier when the script's title changes.
-    # the ID gets stored when serializing and is reloaded in a way that the ctr will afterwards still be larger than
-    # any ID used, even if there were macro scripts deleted which created holes in the id assignments, so we don't get
-    # dangerous overlapping
 
+    """
+    the custom ID ensures that I don't need to change the macro node class's identifier when the script's title changes.
+    the ID gets stored when serializing and is reloaded in a way that the ctr will afterwards still be larger than
+    any ID used, even if there were macro scripts deleted which created holes in the ID assignments, so we don't get
+    dangerous overlapping.
+    notice that id_ctr is defined statically for MacroScript, and not for Base, so this won't affect other
+    Base subclasses, only MacroScripts.
+    """
+
+    # custom node classes
     MacroInputNode, MacroOutputNode, MacroNode = None, None, None
 
     @classmethod
     def build_node_classes(cls):
+        """
+        Triggered by the session during initialization.
+        Internally defined nodes must get built dynamically, during session initialization
+        because the user can provide a custom node base class for all nodes, which affects the inheritance
+        of all internal nodes too.
+        """
         cls.MacroInputNode, \
         cls.MacroOutputNode, \
         cls.MacroNode = \
             build_macro_classes(BaseClass=CLASSES['node base'])
 
+    # ------------------------------------------------------------------------------------------------------------------
 
     def __init__(self, session, title: str = None, config_data: dict = None, create_default_logs=True):
 
         self.input_node, self.output_node = None, None
         self.parameters: [dict] = []
         self.returns: [dict] = []
-        # self.caller_stack = []  # : [FunctionScriptNode]; used by input, output and function nodes
         self.caller = None
+
+        # notice there is only one caller reference, not a stack of callers. it is not allowed to call a macro
+        # recursively, as this would bring at the very least immense performance issues for retaining all data,
+        # and it wouldn't make sense at all with sequential nodes.
 
         self.ID = self.id_ctr.count()
         if config_data and 'ID' in config_data:
