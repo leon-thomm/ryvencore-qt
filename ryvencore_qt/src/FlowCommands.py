@@ -109,7 +109,7 @@ class PlaceNode_Command(FlowUndoCommand):
         self.add_node_request.connect(self.flow.add_node)
         self.remove_node_request.connect(self.flow.remove_node)
 
-        self.flow_view.node_placed.connect(self.node_placed_in_flow)
+        self.flow_view.node_placed.connect(self.node_placed_in_flow_view)
 
     def undo_(self):
         self.remove_node_request.emit(self.node)
@@ -118,13 +118,13 @@ class PlaceNode_Command(FlowUndoCommand):
         if self.node:
             self.add_node_request.emit(self.node)
         else:
-            self.flow_view.node_placed.connect(self.node_placed_in_flow)
+            self.flow_view.node_placed.connect(self.node_placed_in_flow_view)
             self.create_node_request.emit(self.node_class)
 
         # --> node_placed_in_flow()
 
-    def node_placed_in_flow(self, node):
-        self.flow_view.node_placed.disconnect(self.node_placed_in_flow)
+    def node_placed_in_flow_view(self, node):
+        self.flow_view.node_placed.disconnect(self.node_placed_in_flow_view)
         self.node = node
 
 

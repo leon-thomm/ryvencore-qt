@@ -28,6 +28,3 @@ class GUI:
     # logging
     from .src.conv_gui.LogWidget import LogWidget
 
-    # input widgets
-    from .src.PortItemInputWidgets import RCIW_BUILTIN_LineEdit
-    from .src.PortItemInputWidgets import RCIW_BUILTIN_SpinBox

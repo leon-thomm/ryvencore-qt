@@ -1121,14 +1121,6 @@ class FlowView(QGraphicsView):
         script_data['flow']['nodes'] = self.complete_nodes_data(script_data['flow']['nodes'])
         script_data['flow']['connections'] = self.complete_connections_data(script_data['flow']['connections'])
 
-        # flow_data, nodes_data, connections_data = script_data['flow']
-        #
-        # script_data['flow'] = {
-        #     **flow_data,
-        #     'nodes': self.complete_nodes_data(nodes_data),
-        #     'connections': self.complete_connections_data(connections_data),
-        # }
-
         script_data['flow view'] = {
             'drawings': self._get_drawings_data(self.drawings),
             'view size': [self.sceneRect().size().width(), self.sceneRect().size().height()]
@@ -1154,13 +1146,6 @@ class FlowView(QGraphicsView):
             n = find_node_from_GID(n_data['GID'])
             item = self.node_items[n]
             comp_nodes_data.append(item.complete_data(n_data))
-
-        # comp_nodes_data = []
-        # for n in list(nodes_data.keys()):
-        #     data = nodes_data[n]
-        #
-        #     item = self.node_items[n]
-        #     comp_nodes_data.append(item.complete_data(data))
 
         return comp_nodes_data
 

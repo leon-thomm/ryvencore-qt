@@ -3,7 +3,7 @@ from qtpy.QtWidgets import QGraphicsGridLayout, QGraphicsWidget, \
 from qtpy.QtCore import Qt, QRectF, QPointF, QSizeF
 from qtpy.QtGui import QFontMetricsF, QFont
 
-from .PortItemInputWidgets import RCIW_BUILTIN_SpinBox, RCIW_BUILTIN_LineEdit, RCIW_BUILTIN_LineEdit_small, \
+from .PortItemInputWidgets import \
     Data_IW_S, Data_IW_M, Data_IW_L, Float_IW, Integer_IW, Choice_IW, Boolean_IW, String_IW_S, String_IW_M, String_IW_L
 from .ryvencore import dtypes, FlowAlg
 from .ryvencore.tools import deserialize

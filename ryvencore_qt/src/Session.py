@@ -39,7 +39,7 @@ class Session(RC_Session, QObject):
     ):
         QObject.__init__(self)
 
-        # custom WRAPPERS
+        # register custom wrappers
         CLASSES['node base'] = Node if not node_class else node_class
         CLASSES['data conn'] = DataConnection if not data_conn_class else data_conn_class
         CLASSES['logs manager'] = LogsManager
@@ -159,53 +159,38 @@ class Session(RC_Session, QObject):
     def data(self) -> dict:
         """Returns the project as JSON compatible dict to be saved and loaded again using load()"""
 
-        # adds the frontend related data to the abstract project data by the ryvencore Session
-
-        data = RC_Session.data(self)
-
-        # MACRO SCRIPTS
-        complete_macro_scripts_data = []
-        for ms_data in data['macro scripts']:
-            title = ms_data['title']  # script titles are unique!
-            macro_script = self._script_from_title(title)
-            view = self.flow_views[macro_script]
-
-            # complete script data in FlowView in GUI thread
-            self.complete_flow_view_data.connect(view.complete_data)
-            view._tmp_data = None
-            self.complete_flow_view_data.emit(ms_data)
-            while view._tmp_data is None:
-                time.sleep(0.001)
-            self.complete_flow_view_data.disconnect(view.complete_data)
-
-            complete_macro_scripts_data.append(view._tmp_data)
-
-        # SCRIPTS
-        complete_scripts_data = []
-        for s_data in data['scripts']:
-            title = s_data['title']  # script title are unique!
+        def complete_script_data(script_data: dict) -> dict:
+            """adds the frontend related data to the abstract project data by the ryvencore Session"""
+            title = script_data['title']  # script titles are unique!
             script = self._script_from_title(title)
             view = self.flow_views[script]
 
-            # complete script data in FlowView in GUI thread
+            # complete script data in FlowView in GUI thread ---------------
             self.complete_flow_view_data.connect(view.complete_data)
             view._tmp_data = None
-            self.complete_flow_view_data.emit(s_data)
+            self.complete_flow_view_data.emit(script_data)
             while view._tmp_data is None:
                 time.sleep(0.001)
             self.complete_flow_view_data.disconnect(view.complete_data)
+            # --------------------------------------------------------------
 
-            complete_scripts_data.append(view._tmp_data)
+            return view._tmp_data
 
-        complete_data = {
-            'macro scripts': complete_macro_scripts_data,
-            'scripts': complete_scripts_data,
+        data = RC_Session.data(self)
+
+        return {
+            'macro scripts': [
+                complete_script_data(s_data)
+                for s_data in data['macro scripts']
+            ],
+            'scripts': [
+                complete_script_data(s_data)
+                for s_data in data['scripts']
+            ],
         }
 
-        return complete_data
-
     def _script_from_title(self, title: str) -> Script:
-        for s in self.scripts:  # all_scripts():
+        for s in self.scripts:
             if s.title == title:
                 return s
         return None
