@@ -29,7 +29,7 @@ class NodePort(Base):
     def disconnected(self):
         pass
 
-    def config_data(self):
+    def data(self) -> dict:
         data_dict = {
             'type': self.type_,
             'label': self.label_str
@@ -40,11 +40,11 @@ class NodePort(Base):
 
 class NodeInput(NodePort):
 
-    def __init__(self, node, type_, label_str='', add_config=None, dtype: DType = None):
+    def __init__(self, node, type_, label_str='', add_data=None, dtype: DType = None):
         super().__init__(node, PortObjPos.INPUT, type_, label_str)
 
-        # add_config can be used to store additional config data for enhanced data input ports
-        self.add_config = add_config
+        # data can be used to store additional data for enhanced data input ports
+        self.add_data = add_data
 
         # optional dtype
         self.dtype: DType = dtype
@@ -70,8 +70,8 @@ class NodeInput(NodePort):
 
         self.node.update(inp=self.node.inputs.index(self))
 
-    def config_data(self):
-        data = super().config_data()
+    def data(self) -> dict:
+        data = super().data()
 
         if len(self.connections) == 0:
             data['val'] = serialize(self.get_val())

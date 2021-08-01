@@ -21,7 +21,7 @@ class NodeItem(QGraphicsObject):  # QGraphicsItem, QObject):
         QGraphicsObject.__init__(self)
 
         self.node = node
-        flow_view, design, config = params
+        flow_view, design, load_data = params
         self.flow_view = flow_view
         self.session_design = design
         self.movement_state = None
@@ -41,7 +41,7 @@ class NodeItem(QGraphicsObject):  # QGraphicsItem, QObject):
         self.initializing = True
 
         # self.temp_state_data = None
-        self.init_config = config
+        self.init_data = load_data
 
         # CONNECT TO NODE
         self.node.updated.connect(self.node_updated)
@@ -84,11 +84,11 @@ class NodeItem(QGraphicsObject):  # QGraphicsItem, QObject):
     def initialize(self):
         """All ports and the main widget get finally created here."""
 
-        # LOADING CONFIG
-        if self.init_config is not None:
+        # LOADING DATA
+        if self.init_data is not None:
             if self.main_widget:
                 try:
-                    self.main_widget.set_state(deserialize(self.init_config['main widget data']))
+                    self.main_widget.set_state(deserialize(self.init_data['main widget data']))
                 except Exception as e:
                     print('Exception while setting data in', self.node.title, 'Node\'s main widget:', e,
                           ' (was this intended?)')
@@ -100,10 +100,10 @@ class NodeItem(QGraphicsObject):  # QGraphicsItem, QObject):
         for o in self.node.outputs:
             self.add_new_output(o)
 
-        if self.init_config is not None:
-            if self.init_config.get('unconnected ports hidden'):
+        if self.init_data is not None:
+            if self.init_data.get('unconnected ports hidden'):
                 self.hide_unconnected_ports_triggered()
-            if self.init_config.get('collapsed'):
+            if self.init_data.get('collapsed'):
                 self.collapse()
 
         self.initializing = False
@@ -453,42 +453,42 @@ class NodeItem(QGraphicsObject):  # QGraphicsItem, QObject):
 
         return actions
 
-    # CONFIG
+    # DATA
 
-    def complete_config(self, node_config):
+    def complete_data(self, node_data):
         """
-        Completes the node's config by all frontend related data
+        Completes the node's data by adding all frontend related data
         """
 
-        # add input widgets config
-        for i in range(len(node_config['inputs'])):
-            input_cfg = node_config['inputs'][i]
+        # add input widgets data
+        for i in range(len(node_data['inputs'])):
+            inp_data = node_data['inputs'][i]
             inp_item = self.inputs[i]
 
             if inp_item.port.type_ == 'data':
                 if inp_item.widget:
-                    input_cfg['has widget'] = True
+                    inp_data['has widget'] = True
 
                     if inp_item.port.dtype:  # dtype widget
                         # input_cfg['widget name'] = str(inp_item.widget)
                         pass
                     else:  # custom widget
-                        input_cfg['widget name'] = inp_item.port.add_config['widget name']
-                        input_cfg['widget pos'] = inp_item.port.add_config['widget pos']
+                        inp_data['widget name'] = inp_item.port.add_data['widget name']
+                        inp_data['widget pos'] = inp_item.port.add_data['widget pos']
 
-                    input_cfg['widget data'] = serialize(inp_item.widget.get_state())
+                    inp_data['widget data'] = serialize(inp_item.widget.get_state())
                 else:
-                    input_cfg['has widget'] = False
+                    inp_data['has widget'] = False
 
-                node_config['inputs'][i] = input_cfg
+                node_data['inputs'][i] = inp_data
 
         # add item properties
-        node_config['pos x'] = self.pos().x()
-        node_config['pos y'] = self.pos().y()
+        node_data['pos x'] = self.pos().x()
+        node_data['pos y'] = self.pos().y()
         if self.main_widget:
-            node_config['main widget data'] = serialize(self.main_widget.get_state())
+            node_data['main widget data'] = serialize(self.main_widget.get_state())
 
-        node_config['unconnected ports hidden'] = self.hiding_unconnected_ports
-        node_config['collapsed'] = self.collapsed
+        node_data['unconnected ports hidden'] = self.hiding_unconnected_ports
+        node_data['collapsed'] = self.collapsed
 
-        return node_config
+        return node_data

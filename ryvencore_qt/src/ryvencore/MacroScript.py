@@ -37,7 +37,7 @@ class MacroScript(Script):
 
     # ------------------------------------------------------------------------------------------------------------------
 
-    def __init__(self, session, title: str = None, config_data: dict = None, create_default_logs=True):
+    def __init__(self, session, title: str = None, load_data: dict = None, create_default_logs=True):
 
         self.input_node, self.output_node = None, None
         self.parameters: [dict] = []
@@ -49,15 +49,15 @@ class MacroScript(Script):
         # and it wouldn't make sense at all with sequential nodes.
 
         self.ID = self.id_ctr.count()
-        if config_data and 'ID' in config_data:
-            self.ID = max(config_data['ID'], self.ID)
+        if load_data and 'ID' in load_data:
+            self.ID = max(load_data['ID'], self.ID)
         self.id_ctr.set_count(self.ID)
 
-        super().__init__(session, title, config_data, create_default_logs)
+        super().__init__(session, title, load_data, create_default_logs)
 
         _self = self
 
-        class CustomMacrotionScriptNode(_self.MacroNode):
+        class CustomMacroScriptNode(_self.MacroNode):
 
             identifier = _self.macro_node_identifier()
 
@@ -68,12 +68,12 @@ class MacroScript(Script):
             macro_script = _self
             instances = []
 
-        self.macro_node_class = CustomMacrotionScriptNode
+        self.macro_node_class = CustomMacroScriptNode
         self.session.register_node(self.macro_node_class)
 
-        if self.init_config:
-            self.parameters = self.init_config['parameters']
-            self.returns = self.init_config['returns']
+        if self.init_data:
+            self.parameters = self.init_data['parameters']
+            self.returns = self.init_data['returns']
 
 
     def macro_node_identifier(self):
@@ -84,7 +84,7 @@ class MacroScript(Script):
     def load_flow(self):
         super().load_flow()
 
-        if self.init_config:
+        if self.init_data:
             # find input and output node that have already been created by the flow
             for node in self.flow.nodes:
                 if node.identifier == self.MacroInputNode.identifier:
@@ -120,8 +120,8 @@ class MacroScript(Script):
         for mn in self.macro_node_class.instances:
             mn.delete_output(index)
 
-    def serialize(self) -> dict:
-        script_dict = super().serialize()
+    def data(self) -> dict:
+        script_dict = super().data()
 
         script_dict['parameters'] = self.parameters
         script_dict['returns'] = self.returns

@@ -171,7 +171,7 @@ def build_macro_classes(BaseClass):
 
             self.instances.append(self)  # defined statically in the custom macro node class
 
-            if not self.init_config:
+            if not self.init_data:
                 # catch up on params and returns
                 for p in self.macro_script.parameters:
                     self.create_input(type_=p['type'], label=p['label'])
@@ -211,7 +211,7 @@ def build_macro_classes(BaseClass):
             self.macro_script.caller = None
 
         def get_state(self):
-            data = {'title': self.macro_script.title}
+            data = {'title': self.macro_script.title}  # script title are unique
             return data
 
         def set_state(self, data: dict):

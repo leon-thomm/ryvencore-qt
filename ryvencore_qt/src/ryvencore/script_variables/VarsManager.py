@@ -7,16 +7,16 @@ class VarsManager(Base):
     """Manages script variables and triggers receivers when values of variables change"""
 
 
-    def __init__(self, script, config=None):
+    def __init__(self, script, load_data=None):
         Base.__init__(self)
 
         self.script = script
         self.variables: [Variable] = []
         self.var_receivers = {}
 
-        if config:
-            for name in config.keys():  # variables
-                self.create_new_var(name, val=config[name])
+        if load_data:
+            for name in load_data.keys():  # variables
+                self.create_new_var(name, val=load_data[name])
 
 
     def var_name_valid(self, name: str) -> bool:
@@ -117,10 +117,8 @@ class VarsManager(Base):
             return False
 
 
-    def config_data(self) -> dict:
-        """Returns the config data of the script variables."""
-
+    def data(self) -> dict:
         vars_dict = {}
         for v in self.variables:
-            vars_dict[v.name] = {'serialized': v.serialize()}
+            vars_dict[v.name] = {'serialized': v.serialized()}
         return vars_dict

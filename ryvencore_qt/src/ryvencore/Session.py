@@ -103,14 +103,14 @@ class Session(Base):
 
 
     def create_script(self, title: str = None, create_default_logs=True,
-                      config: dict = None) -> Script:
+                      data: dict = None) -> Script:
 
         """Creates and returns a new script.
-        If a config is provided the title parameter will be ignored."""
+        If data is provided the title parameter will be ignored."""
 
         script = Script(
             session=self, title=title, create_default_logs=create_default_logs,
-            config_data=config
+            load_data=data
         )
 
         self.scripts.append(script)
@@ -120,26 +120,26 @@ class Session(Base):
 
 
     def create_macro(self, title: str = None, create_default_logs=True,
-                     config: dict = None) -> MacroScript:
+                     data: dict = None) -> MacroScript:
 
         """
         Creates and returns a new macro script.
-        If a config is provided the title parameter will be ignored and the script will not be initialized,
-        which you need to do manually after you made sure that the config doesnt contain other macro nodes
+        If data is provided the title parameter will be ignored and the script will not be initialized,
+        which you need to do manually after you made sure that the data doesnt contain other macro nodes
         that have not been loaded yet.
         """
 
         macro_script = MacroScript(
             session=self, title=title, create_default_logs=create_default_logs,
-            config_data=config
+            load_data=data
         )
 
         self.scripts.append(macro_script)
         self.macro_scripts.append(macro_script)
 
-        # if config is provided, the script's flow contains content that might include
+        # if data is provided, the script's flow contains content that might include
         # macro nodes that are not loaded yet, so initialization is triggered manually from outside then
-        if not config:
+        if not data:
             macro_script.load_flow()
 
         return macro_script
@@ -192,7 +192,7 @@ class Session(Base):
         new_macro_scripts = []
         if 'macro scripts' in project:
             for msc in project['macro scripts']:
-                new_macro_scripts.append(self.create_macro(config=msc))
+                new_macro_scripts.append(self.create_macro(data=msc))
 
             # now all macro nodes have been registered, so we can initialize the scripts
 
@@ -201,24 +201,24 @@ class Session(Base):
 
         new_scripts = []
         for sc in project['scripts']:
-            new_scripts.append(self.create_script(config=sc))
+            new_scripts.append(self.create_script(data=sc))
 
         return new_scripts + new_macro_scripts
 
 
-    def serialize(self) -> dict:
+    def data(self) -> dict:
         """Returns the project as JSON compatible dict to be saved and loaded again using load()"""
 
         data = {}
 
         macro_scripts_list = []
         for m_script in self.macro_scripts:
-            macro_scripts_list.append(m_script.serialize())
+            macro_scripts_list.append(m_script.data())
         data['macro scripts'] = macro_scripts_list
 
         scripts_list = []
         for script in set(self.scripts) - set(self.macro_scripts):  # exclude macro scripts
-            scripts_list.append(script.serialize())
+            scripts_list.append(script.data())
         data['scripts'] = scripts_list
 
         return data

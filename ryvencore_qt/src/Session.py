@@ -23,7 +23,7 @@ class Session(RC_Session, QObject):
     script_deleted = Signal(object)
 
     build_flow_view_request = Signal(object, tuple)
-    complete_flow_view_config = Signal(dict)
+    complete_flow_view_data = Signal(dict)
 
     def __init__(
             self,
@@ -82,28 +82,22 @@ class Session(RC_Session, QObject):
 
 
     def create_macro(self, title: str = None, create_default_logs=True,
-                     config: dict = None,
+                     data: dict = None,
                      flow_view_size: list = None) -> MacroScript:
-        """Creates and returns a new macro script.
-        If a config is provided the title parameter will be ignored and the script will not be initialized,
-        which you need to do manually after you made sure that the config doesnt contain other macro nodes
-        that have not been loaded yet."""
 
-        script = RC_Session.create_macro(self, title=title, create_default_logs=create_default_logs, config=config)
-
+        script = RC_Session.create_macro(self, title=title, create_default_logs=create_default_logs, data=data)
         self.new_script_created.emit(script)
-
         self._build_flow_view(script, flow_view_size)
 
         return script
 
     def create_script(self, title: str = None, create_default_logs=True,
-                      config: dict = None,
+                      data: dict = None,
                       flow_view_size: list = None) -> Script:
         """Creates and returns a new script.
-        If a config is provided the title parameter will be ignored."""
+        If a data is provided the title parameter will be ignored."""
 
-        script = RC_Session.create_script(self, title=title, create_default_logs=create_default_logs, config=config)
+        script = RC_Session.create_script(self, title=title, create_default_logs=create_default_logs, data=data)
 
         self.new_script_created.emit(script)
 
@@ -131,20 +125,20 @@ class Session(RC_Session, QObject):
     def _build_flow_view(self, script, view_size):
         """Builds the flow view in the GUI thread"""
 
-        script_config = script.init_config
+        script_data = script.init_data
 
-        flow_view_config = None
-        if script_config is not None:
-            if 'flow view' not in script_config:  # backwards compatibility
-                flow_view_config = script_config['flow']
+        flow_view_data = None
+        if script_data is not None:
+            if 'flow view' not in script_data:  # backwards compatibility
+                flow_view_data = script_data['flow']
             else:
-                flow_view_config = script_config['flow view']
+                flow_view_data = script_data['flow view']
 
         flow_view_params = (
             self,
             script,
             script.flow,
-            flow_view_config,
+            flow_view_data,
             view_size,
             self.gui_parent,
         )
@@ -162,44 +156,44 @@ class Session(RC_Session, QObject):
 
         return flow_view
 
-    def serialize(self) -> dict:
+    def data(self) -> dict:
         """Returns the project as JSON compatible dict to be saved and loaded again using load()"""
 
         # adds the frontend related data to the abstract project data by the ryvencore Session
 
-        data = RC_Session.serialize(self)
+        data = RC_Session.data(self)
 
         # MACRO SCRIPTS
         complete_macro_scripts_data = []
-        for ms_cfg in data['macro scripts']:
-            title = ms_cfg['name']  # script titles are unique!
+        for ms_data in data['macro scripts']:
+            title = ms_data['title']  # script titles are unique!
             macro_script = self._script_from_title(title)
             view = self.flow_views[macro_script]
 
-            # complete script config in FlowView in GUI thread
-            self.complete_flow_view_config.connect(view.generate_config_data)
+            # complete script data in FlowView in GUI thread
+            self.complete_flow_view_data.connect(view.complete_data)
             view._tmp_data = None
-            self.complete_flow_view_config.emit(ms_cfg)
+            self.complete_flow_view_data.emit(ms_data)
             while view._tmp_data is None:
                 time.sleep(0.001)
-            self.complete_flow_view_config.disconnect(view.generate_config_data)
+            self.complete_flow_view_data.disconnect(view.complete_data)
 
             complete_macro_scripts_data.append(view._tmp_data)
 
         # SCRIPTS
         complete_scripts_data = []
-        for s_cfg in data['scripts']:
-            title = s_cfg['name']  # script title are unique!
+        for s_data in data['scripts']:
+            title = s_data['title']  # script title are unique!
             script = self._script_from_title(title)
             view = self.flow_views[script]
 
-            # complete script config in FlowView in GUI thread
-            self.complete_flow_view_config.connect(view.generate_config_data)
+            # complete script data in FlowView in GUI thread
+            self.complete_flow_view_data.connect(view.complete_data)
             view._tmp_data = None
-            self.complete_flow_view_config.emit(s_cfg)
+            self.complete_flow_view_data.emit(s_data)
             while view._tmp_data is None:
                 time.sleep(0.001)
-            self.complete_flow_view_config.disconnect(view.generate_config_data)
+            self.complete_flow_view_data.disconnect(view.complete_data)
 
             complete_scripts_data.append(view._tmp_data)
 

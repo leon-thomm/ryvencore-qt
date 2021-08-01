@@ -28,8 +28,9 @@ Saved flows can be deployed directly on the backend (`ryvencore`) which does not
 
 #### load & save  
 All serialization and loading of projects. Data is stored using `json`, and for some parts `pickle`.
+
 ```python
-project: dict = my_session.serialize()
+project: dict = my_session.data()
 with open(filepath, 'w') as f:
     f.write(json.dumps(project))
 ```

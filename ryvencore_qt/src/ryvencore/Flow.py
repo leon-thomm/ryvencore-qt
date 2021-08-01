@@ -21,11 +21,11 @@ class Flow(Base):
         self._tmp_data = None
 
 
-    def load(self, config):
-        """Loading a flow from config data"""
+    def load(self, data):
+        """Loading a flow from data"""
 
         # algorithm mode
-        mode = config['algorithm mode']
+        mode = data['algorithm mode']
         if mode == 'data' or mode == 'data flow':
             self.set_algorithm_mode('data')
         elif mode == 'exec' or mode == 'exec flow':
@@ -33,38 +33,49 @@ class Flow(Base):
 
         # build flow
 
-        new_nodes = self.create_nodes_from_config(config['nodes'])
+        new_nodes = self.create_nodes_from_data(data['nodes'])
 
         #   the following connections should not cause updates in sequential nodes
         blocked_nodes = filter(lambda n: n.block_init_updates, new_nodes)
         for node in blocked_nodes:
             node.block_updates = True
 
-        self.connect_nodes_from_config(new_nodes, config['connections'])
+        self.connect_nodes_from_data(new_nodes, data['connections'])
 
         for node in blocked_nodes:
             node.block_updates = False
 
 
-    def create_nodes_from_config(self, nodes_config: list):
-        """Creates Nodes from nodes_config, previously returned by config_data"""
+    def create_nodes_from_data(self, nodes_data: list):
+        """Creates Nodes from nodes_data, previously returned by data()"""
 
         nodes = []
 
-        for n_c in nodes_config:
+        for n_c in nodes_data:
 
             # find class
             node_class = None
-            if 'parent node title' in n_c:  # backwards compatibility
-                for nc in self.session.nodes:
-                    if nc.title == n_c['parent node title']:
-                        node_class = nc
-                        break
-            else:
+            # if 'parent node title' in n_c:  # backwards compatibility
+            #     for nc in self.session.nodes:
+            #         if nc.title == n_c['parent node title']:
+            #             node_class = nc
+            #             break
+            # else:
+
+            for nc in self.session.nodes + self.session.invisible_nodes:
+                if n_c['identifier'] == nc.identifier:
+                    node_class = nc
+                    break
+            else:  # couldn't find a node with this identifier => search for identifier_comp
                 for nc in self.session.nodes + self.session.invisible_nodes:
-                    if nc.identifier == n_c['identifier']:
+                    if n_c['identifier'] in nc.identifier_comp:
                         node_class = nc
                         break
+                else:
+                    raise Exception(f'could not find node class with identifier {n_c["identifier"]}. '
+                                    f'if you changed your node\'s class name, make sure to add the old '
+                                    f'identifier to the identifier_comp list attribute to provide '
+                                    f'backwards compatibility.')
 
             if node_class is None:
                 raise Exception(f"Couldn't find a registered node with identifier {n_c['identifier']}.")
@@ -75,12 +86,12 @@ class Flow(Base):
         return nodes
 
 
-    def create_node(self, node_class, config=None):
+    def create_node(self, node_class, data=None):
         """Creates, adds and returns a new node object"""
 
-        node = node_class((self, self.session, config))
+        node = node_class((self, self.session, data))
         node.finish_initialization()
-        node.load_user_config()  # --> Node.set_state()
+        node.load_user_data()  # --> Node.set_state()
         self.add_node(node)
         return node
 
@@ -89,8 +100,8 @@ class Flow(Base):
         """Stores a node object and causes the node's place_event()"""
 
         # IMPORTANT: I moved this to create_node(), I am not sure why I put it here in the first place
-        #            but it should definitely happen before node.load_user_config(), otherwise the
-        #            ports are not yet initialized which of course leads to errors when loading configs
+        #            but it should definitely happen before node.load_user_data(), otherwise the
+        #            ports are not yet initialized which of course leads to errors when loading data
         #
         # if not node.initialized:
         #     node.finish_initialization()
@@ -113,10 +124,10 @@ class Flow(Base):
         self.nodes.remove(node)
 
 
-    def connect_nodes_from_config(self, nodes: [Node], config: list):
+    def connect_nodes_from_data(self, nodes: [Node], data: list):
         connections = []
 
-        for c in config:
+        for c in data:
 
             c_parent_node_index = -1
             if 'parent node instance index' in c:  # backwards compatibility
@@ -220,56 +231,48 @@ class Flow(Base):
         self.alg_mode = FlowAlg.from_str(mode)
 
 
-    def generate_config_data(self):
-        """
-        Generates the abstract config data and returns it as tuple in format
-        (flow config, nodes config, connections config)
-        """
+    def data(self) -> dict:
 
-        cfg = \
-            {'algorithm mode': FlowAlg.str(self.alg_mode)}, \
-            self.generate_nodes_config(self.nodes), \
-            self.generate_connections_config(self.nodes)
+        data = {
+            'algorithm mode': FlowAlg.str(self.alg_mode),
+            'nodes': self.gen_nodes_data(self.nodes),
+            'connections': self.gen_conns_data(self.nodes)
+        }
 
-        self._tmp_data = cfg
-        return cfg
+        self._tmp_data = data
+        return data
 
 
-    def generate_nodes_config(self, nodes: [Node]):
-        cfg = {}
-        for n in nodes:
-            cfg[n] = n.config_data()
-        self._tmp_data = cfg
-        return cfg
+    def gen_nodes_data(self, nodes: [Node]) -> [dict]:
+        data = [n.data() for n in nodes]
+        self._tmp_data = data
+        return data
 
 
-    def generate_connections_config(self, nodes: [Node]):
-        cfg = {}
+    def gen_conns_data(self, nodes: [Node]) -> [dict]:
+        # notice that this is intentionally not part of Connection, because connection data
+        # is generated always for a specific set of nodes (like all currently selected ones)
+        # and the data dict has therefore refer to the indices of the nodes in the nodes list
+
+        data = []
         for i in range(len(nodes)):
             n = nodes[i]
             for j in range(len(n.outputs)):
                 out = n.outputs[j]
-
                 for c in out.connections:
                     connected_port = c.inp
                     connected_node = connected_port.node
 
-                    # When copying components, there might be connections going outside the selected list of nodes.
-                    # These should be ignored.
+                    # ignore connections connecting to nodes not in the list
                     if connected_node not in nodes:
                         continue
 
-                    connected_port_index = connected_node.inputs.index(connected_port)
-                    connected_node_index = nodes.index(connected_node)
-
-                    c_dict = {
+                    data.append({
                         'parent node index': i,
                         'output port index': j,
-                        'connected node': connected_node_index,
-                        'connected input port index': connected_port_index
-                    }
+                        'connected node': nodes.index(connected_node),
+                        'connected input port index': connected_node.inputs.index(connected_port)
+                    })
 
-                    cfg[c] = c_dict
-
-        self._tmp_data = cfg
-        return cfg
+        self._tmp_data = data
+        return data

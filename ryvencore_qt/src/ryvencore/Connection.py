@@ -19,7 +19,6 @@ class Connection(Base):
         pass
 
 
-
 class ExecConnection(Connection):
 
     def activate(self):

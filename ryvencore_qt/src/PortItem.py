@@ -73,15 +73,15 @@ class InputPortItem(PortItem):
         if len(self.port.connections) > 0:
             self.port_connected()
 
-        if self.port.add_config:
+        if self.port.add_data:
 
             if self.port.dtype:
-                c_d = self.port.add_config['widget data']
+                c_d = self.port.add_data['widget data']
                 self.widget.set_state(deserialize(c_d))
 
-            elif 'widget data' in self.port.add_config:
+            elif 'widget data' in self.port.add_data:
                 try:
-                    c_d = self.port.add_config['widget data']
+                    c_d = self.port.add_data['widget data']
                     if type(c_d) == dict:  # backwards compatibility
                         self.widget.set_state(c_d)
                     else:
@@ -101,7 +101,7 @@ class InputPortItem(PortItem):
         l.addItem(self.label, 0, 1)
         l.setAlignment(self.label, Qt.AlignVCenter | Qt.AlignLeft)
         if self.widget:
-            if self.port.add_config and self.port.add_config.get('widget pos') == 'below':
+            if self.port.add_data and self.port.add_data.get('widget pos') == 'below':
                 l.addItem(self.proxy, 1, 0, 1, 2)
             else:
                 l.addItem(self.proxy, 0, 2)  # besides
@@ -144,10 +144,10 @@ class InputPortItem(PortItem):
             elif isinstance(dtype, dtypes.Choice):
                 return Choice_IW(params)
 
-        elif self.port.type_ == 'data' and self.port.add_config and 'widget name' in self.port.add_config:
+        elif self.port.type_ == 'data' and self.port.add_data and 'widget name' in self.port.add_data:
 
             # custom input widget
-            return self.get_input_widget_class(self.port.add_config['widget name'])(params)
+            return self.get_input_widget_class(self.port.add_data['widget name'])(params)
 
         else:
             return None

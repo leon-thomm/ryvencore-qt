@@ -39,13 +39,13 @@ class FlowView(QGraphicsView):
     check_connection_validity_request = Signal(NodePort, NodePort, bool)
     connect_request = Signal(NodePort, NodePort)
 
-    get_nodes_config_request = Signal(list)
-    get_connections_config_request = Signal(list)
-    get_flow_config_data_request = Signal()
+    get_nodes_data_request = Signal(list)
+    get_connections_data_request = Signal(list)
+    get_flow_data_request = Signal()
 
     viewport_update_mode_changed = Signal(str)
 
-    def __init__(self, session, script, flow, config=None, flow_size: list = None, parent=None):
+    def __init__(self, session, script, flow, load_data=None, flow_size: list = None, parent=None):
         super(FlowView, self).__init__(parent=parent)
 
         # UNDO/REDO
@@ -69,7 +69,6 @@ class FlowView(QGraphicsView):
 
         # PRIVATE FIELDS
         self._tmp_data = None
-        # self._temp_config_data = None
         self._selected_pin: PortItemPin = None
         self._dragging_connection = False
         self._temp_connection_ports = None
@@ -92,9 +91,9 @@ class FlowView(QGraphicsView):
         self.remove_node_request.connect(self.flow.remove_node)
         self.node_placed.connect(self.flow.node_view_placed)
         self.check_connection_validity_request.connect(self.flow.check_connection_validity)
-        self.get_nodes_config_request.connect(self.flow.generate_nodes_config)
-        self.get_connections_config_request.connect(self.flow.generate_connections_config)
-        self.get_flow_config_data_request.connect(self.flow.generate_config_data)
+        self.get_nodes_data_request.connect(self.flow.gen_nodes_data)
+        self.get_connections_data_request.connect(self.flow.gen_conns_data)
+        self.get_flow_data_request.connect(self.flow.data)
 
         # CONNECTIONS FROM FLOW
         self.flow.node_added.connect(self.add_node)
@@ -102,8 +101,6 @@ class FlowView(QGraphicsView):
         self.flow.connection_added.connect(self.add_connection)
         self.flow.connection_removed.connect(self.remove_connection)
         self.flow.connection_request_valid.connect(self.connection_request_valid)
-        # self.flow.nodes_config_generated.connect(self._abstract_nodes_config_generated)
-        # self.flow.connections_config_generated.connect(self._abstract_connections_config_generated)
 
         # SESSION THREAD
         # if self.session.threaded:
@@ -180,22 +177,14 @@ class FlowView(QGraphicsView):
 
         # self.show_framerate(m_sec_interval=100)  # for testing
 
-        # CONFIG
-        if config is not None:
-            # # viewport update mode
-            # vpum = config['viewport update mode']
-            # if vpum == 'sync':  # vpum == VPUpdateMode.SYNC
-            #     # self.vp_update_mode = VPUpdateMode.SYNC
-            #     self.set_viewport_update_mode('sync')
-            # elif vpum == 'async':  # vpum == VPUpdateMode.ASYNC
-            #     # self.vp_update_mode = VPUpdateMode.ASYNC
-            #     self.set_viewport_update_mode('async')
+        # DATA
+        if load_data is not None:
 
-            if 'drawings' in config:  # not all (old) project files have drawings arr
-                self.place_drawings_from_config(config['drawings'])
+            if 'drawings' in load_data:  # not all (old) project files have drawings arr
+                self.place_drawings_from_data(load_data['drawings'])
 
-            if 'view size' in config:
-                self.setSceneRect(0, 0, config['view size'][0], config['view size'][1])
+            if 'view size' in load_data:
+                self.setSceneRect(0, 0, load_data['view size'][0], load_data['view size'][1])
 
             self._undo_stack.clear()
 
@@ -441,7 +430,7 @@ class FlowView(QGraphicsView):
                     view_pos = self.mapToScene(self.viewport().pos())
                     new_drawing = self._create_and_place_drawing__cmd(
                         view_pos + scaled_event_pos,
-                        config={**self._stylus_modes_widget.get_pen_settings(), 'viewport pos': view_pos}
+                        data={**self._stylus_modes_widget.get_pen_settings(), 'viewport pos': view_pos}
                     )
                     self._current_drawing = new_drawing
                     self._drawing = True
@@ -783,18 +772,18 @@ class FlowView(QGraphicsView):
             self._add_node_item(item)
 
         else:  # create new item
-            item_config = node.init_config
-            item = NodeItem(node, params=(self, self.session.design, item_config))
+            item_data = node.init_data
+            item = NodeItem(node, params=(self, self.session.design, item_data))
             node.item = item
             item.initialize()
             self.node_placed.emit(node)
 
             pos = None
-            if item_config is not None:
-                if 'pos x' in item_config:
-                    pos = QPointF(item_config['pos x'], item_config['pos y'])
-                elif 'position x' in item_config:  # backwards compatibility
-                    pos = QPointF(item_config['position x'], item_config['position y'])
+            if item_data is not None:
+                if 'pos x' in item_data:
+                    pos = QPointF(item_data['pos x'], item_data['pos y'])
+                elif 'position x' in item_data:  # backwards compatibility
+                    pos = QPointF(item_data['position x'], item_data['position y'])
             else:
                 pos = self._node_place_pos
 
@@ -914,10 +903,10 @@ class FlowView(QGraphicsView):
             self.connection_items[c].update()
 
     # DRAWINGS
-    def create_drawing(self, config=None) -> DrawingObject:
+    def create_drawing(self, data=None) -> DrawingObject:
         """Creates and returns a new DrawingObject."""
 
-        new_drawing = DrawingObject(self, config)
+        new_drawing = DrawingObject(self, data)
         return new_drawing
 
     def add_drawing(self, drawing_obj, posF=None):
@@ -942,22 +931,22 @@ class FlowView(QGraphicsView):
         self.scene().removeItem(drawing)
         self.drawings.remove(drawing)
 
-    def place_drawings_from_config(self, drawings_config: list, offset_pos=QPoint(0, 0)):
-        """Creates and places drawings from drawings. The same list is returned by the config_data() method
+    def place_drawings_from_data(self, drawings_data: list, offset_pos=QPoint(0, 0)):
+        """Creates and places drawings from drawings. The same list is returned by the data_() method
         at 'drawings'."""
 
         new_drawings = []
-        for d_config in drawings_config:
-            x = d_config['pos x'] + offset_pos.x()
-            y = d_config['pos y'] + offset_pos.y()
-            new_drawing = self.create_drawing(config=d_config)
+        for d_data in drawings_data:
+            x = d_data['pos x'] + offset_pos.x()
+            y = d_data['pos y'] + offset_pos.y()
+            new_drawing = self.create_drawing(data=d_data)
             self.add_drawing(new_drawing, QPointF(x, y))
             new_drawings.append(new_drawing)
 
         return new_drawings
 
-    def _create_and_place_drawing__cmd(self, posF, config=None):
-        new_drawing_obj = self.create_drawing(config)
+    def _create_and_place_drawing__cmd(self, posF, data=None):
+        new_drawing_obj = self.create_drawing(data)
         place_command = PlaceDrawing_Command(self, posF, new_drawing_obj)
         self._push_undo(place_command)
         return new_drawing_obj
@@ -1075,15 +1064,15 @@ class FlowView(QGraphicsView):
 
     # ACTIONS
     def _copy(self):  # ctrl+c
-        data = {'nodes': self._get_nodes_config_data(self.selected_nodes()),
-                'connections': self._get_connections_config_data(self.selected_nodes()),
-                'drawings': self._get_drawings_config_data(self.selected_drawings())}
+        data = {'nodes': self._get_nodes_data(self.selected_nodes()),
+                'connections': self._get_connections_data(self.selected_nodes()),
+                'drawings': self._get_drawings_data(self.selected_drawings())}
         QGuiApplication.clipboard().setText(json.dumps(data))
 
     def _cut(self):  # ctrl+x
-        data = {'nodes': self._get_nodes_config_data(self.selected_nodes()),
-                'connections': self._get_connections_config_data(self.selected_nodes()),
-                'drawings': self._get_drawings_config_data(self.selected_drawings())}
+        data = {'nodes': self._get_nodes_data(self.selected_nodes()),
+                'connections': self._get_connections_data(self.selected_nodes()),
+                'drawings': self._get_drawings_data(self.selected_drawings())}
         QGuiApplication.clipboard().setText(json.dumps(data))
         self.remove_selected_components__cmd()
 
@@ -1126,36 +1115,22 @@ class FlowView(QGraphicsView):
             Paste_Command(self, data, offset_for_middle_pos)
         )
 
-    # # VIEWPORT UPDATE MODE
-    # def viewport_update_mode(self) -> str:
-    #     """Returns the current viewport update mode as string (sync or async) of the flow"""
-    #     return VPUpdateMode.stringify(self.vp_update_mode)
-    #
-    # def set_viewport_update_mode(self, mode: str):
-    #     """
-    #     Sets the viewport update mode of the flow
-    #     :mode: 'sync' or 'async'
-    #     """
-    #     if mode == 'sync':
-    #         self.vp_update_mode = VPUpdateMode.SYNC
-    #     elif mode == 'async':
-    #         self.vp_update_mode = VPUpdateMode.ASYNC
-    #
-    #     self.viewport_update_mode_changed.emit(self.viewport_update_mode())
+    # DATA
+    def complete_data(self, script_data: dict):
 
-    # CONFIG
-    def generate_config_data(self, script_data):
+        script_data['flow']['nodes'] = self.complete_nodes_data(script_data['flow']['nodes'])
+        script_data['flow']['connections'] = self.complete_connections_data(script_data['flow']['connections'])
 
-        flow_config, nodes_data, connections_data = script_data['flow']
-
-        script_data['flow'] = {
-            **flow_config,
-            'nodes': self.complete_nodes_config_data(nodes_data),
-            'connections': self.complete_connections_config_data(connections_data),
-        }
+        # flow_data, nodes_data, connections_data = script_data['flow']
+        #
+        # script_data['flow'] = {
+        #     **flow_data,
+        #     'nodes': self.complete_nodes_data(nodes_data),
+        #     'connections': self.complete_connections_data(connections_data),
+        # }
 
         script_data['flow view'] = {
-            'drawings': self._get_drawings_config_data(self.drawings),
+            'drawings': self._get_drawings_data(self.drawings),
             'view size': [self.sceneRect().size().width(), self.sceneRect().size().height()]
         }
 
@@ -1163,58 +1138,59 @@ class FlowView(QGraphicsView):
 
         return script_data
 
-    def complete_nodes_config_data(self, nodes_config_dict):
+    def complete_nodes_data(self, nodes_data):
         """
-        Adds the item config (scene pos etc.) to the config of the nodes.
+        Adds the item data (scene pos etc.) to the data of the nodes.
         """
 
-        nodes_config_list = []
-        for n in list(nodes_config_dict.keys()):
-            cfg = nodes_config_dict[n]
+        def find_node_from_GID(GID):
+            for n in self.flow.nodes:
+                if n.GLOBAL_ID == GID:
+                    return n
 
+        comp_nodes_data = []
+
+        for n_data in nodes_data:
+            n = find_node_from_GID(n_data['GID'])
             item = self.node_items[n]
-            nodes_config_list.append(item.complete_config(cfg))
+            comp_nodes_data.append(item.complete_data(n_data))
 
-        return nodes_config_list
+        # comp_nodes_data = []
+        # for n in list(nodes_data.keys()):
+        #     data = nodes_data[n]
+        #
+        #     item = self.node_items[n]
+        #     comp_nodes_data.append(item.complete_data(data))
 
-    def complete_connections_config_data(self, conn_config_dict):
-        """
-        Adds the item config to the config of the connections
-        """
+        return comp_nodes_data
 
-        # TODO: add custom config for connection items
+    def complete_connections_data(self, conns_data):
+        # nothing so far...
+        return conns_data
 
-        conns_config_list = []
-        for c in list(conn_config_dict.keys()):
-            conns_config_list.append(conn_config_dict[c])
-
-        return conns_config_list
-
-    def _get_nodes_config_data(self, nodes):
-
-        # wait for abstract flow
-        self.flow._tmp_data = None
-        self.get_nodes_config_request.emit(nodes)
-        while self.flow._tmp_data is None:
-            time.sleep(0.001)
-
-        return self.complete_nodes_config_data(self.flow._tmp_data)
-
-    def _get_connections_config_data(self, nodes):
+    def _get_nodes_data(self, nodes):
+        """requests the nodes data from the core, completes it and returns it"""
 
         # wait for abstract flow
         self.flow._tmp_data = None
-        self.get_connections_config_request.emit(nodes)
+        self.get_nodes_data_request.emit(nodes)
         while self.flow._tmp_data is None:
             time.sleep(0.001)
 
-        return self.complete_connections_config_data(self.flow._tmp_data)
+        return self.complete_nodes_data(self.flow._tmp_data)
 
-    def _get_drawings_config_data(self, drawings):
-        drawings_list = []
-        for drawing in drawings:
-            drawing_dict = drawing.config_data()
+    def _get_connections_data(self, nodes):
+        """requests the connections data for the given nodes from the core, completes it and returns it"""
 
-            drawings_list.append(drawing_dict)
+        # wait for abstract flow
+        self.flow._tmp_data = None
+        self.get_connections_data_request.emit(nodes)
+        while self.flow._tmp_data is None:
+            time.sleep(0.001)
 
-        return drawings_list
+        return self.complete_connections_data(self.flow._tmp_data)
+
+    def _get_drawings_data(self, drawings):
+        """generates the data for the given drawings and returns it"""
+
+        return [d.data() for d in self.drawings]

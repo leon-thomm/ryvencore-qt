@@ -335,16 +335,16 @@ class Paste_Command(FlowUndoCommand):
 
     def connect_to_flow(self):
         """creates temporary connections to retrieve the created components once"""
-        self.flow.nodes_created_from_config.connect(self.nodes_created)
-        self.flow.connections_created_from_config.connect(self.connections_created)
-        self.create_nodes_request.connect(self.flow.create_nodes_from_config)
-        self.create_connections_request.connect(self.flow.connect_nodes_from_config)
+        self.flow.nodes_created_from_data.connect(self.nodes_created)
+        self.flow.connections_created_from_data.connect(self.connections_created)
+        self.create_nodes_request.connect(self.flow.create_nodes_from_data)
+        self.create_connections_request.connect(self.flow.connect_nodes_from_data)
 
     def disconnect_from_flow(self):
-        self.flow.nodes_created_from_config.disconnect(self.nodes_created)
-        self.flow.connections_created_from_config.disconnect(self.connections_created)
-        self.create_nodes_request.disconnect(self.flow.create_nodes_from_config)
-        self.create_connections_request.disconnect(self.flow.connect_nodes_from_config)
+        self.flow.nodes_created_from_data.disconnect(self.nodes_created)
+        self.flow.connections_created_from_data.disconnect(self.connections_created)
+        self.create_nodes_request.disconnect(self.flow.create_nodes_from_data)
+        self.create_connections_request.disconnect(self.flow.connect_nodes_from_data)
 
 
     def redo_(self):

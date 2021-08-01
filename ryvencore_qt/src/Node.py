@@ -107,8 +107,8 @@ class Node(RC_Node, QObject):
         self.updated.emit()
 
     # @override
-    def create_input(self, label: str = '', type_: str = 'data', add_config={}, insert: int = None):
-        RC_Node.create_input(self, label=label, type_=type_, add_config=add_config, insert=insert)
+    def create_input(self, label: str = '', type_: str = 'data', add_data={}, insert: int = None):
+        RC_Node.create_input(self, label=label, type_=type_, add_data=add_data, insert=insert)
 
         if insert is not None:
 
@@ -123,8 +123,8 @@ class Node(RC_Node, QObject):
             self.input_added.emit(self.inputs[-1], None)
 
     # @override
-    def create_input_dt(self, dtype: DType, label: str = '', add_config={}, insert: int = None):
-        RC_Node.create_input_dt(self, dtype=dtype, label=label, add_config=add_config, insert=insert)
+    def create_input_dt(self, dtype: DType, label: str = '', add_data={}, insert: int = None):
+        RC_Node.create_input_dt(self, dtype=dtype, label=label, add_data=add_data, insert=insert)
 
         if insert is not None:
 
@@ -165,14 +165,14 @@ class Node(RC_Node, QObject):
         self.output_removed.emit(out)
 
     # @override
-    def custom_config_data(self) -> dict:
+    def custom_data(self) -> dict:
         return {
             'special actions': self.get_special_actions_data(self.actions),
             'display title': self.display_title,
         }
 
     # @override
-    def load_custom_config(self, data: dict):
+    def load_custom_data(self, data: dict):
         self.actions = self.set_special_actions_data(data['special actions'])
         self.display_title = data['display title']
 

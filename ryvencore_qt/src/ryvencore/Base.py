@@ -33,3 +33,7 @@ class Base:
         # ignore custom ID if it has already been set
         if self.id_ctr is not None and not (hasattr(self, 'ID') and self.ID is not None):
             self.ID = self.id_ctr.count()
+
+    def data(self) -> dict:
+        """Converts the object to a JSON compatible dict for serialization"""
+        return None

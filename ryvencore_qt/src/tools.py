@@ -42,49 +42,6 @@ class MovementEnum(enum.Enum):
     mouse_released = 3
 
 
-def translate_project(filepath: str):
-    """Performs a few minor changes to a project file using the structure from Ryven 2, to make it compatible
-    with the current system"""
-
-    f = open(filepath, 'r')
-    project_str = f.read()
-    f.close()
-
-    project_str = project_str.replace('flow widget config', 'flow view')
-    project_str = project_str.replace('widget position', 'widget pos')
-
-    project: dict = json.loads(project_str)
-    project_repaired = translate_project__repair(project)
-    project_repaired_str = json.dumps(project_repaired, indent=4)
-
-    f = open(os.path.splitext(filepath)[0]+'_TRANSLATED.rpo', 'w')
-    f.write(project_repaired_str)
-    f.close()
-
-
-def translate_project__repair(obj):
-    if type(obj) == dict:
-        for k, v in obj.items():
-            if k in ('state data', 'widget data', 'main widget data'):
-                obj[k] = serialize(v)
-
-            # elif k == 'flow widget config':
-            #     obj['flow view'] = obj['flow widget config']
-            #     del obj['flow widget config']
-
-            elif k == 'widget pos' and v == 'under':
-                obj[k] = 'below'
-
-            else:
-                obj[k] = translate_project__repair(v)
-
-    elif type(obj) == list:
-        for i in range(len(obj)):
-            obj[i] = translate_project__repair(obj[i])
-
-    return obj
-
-
 def change_svg_color(filepath: str, color_hex: str):
 
 

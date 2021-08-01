@@ -20,12 +20,12 @@ class Node(Base):
     title = ''
     type_ = ''
     # keywords = []  TODO: add this with intelligent search in NodeSelectionWidget
-    # identifier_comp = [] TODO: add identifier compatibility for when the class name gets changed
     init_inputs: [NodeInputBP] = []
     init_outputs: [NodeOutputBP] = []
     identifier: str = None  # set by Session if None
-    identifier_prefix: str = None
+    identifier_comp: [str] = []  # identifier compatibility, useful when node class name changes
 
+    identifier_prefix: str = None  # becomes part of identifier if set
 
     @classmethod
     def build_identifier(cls):
@@ -41,7 +41,7 @@ class Node(Base):
     def __init__(self, params):
         Base.__init__(self)
 
-        self.flow, self.session, self.init_config = params
+        self.flow, self.session, self.init_data = params
         self.script = self.flow.script
         self.inputs: [NodeInputBP] = []
         self.outputs: [NodeOutputBP] = []
@@ -55,15 +55,15 @@ class Node(Base):
 
     def finish_initialization(self):
         """
-        Loads all default properties from initial config if it was provided;
-        sets up inputs and outputs, enables the logs, loads custom (std) config
+        Loads all default properties from initial data if it was provided;
+        sets up inputs and outputs, enables the logs, loads custom (std) data
         and calls self._initialized()
         """
 
-        if self.init_config:
-            self.setup_ports(self.init_config['inputs'], self.init_config['outputs'])
+        if self.init_data:
+            self.setup_ports(self.init_data['inputs'], self.init_data['outputs'])
 
-            self.load_custom_config(self.init_config)
+            self.load_custom_data(self.init_data)
 
         else:
             self.setup_ports()
@@ -74,44 +74,44 @@ class Node(Base):
 
         # self.update()
 
-    def load_user_config(self):
-        """Loads the component-specific config data that was returned by get_state() previously; prints an exception
+    def load_user_data(self):
+        """Loads the component-specific data that was returned by get_state() previously; prints an exception
         if it fails but doesn't crash because that usually happens when developing nodes"""
 
-        if self.init_config:
+        if self.init_data:
             try:
-                if type(self.init_config['state data']) == dict:  # backwards compatibility
-                    self.set_state(self.init_config['state data'])
+                if type(self.init_data['state data']) == dict:  # backwards compatibility
+                    self.set_state(self.init_data['state data'])
                 else:
-                    self.set_state(deserialize(self.init_config['state data']))
+                    self.set_state(deserialize(self.init_data['state data']))
             except Exception as e:
                 InfoMsgs.write_err(
                     'Exception while setting data in', self.title, 'node:', e, ' (was this intended?)')
 
 
-    def setup_ports(self, inputs_config=None, outputs_config=None):
+    def setup_ports(self, inputs_data=None, outputs_data=None):
 
-        if not inputs_config and not outputs_config:
+        if not inputs_data and not outputs_data:
             for i in range(len(self.init_inputs)):
                 inp = self.init_inputs[i]
 
                 if inp.dtype:
-                    self.create_input_dt(dtype=inp.dtype, label=inp.label, add_config=inp.add_config)
+                    self.create_input_dt(dtype=inp.dtype, label=inp.label, add_data=inp.add_data)
 
                 else:
-                    self.create_input(inp.label, inp.type_, add_config=self.init_inputs[i].add_config)
+                    self.create_input(inp.label, inp.type_, add_data=self.init_inputs[i].add_data)
 
             for o in range(len(self.init_outputs)):
                 out = self.init_outputs[o]
                 self.create_output(out.label, out.type_)
 
         else:  # when loading saved nodes, the init_inputs and init_outputs are irrelevant
-            for inp in inputs_config:
+            for inp in inputs_data:
                 if 'dtype' in inp:
                     self.create_input_dt(dtype=DType.from_str(inp['dtype'])(
-                        _load_state=deserialize(inp['dtype state'])), label=inp['label'], add_config=inp)
+                        _load_state=deserialize(inp['dtype state'])), label=inp['label'], add_data=inp)
                 else:
-                    self.create_input(label=inp['label'], type_=inp['type'], add_config=inp)
+                    self.create_input(label=inp['label'], type_=inp['type'], add_data=inp)
 
                 if 'val' in inp:
                     # this means the input is 'data' and did not have any connections,
@@ -119,7 +119,7 @@ class Node(Base):
                     # in the front end which has probably overridden the Node.input() method
                     self.inputs[-1].val = deserialize(inp['val'])
 
-            for out in outputs_config:
+            for out in outputs_data:
                 self.create_output(out['label'], out['type'])
 
     # -----------------------------------------------------------------------------------------------------------------
@@ -202,15 +202,15 @@ class Node(Base):
         pass
 
     # OVERRIDE
-    def custom_config_data(self) -> dict:
-        """Convenience method for saving some std config for all nodes in an editor.
+    def custom_data(self) -> dict:
+        """Convenience method for saving some std data for all nodes in an editor.
         get_state()/set_state() then stays clean for all specific node subclasses"""
 
         return {}
 
     # OVERRIDE
-    def load_custom_config(self, data: dict):
-        """For loading the data returned by custom_config_data()"""
+    def load_custom_data(self, data: dict):
+        """For loading the data returned by custom_data()"""
         pass
 
     # OVERRIDE
@@ -262,7 +262,7 @@ class Node(Base):
     #   PORTS
 
 
-    def create_input(self, label: str = '', type_: str = 'data', add_config={}, insert: int = None):
+    def create_input(self, label: str = '', type_: str = 'data', add_data={}, insert: int = None):
         """Creates and adds a new input at index pos"""
         # InfoMsgs.write('create_input called')
 
@@ -270,7 +270,7 @@ class Node(Base):
             node=self,
             type_=type_,
             label_str=label,
-            add_config=add_config,
+            add_data=add_data,
         )
 
         if insert is not None:
@@ -279,7 +279,7 @@ class Node(Base):
             self.inputs.append(inp)
 
 
-    def create_input_dt(self, dtype: DType, label: str = '', add_config={}, insert: int = None):
+    def create_input_dt(self, dtype: DType, label: str = '', add_data={}, insert: int = None):
         """Creates and adds a new data input with a DType"""
         # InfoMsgs.write('create_input called')
 
@@ -288,7 +288,7 @@ class Node(Base):
             type_='data',
             label_str=label,
             dtype=dtype,
-            add_config=add_config,
+            add_data=add_data,
         )
 
         if insert is not None:
@@ -393,7 +393,7 @@ class Node(Base):
         return False
 
 
-    def config_data(self) -> dict:
+    def data(self) -> dict:
         """
         Returns all metadata of the node in JSON-compatible dict.
         Used to rebuild the Flow when loading a project or pasting components.
@@ -403,20 +403,22 @@ class Node(Base):
         node_dict = {
             'identifier': self.identifier,
             'state data': serialize(self.get_state()),
-            **self.custom_config_data()
+            'GID': self.GLOBAL_ID,
+
+            **self.custom_data(),
         }
 
         # inputs
         inputs = []
         for i in self.inputs:
-            input_dict = i.config_data()
+            input_dict = i.data()
             inputs.append(input_dict)
         node_dict['inputs'] = inputs
 
         # outputs
         outputs = []
         for o in self.outputs:
-            output_dict = o.config_data()
+            output_dict = o.data()
             outputs.append(output_dict)
         node_dict['outputs'] = outputs
 

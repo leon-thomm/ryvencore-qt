@@ -8,7 +8,7 @@ from .tools import MovementEnum
 class DrawingObject(QGraphicsItem):
     """GUI implementation for 'drawing objects' in the scene, written by hand using a stylus pen"""
 
-    def __init__(self, flow_view, config=None):
+    def __init__(self, flow_view, load_data=None):
         super(DrawingObject, self).__init__()
 
         self.setFlags(QGraphicsItem.ItemIsSelectable | QGraphicsItem.ItemIsMovable |
@@ -30,14 +30,14 @@ class DrawingObject(QGraphicsItem):
         self.finished = False
 
         # viewport_pos enables global floating points for precise pen positions
-        self.viewport_pos: QPointF = config['viewport pos'] if 'viewport pos' in config else None
+        self.viewport_pos: QPointF = load_data['viewport pos'] if 'viewport pos' in load_data else None
         # if the drawing gets loaded, its correct global floating pos is already correct (gets set by flow then)
 
         self.movement_state = None  # ugly - should get replaced later, see NodeItem, same issue
         self.movement_pos_from = None
 
-        if 'points' in config:
-            p_c = config['points']
+        if 'points' in load_data:
+            p_c = load_data['points']
             for p in p_c:
                 if type(p) == list:
                     x = p[0]
@@ -53,8 +53,8 @@ class DrawingObject(QGraphicsItem):
                     self.stroke_weights.append(w)
             self.finished = True
 
-        self.color = QColor(config['color'])
-        self.base_stroke_weight = config['base stroke weight']
+        self.color = QColor(load_data['color'])
+        self.base_stroke_weight = load_data['base stroke weight']
 
 
     def paint(self, painter, option, widget=None):
@@ -180,7 +180,7 @@ class DrawingObject(QGraphicsItem):
         self.movement_state = None
         return QGraphicsItem.mouseReleaseEvent(self, event)
 
-    def config_data(self):
+    def data_(self):
         drawing_dict = {
             'pos x': self.pos().x(),
             'pos y': self.pos().y(),

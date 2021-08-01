@@ -55,9 +55,9 @@ class VarsManager(RC_VarsManager, QObject):
     var_deleted = Signal(Variable)
     var_val_changed = Signal(Variable, object)
 
-    def __init__(self, script, config=None):
+    def __init__(self, script, load_data=None):
         QObject.__init__(self)
-        RC_VarsManager.__init__(self, script=script, config=config)
+        RC_VarsManager.__init__(self, script=script, load_data=load_data)
 
     def create_new_var(self, name: str, val=None) -> Variable:
         """Creates and returns a new script variable and emits new_var_created"""
@@ -91,8 +91,8 @@ class Flow(RC_Flow, QObject):
     connection_removed = Signal(Connection)
 
     connection_request_valid = Signal(bool)
-    nodes_created_from_config = Signal(list)
-    connections_created_from_config = Signal(list)
+    nodes_created_from_data = Signal(list)
+    connections_created_from_data = Signal(list)
 
     algorithm_mode_changed = Signal(str)
 
@@ -132,16 +132,16 @@ class Flow(RC_Flow, QObject):
             self.connection_request_valid.emit(valid)
         return valid
 
-    def create_nodes_from_config(self, nodes_config: list):
-        """Creates Nodes from nodes_config, previously returned by config_data"""
+    def create_nodes_from_data(self, nodes_data: list):
+        """Creates Nodes from nodes_data, previously returned by data()"""
 
-        nodes = RC_Flow.create_nodes_from_config(self, nodes_config=nodes_config)
-        self.nodes_created_from_config.emit(nodes)
+        nodes = RC_Flow.create_nodes_from_data(self, nodes_data=nodes_data)
+        self.nodes_created_from_data.emit(nodes)
         return nodes
 
-    def connect_nodes_from_config(self, nodes: [Node], config: list):
-        connections = RC_Flow.connect_nodes_from_config(self, nodes=nodes, config=config)
-        self.connections_created_from_config.emit(connections)
+    def connect_nodes_from_data(self, nodes: [Node], data: list):
+        connections = RC_Flow.connect_nodes_from_data(self, nodes=nodes, data=data)
+        self.connections_created_from_data.emit(connections)
         return connections
 
     def set_algorithm_mode(self, mode: str):
