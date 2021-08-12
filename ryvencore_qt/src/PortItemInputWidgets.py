@@ -3,6 +3,9 @@ from qtpy.QtGui import QFontMetrics, QFont
 from qtpy.QtWidgets import QSpinBox, QLineEdit, QSlider, QCheckBox, QComboBox
 
 
+from .ryvencore.InfoMsgs import InfoMsgs
+
+
 from .WidgetBaseClasses import IWB
 from .retain import M
 
@@ -126,6 +129,13 @@ class DType_IW_Base(IWB):
     def __str__(self):
         return self.__class__.__name__
 
+    def show(self, data):
+        """
+        Tries to convert and show the data appropriately in the widget.
+        Failure here should NOT result in a crash, i.e. subclasses must catch errors.
+        """
+        pass
+
 
 
 
@@ -140,7 +150,7 @@ class Data_IW(DType_IW_Base, QLineEdit):  # virtual
         dtype = self.input.dtype
 
         self.setFont(QFont('source code pro', 10))
-        self.val_update_event(dtype.default)
+        self.show(dtype.default)
         if dtype.size == 's':
             self.base_width = 30
         elif dtype.size == 'm':
@@ -174,16 +184,19 @@ class Data_IW(DType_IW_Base, QLineEdit):  # virtual
             return self.text()
 
     def val_update_event(self, val):
-        try:
-            self.setText(str(val))
-        except Exception as e:
-            pass
+        self.show(val)
 
     def get_state(self) -> dict:
         return {'text': self.text()}
 
     def set_state(self, data: dict):
-        self.setText(data['text'])
+        self.show(data['text'])
+
+    def show(self, data):
+        try:
+            self.setText(str(data))
+        except Exception as e:
+            InfoMsgs.write_err(e)
 
 
 # custom sized classes for qss access:
@@ -214,7 +227,7 @@ class String_IW(DType_IW_Base, QLineEdit):  # virtual
         dtype = self.input.dtype
 
         self.setFont(QFont('source code pro', 10))
-        self.setText(dtype.default)
+        self.show(dtype.default)
         self.setFixedWidth(self.width)
         self.setToolTip(dtype.doc)
 
@@ -230,14 +243,20 @@ class String_IW(DType_IW_Base, QLineEdit):  # virtual
 
     def val_update_event(self, val):
         self.block = True
-        self.setText(str(val))
+        self.show(val)
         self.block = False
 
     def get_state(self) -> dict:
         return {'text': self.text()}
 
     def set_state(self, data: dict):
-        self.setText(data['text'])
+        self.show(data['text'])
+
+    def show(self, data):
+        try:
+            self.setText(str(data))
+        except Exception as e:
+            InfoMsgs.write_err(e)
 
 
 # custom sized classes for qss access:
@@ -266,7 +285,7 @@ class Integer_IW(DType_IW_Base, QSpinBox):
 
         if dtype.bounds:
             self.setRange(dtype.bounds[0], dtype.bounds[1])
-        self.setValue(dtype.default)
+        self.show(dtype.default)
         self.setToolTip(dtype.doc)
 
         self.block = False  # ignore updates from val_update_event
@@ -281,16 +300,21 @@ class Integer_IW(DType_IW_Base, QSpinBox):
 
     def val_update_event(self, val):
         self.block = True
-        try:
-            self.setValue(val)
-        finally:
-            self.block = False
+        self.show(val)
+        self.block = False
 
     def get_state(self) -> dict:
         return {'val': self.value()}
 
     def set_state(self, data: dict):
-        self.setValue(data['val'])
+        self.show(data['val'])
+
+    def show(self, data):
+        try:
+            self.setValue(data)
+        except Exception as e:
+            InfoMsgs.write_err(e)
+
 
 
 class Float_IW(DType_IW_Base, QLineEdit):
@@ -303,7 +327,7 @@ class Float_IW(DType_IW_Base, QLineEdit):
         self.setFont(QFont('source code pro', 10))
         fm = QFontMetrics(self.font())
         self.setMaximumWidth(fm.width(' ')*dtype.decimals+1)
-        self.setText(str(dtype.default))
+        self.show(dtype.default)
         self.setToolTip(dtype.doc)
 
         self.block = False  # ignore updates from val_update_event
@@ -318,16 +342,20 @@ class Float_IW(DType_IW_Base, QLineEdit):
 
     def val_update_event(self, val):
         self.block = True
-        try:
-            self.setText(str(val))
-        finally:
-            self.block = False
+        self.show(val)
+        self.block = False
 
     def get_state(self) -> dict:
         return {'text': self.text()}
 
     def set_state(self, data: dict):
-        self.setText(data['text'])
+        self.show(data['text'])
+
+    def show(self, data):
+        try:
+            self.setText(str(data))
+        except Exception as e:
+            InfoMsgs.write_err(e)
 
 
 class Boolean_IW(DType_IW_Base, QCheckBox):
@@ -337,7 +365,7 @@ class Boolean_IW(DType_IW_Base, QCheckBox):
 
         dtype = self.input.dtype
 
-        self.setChecked(dtype.default)
+        self.show(dtype.default)
 
         self.setToolTip(dtype.doc)
 
@@ -353,16 +381,21 @@ class Boolean_IW(DType_IW_Base, QCheckBox):
 
     def val_update_event(self, val):
         self.block = True
-        try:
-            self.setChecked(bool(val))
-        finally:
-            self.block = False
+        self.show(val)
+        self.block = False
 
     def get_state(self) -> dict:
         return {'checked': self.isChecked()}
 
     def set_state(self, data: dict):
-        self.setChecked(data['checked'])
+        self.show(data['checked'])
+
+    def show(self, data):
+        try:
+            self.setChecked(bool(data))
+        except Exception as e:
+            InfoMsgs.write_err(e)
+
 
 
 class Choice_IW(DType_IW_Base, QComboBox):
@@ -373,7 +406,7 @@ class Choice_IW(DType_IW_Base, QComboBox):
         dtype = self.input.dtype
 
         self.addItems(dtype.items)
-        self.setCurrentText(dtype.default)
+        self.show(dtype.default)
         self.setToolTip(dtype.doc)
 
         self.block = False  # ignore updates from val_update_event
@@ -388,10 +421,8 @@ class Choice_IW(DType_IW_Base, QComboBox):
 
     def val_update_event(self, val):
         self.block = True
-        try:
-            self.setCurrentText(val)
-        finally:
-            self.block = False
+        self.show(val)
+        self.block = False
 
     def get_state(self) -> dict:
         return {
@@ -402,4 +433,10 @@ class Choice_IW(DType_IW_Base, QComboBox):
     def set_state(self, data: dict):
         self.clear()
         self.addItems(data['items'])
-        self.setCurrentText(data['active'])
+        self.show(data['active'])
+
+    def show(self, data):
+        try:
+            self.setCurrentText(data)
+        except Exception as e:
+            InfoMsgs.write_err(e)
