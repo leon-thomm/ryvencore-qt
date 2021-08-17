@@ -212,17 +212,11 @@ class Session(Base):
 
 
     def data(self) -> dict:
-
-        data = {}
-
-        macro_scripts_list = []
-        for m_script in self.macro_scripts:
-            macro_scripts_list.append(m_script.data())
-        data['macro scripts'] = macro_scripts_list
-
-        scripts_list = []
-        for script in set(self.scripts) - set(self.macro_scripts):  # exclude macro scripts
-            scripts_list.append(script.data())
-        data['scripts'] = scripts_list
-
-        return data
+        return {
+            'macro scripts': [
+                m_s.data() for m_s in self.macro_scripts
+            ],
+            'scripts': [
+                s.data() for s in set(self.scripts) - set(self.macro_scripts)
+            ],
+        }

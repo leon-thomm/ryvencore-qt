@@ -40,9 +40,9 @@ class Script(Base):
 
 
     def data(self) -> dict:
-
         return {
             'title': self.title,
             'variables': self.vars_manager.data(),
             'flow': self.flow.data(),
+            'GID': self.GLOBAL_ID,
         }

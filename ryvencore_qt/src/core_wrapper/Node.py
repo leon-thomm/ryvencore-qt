@@ -165,7 +165,7 @@ class Node(RC_Node, QObject):
         self.output_removed.emit(out)
 
     # @override
-    def custom_data(self) -> dict:
+    def additional_data(self) -> dict:
         return {
             'special actions': self.get_special_actions_data(self.actions),
             'display title': self.display_title,

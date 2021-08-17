@@ -202,8 +202,8 @@ class Node(Base):
         pass
 
     # OVERRIDE
-    def custom_data(self) -> dict:
-        """Convenience method for saving some std data for all nodes in an editor.
+    def additional_data(self) -> dict:
+        """Convenience method for wrappers for saving some std data for all nodes in an editor.
         get_state()/set_state() then stays clean for all specific node subclasses"""
 
         return {}
@@ -399,27 +399,13 @@ class Node(Base):
         Used to rebuild the Flow when loading a project or pasting components.
         """
 
-        # general attributes
-        node_dict = {
+        return {
             'identifier': self.identifier,
             'state data': serialize(self.get_state()),
+            'inputs': [i.data() for i in self.inputs],
+            'outputs': [o.data() for o in self.outputs],
+
+            **self.additional_data(),
+
             'GID': self.GLOBAL_ID,
-
-            **self.custom_data(),
         }
-
-        # inputs
-        inputs = []
-        for i in self.inputs:
-            input_dict = i.data()
-            inputs.append(input_dict)
-        node_dict['inputs'] = inputs
-
-        # outputs
-        outputs = []
-        for o in self.outputs:
-            output_dict = o.data()
-            outputs.append(output_dict)
-        node_dict['outputs'] = outputs
-
-        return node_dict
