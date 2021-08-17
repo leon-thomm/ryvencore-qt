@@ -1,18 +1,21 @@
 import time
+from waiting import wait
 
+from PySide2.QtCore import QTimer
 from qtpy.QtWidgets import QWidget, QApplication
 from qtpy.QtCore import QObject, Signal, Qt
 
-from .ryvencore import Session as RC_Session, Script
-from .ryvencore.MacroScript import MacroScript
-from .ryvencore.RC import CLASSES
+from ..SessionThreadInterface import SessionThreadInterface_Frontend, SessionThreadInterface_Backend
+from ..ryvencore import Session as RC_Session, Script
+from ..ryvencore.MacroScript import MacroScript
+from ..ryvencore.RC import CLASSES
 
-from .Design import Design
-from .ConnectionItem import DataConnectionItem, ExecConnectionItem
-from .SessionThreadingBridge import SessionThreadingBridge
+from ..Design import Design
+from ..ConnectionItem import DataConnectionItem, ExecConnectionItem
 from .Node import Node
-from .FlowView import FlowView
+from ..FlowView import FlowView
 from .WRAPPERS import VarsManager, LogsManager, DataConnection, Flow, Logger
+from ..tools import Container, wait_until
 
 
 class Session(RC_Session, QObject):
@@ -21,9 +24,6 @@ class Session(RC_Session, QObject):
     flow_view_created = Signal(object, object)
     script_renamed = Signal(object)
     script_deleted = Signal(object)
-
-    build_flow_view_request = Signal(object, tuple)
-    complete_flow_view_data = Signal(dict)
 
     def __init__(
             self,
@@ -46,11 +46,9 @@ class Session(RC_Session, QObject):
         CLASSES['logger'] = Logger
         CLASSES['vars manager'] = VarsManager
         CLASSES['flow'] = Flow
-
         if exec_conn_class:
             CLASSES['exec conn'] = exec_conn_class
-
-        # register additional classes
+        # and some additional classes
         CLASSES['data conn item'] = DataConnectionItem if not data_conn_item_class else data_conn_item_class
         CLASSES['exec conn item'] = ExecConnectionItem if not exec_conn_item_class else exec_conn_item_class
 
@@ -64,11 +62,11 @@ class Session(RC_Session, QObject):
 
         # threading
         self.threaded = threaded
-        self.threading_bridge = None
         self.gui_parent = gui_parent
-        self.threading_bridge = SessionThreadingBridge()
-        self.threading_bridge.moveToThread(gui_parent.thread() if threaded else self.thread())
-        self.build_flow_view_request.connect(self.threading_bridge.init_flow_view)
+
+        self.threading_bridge__backend = SessionThreadInterface_Backend()
+        self.threading_bridge__frontend = self.threading_bridge__backend.frontend
+        self.threading_bridge__frontend.moveToThread(gui_parent.thread() if threaded else self.thread())
 
         # design
         app = QApplication.instance()
@@ -134,60 +132,24 @@ class Session(RC_Session, QObject):
             else:
                 flow_view_data = script_data['flow view']
 
-        flow_view_params = (
-            self,
-            script,
-            script.flow,
-            flow_view_data,
-            view_size,
-            self.gui_parent,
+        flow_view = self.threading_bridge__backend.run(
+            FlowView, (
+                self,
+                script,
+                script.flow,
+                flow_view_data,
+                view_size,
+                self.gui_parent,
+            )
         )
-
-        # build flow view in GUI thread
-        self.tmp_data = None
-        self.build_flow_view_request.emit(self, flow_view_params)
-        while self.tmp_data is None:
-            time.sleep(0.001)
-        self.tmp_data: FlowView
-        flow_view = self.tmp_data
 
         self.flow_views[script] = flow_view
         self.flow_view_created.emit(script, flow_view)
 
         return flow_view
 
-    def data(self) -> dict:
-        """Returns the project as JSON compatible dict to be saved and loaded again using load()"""
-
-        def complete_script_data(script_data: dict) -> dict:
-            """adds the frontend related data to the abstract project data by the ryvencore Session"""
-            title = script_data['title']  # script titles are unique!
-            script = self._script_from_title(title)
-            view = self.flow_views[script]
-
-            # complete script data in FlowView in GUI thread ---------------
-            self.complete_flow_view_data.connect(view.complete_data)
-            view._tmp_data = None
-            self.complete_flow_view_data.emit(script_data)
-            while view._tmp_data is None:
-                time.sleep(0.001)
-            self.complete_flow_view_data.disconnect(view.complete_data)
-            # --------------------------------------------------------------
-
-            return view._tmp_data
-
-        data = RC_Session.data(self)
-
-        return {
-            'macro scripts': [
-                complete_script_data(s_data)
-                for s_data in data['macro scripts']
-            ],
-            'scripts': [
-                complete_script_data(s_data)
-                for s_data in data['scripts']
-            ],
-        }
+    def _flow_view_created(self, view):
+        self.temp_data = view
 
     def _script_from_title(self, title: str) -> Script:
         for s in self.scripts:

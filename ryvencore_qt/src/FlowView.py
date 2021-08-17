@@ -5,12 +5,12 @@ from qtpy.QtCore import Qt, QPointF, QPoint, QRectF, QSizeF, Signal, QTimer
 from qtpy.QtGui import QPainter, QPen, QColor, QKeySequence, QTabletEvent, QImage, QGuiApplication, QFont
 from qtpy.QtWidgets import QGraphicsView, QGraphicsScene, QShortcut, QMenu, QGraphicsItem, QUndoStack
 
+from .GUIBase import GUIBase
 from .ryvencore.Flow import Flow
 from .FlowCommands import MoveComponents_Command, PlaceNode_Command, \
     PlaceDrawing_Command, RemoveComponents_Command, ConnectPorts_Command, Paste_Command, FlowUndoCommand
 from .FlowViewProxyWidget import FlowViewProxyWidget
 from .FlowViewStylusModesWidget import FlowViewStylusModesWidget
-from .FlowSessionThreadInterface import FlowSessionThreadInterface
 from .FlowViewZoomWidget import FlowViewZoomWidget
 from .ryvencore.Node import Node
 from .ryvencore.NodePort import NodePort
@@ -24,10 +24,7 @@ from .ryvencore.InfoMsgs import InfoMsgs
 from .ryvencore.RC import PortObjPos, CLASSES
 
 
-# from .ryvencore.RC import FlowVPUpdateMode as VPUpdateMode
-
-
-class FlowView(QGraphicsView):
+class FlowView(GUIBase, QGraphicsView):
     """Manages the GUI of flows"""
 
     nodes_selection_changed = Signal(list)
@@ -46,7 +43,8 @@ class FlowView(QGraphicsView):
     viewport_update_mode_changed = Signal(str)
 
     def __init__(self, session, script, flow, load_data=None, flow_size: list = None, parent=None):
-        super(FlowView, self).__init__(parent=parent)
+        GUIBase.__init__(self)
+        QGraphicsView.__init__(self, parent=parent)
 
         # UNDO/REDO
         self._undo_stack = QUndoStack(self)
@@ -103,12 +101,7 @@ class FlowView(QGraphicsView):
         self.flow.connection_request_valid.connect(self.connection_request_valid)
 
         # SESSION THREAD
-        # if self.session.threaded:
-        self.thread_interface = FlowSessionThreadInterface()
-        self.thread_interface.moveToThread(self.session.thread())
-
-        # # SETTINGS
-        # self.vp_update_mode: VPUpdateMode = VPUpdateMode.SYNC
+        self.thread_interface = self.session.threading_bridge__frontend
 
         # CREATE UI
         scene = QGraphicsScene(self)
@@ -1064,15 +1057,19 @@ class FlowView(QGraphicsView):
 
     # ACTIONS
     def _copy(self):  # ctrl+c
-        data = {'nodes': self._get_nodes_data(self.selected_nodes()),
-                'connections': self._get_connections_data(self.selected_nodes()),
-                'drawings': self._get_drawings_data(self.selected_drawings())}
+        data = {
+            'nodes': self._get_nodes_data(self.selected_nodes()),
+            'connections': self._get_connections_data(self.selected_nodes()),
+            'drawings': self._get_drawings_data(self.selected_drawings())
+        }
         QGuiApplication.clipboard().setText(json.dumps(data))
 
     def _cut(self):  # ctrl+x
-        data = {'nodes': self._get_nodes_data(self.selected_nodes()),
-                'connections': self._get_connections_data(self.selected_nodes()),
-                'drawings': self._get_drawings_data(self.selected_drawings())}
+        data = {
+            'nodes': self._get_nodes_data(self.selected_nodes()),
+            'connections': self._get_connections_data(self.selected_nodes()),
+            'drawings': self._get_drawings_data(self.selected_drawings())
+        }
         QGuiApplication.clipboard().setText(json.dumps(data))
         self.remove_selected_components__cmd()
 
@@ -1116,66 +1113,41 @@ class FlowView(QGraphicsView):
         )
 
     # DATA
-    def complete_data(self, script_data: dict):
+    def complete_data(self, data: dict):
 
-        script_data['flow']['nodes'] = self.complete_nodes_data(script_data['flow']['nodes'])
-        script_data['flow']['connections'] = self.complete_connections_data(script_data['flow']['connections'])
-
-        script_data['flow view'] = {
+        data['flow view'] = {
             'drawings': self._get_drawings_data(self.drawings),
             'view size': [self.sceneRect().size().width(), self.sceneRect().size().height()]
         }
 
-        self._tmp_data = script_data
-
-        return script_data
-
-    def complete_nodes_data(self, nodes_data):
-        """
-        Adds the item data (scene pos etc.) to the data of the nodes.
-        """
-
-        def find_node_from_GID(GID):
-            for n in self.flow.nodes:
-                if n.GLOBAL_ID == GID:
-                    return n
-
-        comp_nodes_data = []
-
-        for n_data in nodes_data:
-            n = find_node_from_GID(n_data['GID'])
-            item = self.node_items[n]
-            comp_nodes_data.append(item.complete_data(n_data))
-
-        return comp_nodes_data
-
-    def complete_connections_data(self, conns_data):
-        # nothing so far...
-        return conns_data
+        return data
 
     def _get_nodes_data(self, nodes):
-        """requests the nodes data from the core, completes it and returns it"""
+        """generates the data for the specified list of nodes"""
 
-        # wait for abstract flow
-        self.flow._tmp_data = None
-        self.get_nodes_data_request.emit(nodes)
-        while self.flow._tmp_data is None:
-            time.sleep(0.001)
+        data = self.thread_interface.run(
+            self.flow.gen_nodes_data, (nodes,)
+        )
 
-        return self.complete_nodes_data(self.flow._tmp_data)
+        complete_data = self.thread_interface.run(
+            self.flow.complete_data, (data,)
+        )
+
+        return complete_data
 
     def _get_connections_data(self, nodes):
-        """requests the connections data for the given nodes from the core, completes it and returns it"""
+        """generates the connections data for connections between a specified list of nodes"""
 
-        # wait for abstract flow
-        self.flow._tmp_data = None
-        self.get_connections_data_request.emit(nodes)
-        while self.flow._tmp_data is None:
-            time.sleep(0.001)
+        data = self.thread_interface.run(
+            self.flow.gen_conns_data, (nodes,)
+        )
+        complete_data = self.thread_interface.run(
+            self.flow.complete_data, (data,)
+        )
 
-        return self.complete_connections_data(self.flow._tmp_data)
+        return complete_data
 
     def _get_drawings_data(self, drawings):
-        """generates the data for the given drawings and returns it"""
+        """generates the data for a list of drawings"""
 
-        return [d.data() for d in self.drawings]
+        return [d.data() for d in drawings]

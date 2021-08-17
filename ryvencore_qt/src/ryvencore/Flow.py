@@ -245,8 +245,8 @@ class Flow(Base):
 
     def gen_nodes_data(self, nodes: [Node]) -> [dict]:
         data = [n.data() for n in nodes]
-        self._tmp_data = data
-        return data
+        self._tmp_data = self.complete_data(data)
+        return self._tmp_data
 
 
     def gen_conns_data(self, nodes: [Node]) -> [dict]:

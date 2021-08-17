@@ -205,9 +205,13 @@ class Session(Base):
 
         return new_scripts + new_macro_scripts
 
+    def serialize(self):
+        """Returns the project as JSON compatible dict to be saved and loaded again using load()"""
+
+        return self.complete_data(self.data())
+
 
     def data(self) -> dict:
-        """Returns the project as JSON compatible dict to be saved and loaded again using load()"""
 
         data = {}
 

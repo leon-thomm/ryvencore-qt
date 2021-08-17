@@ -2,8 +2,28 @@ import enum
 import json
 import os
 from math import sqrt
+from waiting import wait
 
 from .ryvencore.tools import serialize, deserialize
+
+
+class Container:
+    """used for threading; accessed from multiple threads"""
+
+    def __init__(self):
+        self.payload = None
+        self.set = False
+
+    def set(self, val):
+        self.payload = val
+        self.set = True
+
+    def is_set(self):
+        return self.set
+
+
+def wait_until(func):
+    return wait(func, sleep_seconds=0.001)
 
 
 def pythagoras(a, b):
@@ -43,7 +63,7 @@ class MovementEnum(enum.Enum):
 
 
 def change_svg_color(filepath: str, color_hex: str):
-
+    # doesnt seem to work properly yet :(
 
     from qtpy.QtSvg import QSvgRenderer
     from qtpy.QtGui import QPixmap, QPainter

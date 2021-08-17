@@ -1,7 +1,7 @@
 from qtpy.QtGui import QFont
 from qtpy.QtWidgets import QWidget, QHBoxLayout, QVBoxLayout, QLabel, QPushButton, QPlainTextEdit
 
-from ..WRAPPERS import Logger
+from ..core_wrapper.WRAPPERS import Logger
 import logging
 
 

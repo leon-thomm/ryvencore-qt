@@ -3,6 +3,7 @@ from qtpy.QtWidgets import QGraphicsGridLayout, QGraphicsWidget, \
 from qtpy.QtCore import Qt, QRectF, QPointF, QSizeF
 from qtpy.QtGui import QFontMetricsF, QFont
 
+from .GUIBase import GUIBase
 from .PortItemInputWidgets import \
     Data_IW_S, Data_IW_M, Data_IW_L, Float_IW, Integer_IW, Choice_IW, Boolean_IW, String_IW_S, String_IW_M, String_IW_L
 from .ryvencore import dtypes, FlowAlg
@@ -12,11 +13,13 @@ from .tools import get_longest_line, shorten
 from .FlowViewProxyWidget import FlowViewProxyWidget
 
 
-class PortItem(QGraphicsWidget):
+class PortItem(GUIBase, QGraphicsWidget):
     """The GUI representative for ports of nodes, also handling mouse events for connections."""
 
     def __init__(self, node, node_item, port, flow_view):
-        super(PortItem, self).__init__()
+        GUIBase.__init__(self)
+        QGraphicsWidget.__init__(self)
+
         self.setGraphicsItem(self)
 
         self.node = node

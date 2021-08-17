@@ -2,6 +2,7 @@ from qtpy.QtWidgets import QGraphicsItem, QGraphicsObject, QMenu, QGraphicsDropS
 from qtpy.QtCore import Qt, QRectF, QObject, QPointF
 from qtpy.QtGui import QColor
 
+from .GUIBase import GUIBase
 from .ryvencore.NodePort import NodeInput, NodeOutput
 from .NodeItemAction import NodeItemAction
 from .NodeItemAnimator import NodeItemAnimator
@@ -11,13 +12,14 @@ from .ryvencore.tools import serialize, deserialize
 from .tools import MovementEnum
 
 
-class NodeItem(QGraphicsObject):  # QGraphicsItem, QObject):
+class NodeItem(GUIBase, QGraphicsObject):  # QGraphicsItem, QObject):
     """The GUI representative for nodes. Unlike the Node class, this class is not subclassed individually and works
     the same for every node."""
 
     def __init__(self, node, params):
         # QGraphicsItem.__init__(self)
         # QObject.__init__(self)
+        GUIBase.__init__(self)
         QGraphicsObject.__init__(self)
 
         self.node = node
@@ -455,14 +457,14 @@ class NodeItem(QGraphicsObject):  # QGraphicsItem, QObject):
 
     # DATA
 
-    def complete_data(self, node_data):
+    def complete_data(self, data: dict) -> dict:
         """
         Completes the node's data by adding all frontend related data
         """
 
         # add input widgets data
-        for i in range(len(node_data['inputs'])):
-            inp_data = node_data['inputs'][i]
+        for i in range(len(data['inputs'])):
+            inp_data = data['inputs'][i]
             inp_item = self.inputs[i]
 
             if inp_item.port.type_ == 'data':
@@ -480,15 +482,15 @@ class NodeItem(QGraphicsObject):  # QGraphicsItem, QObject):
                 else:
                     inp_data['has widget'] = False
 
-                node_data['inputs'][i] = inp_data
+                data['inputs'][i] = inp_data
 
         # add item properties
-        node_data['pos x'] = self.pos().x()
-        node_data['pos y'] = self.pos().y()
+        data['pos x'] = self.pos().x()
+        data['pos y'] = self.pos().y()
         if self.main_widget:
-            node_data['main widget data'] = serialize(self.main_widget.get_state())
+            data['main widget data'] = serialize(self.main_widget.get_state())
 
-        node_data['unconnected ports hidden'] = self.hiding_unconnected_ports
-        node_data['collapsed'] = self.collapsed
+        data['unconnected ports hidden'] = self.hiding_unconnected_ports
+        data['collapsed'] = self.collapsed
 
-        return node_data
+        return data

@@ -1,5 +1,5 @@
 
-# package path
+# set package path (for resources, packages, saves, etc.)
 import os
 from .src.GlobalAttributes import Location
 Location.PACKAGE_PATH = os.path.normpath(os.path.dirname(__file__))
@@ -7,24 +7,10 @@ Location.PACKAGE_PATH = os.path.normpath(os.path.dirname(__file__))
 # set ryvencore gui mode
 os.environ['RC_MODE'] = 'gui'
 
-# backend imports
-from .src.ryvencore import InfoMsgs, NodeInputBP, NodeOutputBP, ExecConnection, LogsManager, dtypes
-# Note: Node and DataConnection are subclassed by ryvencore-qt and imported below
+# import backend
+from .src.core_wrapper import *
 
-# front end ...
-from .src.Node import Node
-from .src.Session import Session
-from .src.WRAPPERS import DataConnection
+# import frontend
 from .src.WidgetBaseClasses import MWB, IWB
 from .src.ConnectionItem import DataConnectionItem, ExecConnectionItem
-
-
-class GUI:
-
-    # list widgets
-    from .src.conv_gui.VariablesListWidget import VariablesListWidget as VarsList
-    from .src.conv_gui.ScriptsListWidget import ScriptsListWidget as ScriptsList
-
-    # logging
-    from .src.conv_gui.LogWidget import LogWidget
-
+from .src.conv_gui import *

@@ -42,8 +42,6 @@ class FlowUndoCommand(QObject, QUndoCommand):
         QObject.__init__(self)
         QUndoCommand.__init__(self)
 
-        self.send_to_thread_interface.connect(self.flow_view.thread_interface.run)
-
     def activate(self):
         self._activated = True
         self.redo()
@@ -66,12 +64,13 @@ class FlowUndoCommand(QObject, QUndoCommand):
         pass
 
 
-
-    send_to_thread_interface = Signal(object, object, object)
-
     def call(self, target_method, args: tuple, then=None):
         """Calls the backend thread to execute some method and runs 'then' with the response"""
-        self.send_to_thread_interface.emit(target_method, tuple(args), then)
+
+        ret = self.flow_view.thread_interface.run(target_method, args)
+
+        if then is not None:
+            then(ret)
 
 
 class MoveComponents_Command(FlowUndoCommand):
@@ -134,7 +133,7 @@ class PlaceNode_Command(FlowUndoCommand):
             # self.create_node_request.emit(self.node_class)
             self.call(self.flow.create_node, (self.node_class,))
 
-        # --> node_placed_in_flow()
+        # --> node_placed_in_flow_view()
 
     def node_placed_in_flow_view(self, node):
         self.flow_view.node_placed.disconnect(self.node_placed_in_flow_view)

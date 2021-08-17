@@ -4,17 +4,19 @@ from qtpy.QtCore import QRectF, QPointF, Qt
 from qtpy.QtGui import QPainter, QColor, QRadialGradient, QPainterPath, QPen
 from qtpy.QtWidgets import QGraphicsPathItem, QGraphicsItem, QStyleOptionGraphicsItem
 
+from .GUIBase import GUIBase
 from .tools import sqrt
 from .tools import pythagoras
 
 
-class ConnectionItem(QGraphicsPathItem):
+class ConnectionItem(GUIBase, QGraphicsPathItem):
     """The GUI representative for a connection. The classes ExecConnectionItem and DataConnectionItem will be ready
     for reimplementation later, so users can add GUI for the enhancements of DataConnection and ExecConnection,
     like input fields for weights."""
 
     def __init__(self, connection, session_design):
-        super().__init__()
+        GUIBase.__init__(self)
+        QGraphicsPathItem.__init__(self)
 
         self.setAcceptHoverEvents(True)
 

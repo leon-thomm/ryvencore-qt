@@ -1,3 +1,11 @@
+def complete_data(data: dict) -> dict:
+    """Default implementation for completing data with frontend properties.
+    When running with a frontend that needs to store additional information about
+    components (e.g. current position and color of a node), this frontend then
+    overrode this exact function to add whatever is necessary for adding this data."""
+    return data
+
+
 class Base:
     """
     Base class for all abstract components. Provides functionality for ID counting.
@@ -37,3 +45,6 @@ class Base:
     def data(self) -> dict:
         """Converts the object to a JSON compatible dict for serialization"""
         return None
+
+    def complete_data(self, data: dict) -> data:
+        return complete_data(data)

@@ -1,8 +1,8 @@
 from qtpy.QtCore import QObject, Signal
 
-from .ryvencore import Node as RC_Node
-from .GlobalAttributes import Location
-from .ryvencore.dtypes import DType
+from ..ryvencore import Node as RC_Node
+from ..GlobalAttributes import Location
+from ..ryvencore.dtypes import DType
 
 
 class Node(RC_Node, QObject):
@@ -39,7 +39,7 @@ class Node(RC_Node, QObject):
     @staticmethod
     def complete_default_node_classes():
         func_node_icon = Location.PACKAGE_PATH + '/resources/pics/macro_node_icon.png'
-        from .ryvencore.MacroScript import MacroScript
+        from ..ryvencore.MacroScript import MacroScript
         MacroScript.MacroNode.icon = func_node_icon
 
     """actions"""

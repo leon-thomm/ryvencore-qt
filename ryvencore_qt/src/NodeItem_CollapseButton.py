@@ -1,7 +1,7 @@
 from qtpy.QtCore import QSize, QRectF, QPointF, QSizeF, Qt
 from qtpy.QtWidgets import QGraphicsWidget, QGraphicsLayoutItem
 
-from ryvencore_qt.src.GlobalAttributes import Location
+from .GlobalAttributes import Location
 from .tools import change_svg_color
 
 
