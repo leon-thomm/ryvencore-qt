@@ -12,14 +12,14 @@ class Container:
 
     def __init__(self):
         self.payload = None
-        self.set = False
+        self.has_been_set = False
 
     def set(self, val):
         self.payload = val
-        self.set = True
+        self.has_been_set = True
 
     def is_set(self):
-        return self.set
+        return self.has_been_set
 
 
 def wait_until(func):

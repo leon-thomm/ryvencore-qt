@@ -4,9 +4,9 @@ from qtpy.QtCore import QRectF, QPointF, Qt
 from qtpy.QtGui import QPainter, QColor, QRadialGradient, QPainterPath, QPen
 from qtpy.QtWidgets import QGraphicsPathItem, QGraphicsItem, QStyleOptionGraphicsItem
 
-from .GUIBase import GUIBase
-from .tools import sqrt
-from .tools import pythagoras
+from ...GUIBase import GUIBase
+from ...tools import sqrt
+from ...tools import pythagoras
 
 
 class ConnectionItem(GUIBase, QGraphicsPathItem):
@@ -15,7 +15,7 @@ class ConnectionItem(GUIBase, QGraphicsPathItem):
     like input fields for weights."""
 
     def __init__(self, connection, session_design):
-        GUIBase.__init__(self)
+        GUIBase.__init__(self, representing_component=connection)
         QGraphicsPathItem.__init__(self)
 
         self.setAcceptHoverEvents(True)

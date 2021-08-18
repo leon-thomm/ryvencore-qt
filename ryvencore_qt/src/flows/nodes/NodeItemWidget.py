@@ -2,7 +2,7 @@ from qtpy.QtCore import QPointF, QRectF, Qt, QSizeF
 from qtpy.QtWidgets import QGraphicsWidget, QGraphicsLinearLayout, QSizePolicy
 
 from .NodeItem_CollapseButton import NodeItem_CollapseButton
-from .FlowViewProxyWidget import FlowViewProxyWidget
+from ..FlowViewProxyWidget import FlowViewProxyWidget
 # from .Node import Node
 from .NodeItem_Icon import NodeItem_Icon
 from .NodeItem_TitleLabel import TitleLabel

@@ -2,7 +2,7 @@ from qtpy.QtWidgets import QGraphicsItem
 from qtpy.QtGui import QPen, QPainter, QColor, QPainterPath
 from qtpy.QtCore import Qt, QRectF, QPointF, QLineF
 
-from .tools import MovementEnum
+from ...tools import MovementEnum
 
 
 class DrawingObject(QGraphicsItem):

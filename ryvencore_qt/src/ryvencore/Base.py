@@ -42,9 +42,12 @@ class Base:
         if self.id_ctr is not None and not (hasattr(self, 'ID') and self.ID is not None):
             self.ID = self.id_ctr.count()
 
+    # this can be set to another function by the frontend to implement adding frontend information to the data dict
+    complete_data_function = lambda data: data
+
     def data(self) -> dict:
-        """Converts the object to a JSON compatible dict for serialization"""
+        """converts the object to a JSON compatible dict for serialization"""
         return None
 
     def complete_data(self, data: dict) -> data:
-        return complete_data(data)
+        return Base.complete_data_function(data)

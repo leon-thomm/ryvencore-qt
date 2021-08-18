@@ -2,14 +2,14 @@ from qtpy.QtWidgets import QGraphicsItem, QGraphicsObject, QMenu, QGraphicsDropS
 from qtpy.QtCore import Qt, QRectF, QObject, QPointF
 from qtpy.QtGui import QColor
 
-from .GUIBase import GUIBase
-from .ryvencore.NodePort import NodeInput, NodeOutput
+from ...GUIBase import GUIBase
+from ...ryvencore.NodePort import NodeInput, NodeOutput
 from .NodeItemAction import NodeItemAction
 from .NodeItemAnimator import NodeItemAnimator
 from .NodeItemWidget import NodeItemWidget
 from .PortItem import InputPortItem, OutputPortItem
-from .ryvencore.tools import serialize, deserialize
-from .tools import MovementEnum
+from ...tools import serialize, deserialize
+from ...tools import MovementEnum
 
 
 class NodeItem(GUIBase, QGraphicsObject):  # QGraphicsItem, QObject):
@@ -19,7 +19,7 @@ class NodeItem(GUIBase, QGraphicsObject):  # QGraphicsItem, QObject):
     def __init__(self, node, params):
         # QGraphicsItem.__init__(self)
         # QObject.__init__(self)
-        GUIBase.__init__(self)
+        GUIBase.__init__(self, representing_component=node)
         QGraphicsObject.__init__(self)
 
         self.node = node
@@ -458,33 +458,8 @@ class NodeItem(GUIBase, QGraphicsObject):  # QGraphicsItem, QObject):
     # DATA
 
     def complete_data(self, data: dict) -> dict:
-        """
-        Completes the node's data by adding all frontend related data
-        """
+        """completes the node's data by adding all frontend info"""
 
-        # add input widgets data
-        for i in range(len(data['inputs'])):
-            inp_data = data['inputs'][i]
-            inp_item = self.inputs[i]
-
-            if inp_item.port.type_ == 'data':
-                if inp_item.widget:
-                    inp_data['has widget'] = True
-
-                    if inp_item.port.dtype:  # dtype widget
-                        # input_cfg['widget name'] = str(inp_item.widget)
-                        pass
-                    else:  # custom widget
-                        inp_data['widget name'] = inp_item.port.add_data['widget name']
-                        inp_data['widget pos'] = inp_item.port.add_data['widget pos']
-
-                    inp_data['widget data'] = serialize(inp_item.widget.get_state())
-                else:
-                    inp_data['has widget'] = False
-
-                data['inputs'][i] = inp_data
-
-        # add item properties
         data['pos x'] = self.pos().x()
         data['pos y'] = self.pos().y()
         if self.main_widget:

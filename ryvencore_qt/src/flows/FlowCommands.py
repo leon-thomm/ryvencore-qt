@@ -15,14 +15,11 @@ These implementations might have quite some potential for improvement.
 """
 
 
-from qtpy.QtCore import Signal, QObject, QPointF
+from qtpy.QtCore import QObject, QPointF
 from qtpy.QtWidgets import QUndoCommand
 
-from .DrawingObject import DrawingObject
-from .ryvencore.Node import Node
-from .ryvencore.Connection import Connection
-from .NodeItem import NodeItem
-from .ryvencore.NodePort import NodePort
+from .drawings.DrawingObject import DrawingObject
+from .nodes.NodeItem import NodeItem
 
 
 class FlowUndoCommand(QObject, QUndoCommand):

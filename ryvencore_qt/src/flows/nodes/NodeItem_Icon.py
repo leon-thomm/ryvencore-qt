@@ -2,7 +2,7 @@ from qtpy.QtCore import QSize, QRectF, QPointF, QSizeF
 from qtpy.QtGui import QPixmap, QImage, QPainter, QIcon, QPicture
 from qtpy.QtWidgets import QGraphicsPixmapItem, QGraphicsWidget, QGraphicsLayoutItem
 
-from .tools import change_svg_color
+from ...tools import change_svg_color
 
 
 class NodeItem_Icon(QGraphicsWidget):

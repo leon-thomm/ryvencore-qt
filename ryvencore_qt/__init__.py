@@ -1,5 +1,5 @@
 
-# set package path (for resources, packages, saves, etc.)
+# set package path (for resources etc.)
 import os
 from .src.GlobalAttributes import Location
 Location.PACKAGE_PATH = os.path.normpath(os.path.dirname(__file__))
@@ -11,6 +11,6 @@ os.environ['RC_MODE'] = 'gui'
 from .src.core_wrapper import *
 
 # import frontend
-from .src.WidgetBaseClasses import MWB, IWB
-from .src.ConnectionItem import DataConnectionItem, ExecConnectionItem
+from .src.flows.nodes.WidgetBaseClasses import MWB, IWB
+from .src.flows.connections.ConnectionItem import DataConnectionItem, ExecConnectionItem
 from .src.conv_gui import *

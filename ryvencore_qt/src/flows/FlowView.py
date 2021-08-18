@@ -1,27 +1,25 @@
-import time
 import json
 
 from qtpy.QtCore import Qt, QPointF, QPoint, QRectF, QSizeF, Signal, QTimer
 from qtpy.QtGui import QPainter, QPen, QColor, QKeySequence, QTabletEvent, QImage, QGuiApplication, QFont
 from qtpy.QtWidgets import QGraphicsView, QGraphicsScene, QShortcut, QMenu, QGraphicsItem, QUndoStack
 
-from .GUIBase import GUIBase
-from .ryvencore.Flow import Flow
+from ..GUIBase import GUIBase
+from ..ryvencore.Flow import Flow
 from .FlowCommands import MoveComponents_Command, PlaceNode_Command, \
     PlaceDrawing_Command, RemoveComponents_Command, ConnectPorts_Command, Paste_Command, FlowUndoCommand
 from .FlowViewProxyWidget import FlowViewProxyWidget
 from .FlowViewStylusModesWidget import FlowViewStylusModesWidget
-from .FlowViewZoomWidget import FlowViewZoomWidget
-from .ryvencore.Node import Node
-from .ryvencore.NodePort import NodePort
-from .node_selection_widget.PlaceNodeWidget import PlaceNodeWidget
-from .NodeItem import NodeItem
-from .PortItem import PortItemPin, PortItem
-from .ryvencore.Connection import Connection, DataConnection
-from .ConnectionItem import default_cubic_connection_path, ConnectionItem
-from .DrawingObject import DrawingObject
-from .ryvencore.InfoMsgs import InfoMsgs
-from .ryvencore.RC import PortObjPos, CLASSES
+from ..ryvencore.Node import Node
+from ..ryvencore.NodePort import NodePort
+from ryvencore_qt.src.flows.node_selection_widget.PlaceNodeWidget import PlaceNodeWidget
+from .nodes.NodeItem import NodeItem
+from .nodes.PortItem import PortItemPin, PortItem
+from ..ryvencore.Connection import Connection, DataConnection
+from .connections.ConnectionItem import default_cubic_connection_path, ConnectionItem
+from .drawings.DrawingObject import DrawingObject
+from ..ryvencore.InfoMsgs import InfoMsgs
+from ..ryvencore.RC import PortObjPos, CLASSES
 
 
 class FlowView(GUIBase, QGraphicsView):
@@ -43,7 +41,7 @@ class FlowView(GUIBase, QGraphicsView):
     viewport_update_mode_changed = Signal(str)
 
     def __init__(self, session, script, flow, load_data=None, flow_size: list = None, parent=None):
-        GUIBase.__init__(self)
+        GUIBase.__init__(self, representing_component=flow)
         QGraphicsView.__init__(self, parent=parent)
 
         # UNDO/REDO

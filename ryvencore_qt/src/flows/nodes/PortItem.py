@@ -3,21 +3,21 @@ from qtpy.QtWidgets import QGraphicsGridLayout, QGraphicsWidget, \
 from qtpy.QtCore import Qt, QRectF, QPointF, QSizeF
 from qtpy.QtGui import QFontMetricsF, QFont
 
-from .GUIBase import GUIBase
+from ...GUIBase import GUIBase
 from .PortItemInputWidgets import \
     Data_IW_S, Data_IW_M, Data_IW_L, Float_IW, Integer_IW, Choice_IW, Boolean_IW, String_IW_S, String_IW_M, String_IW_L
-from .ryvencore import dtypes, FlowAlg
-from .ryvencore.tools import deserialize
-from .tools import get_longest_line, shorten
+from ...ryvencore import dtypes, serialize
+from ...ryvencore.tools import deserialize
+from ...tools import get_longest_line, shorten
 
-from .FlowViewProxyWidget import FlowViewProxyWidget
+from ..FlowViewProxyWidget import FlowViewProxyWidget
 
 
 class PortItem(GUIBase, QGraphicsWidget):
     """The GUI representative for ports of nodes, also handling mouse events for connections."""
 
     def __init__(self, node, node_item, port, flow_view):
-        GUIBase.__init__(self)
+        GUIBase.__init__(self, representing_component=port)
         QGraphicsWidget.__init__(self)
 
         self.setGraphicsItem(self)
@@ -180,6 +180,21 @@ class InputPortItem(PortItem):
 
         if self.update_widget_value:  # this might be quite slow
             self.widget.val_update_event(val)
+
+    def complete_data(self, data: dict) -> dict:
+        if self.port.type_ == 'data':
+            if self.widget:
+                data['has widget'] = True
+                if not self.port.dtype:
+                    # this stuff is statically stored in port.add_data
+                    data['widget name'] = self.port.add_data['widget name']
+                    data['widget pos'] = self.port.add_data['widget pos']
+
+                data['widget data'] = serialize(self.widget.get_state())
+            else:
+                data['has widget'] = False
+
+        return data
 
 
 class OutputPortItem(PortItem):

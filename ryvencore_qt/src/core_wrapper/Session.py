@@ -1,21 +1,18 @@
-import time
-from waiting import wait
-
-from PySide2.QtCore import QTimer
 from qtpy.QtWidgets import QWidget, QApplication
 from qtpy.QtCore import QObject, Signal, Qt
 
-from ..SessionThreadInterface import SessionThreadInterface_Frontend, SessionThreadInterface_Backend
+from ..GUIBase import GUIBase
+from ..SessionThreadInterface import SessionThreadInterface_Backend
 from ..ryvencore import Session as RC_Session, Script
+from ..ryvencore.Base import Base
 from ..ryvencore.MacroScript import MacroScript
 from ..ryvencore.RC import CLASSES
 
 from ..Design import Design
-from ..ConnectionItem import DataConnectionItem, ExecConnectionItem
+from ryvencore_qt.src.flows.connections.ConnectionItem import DataConnectionItem, ExecConnectionItem
 from .Node import Node
-from ..FlowView import FlowView
+from ryvencore_qt.src.flows.FlowView import FlowView
 from .WRAPPERS import VarsManager, LogsManager, DataConnection, Flow, Logger
-from ..tools import Container, wait_until
 
 
 class Session(RC_Session, QObject):
@@ -39,7 +36,8 @@ class Session(RC_Session, QObject):
     ):
         QObject.__init__(self)
 
-        # register custom wrappers
+        # REGISTER CLASSES
+        # custom wrappers
         CLASSES['node base'] = Node if not node_class else node_class
         CLASSES['data conn'] = DataConnection if not data_conn_class else data_conn_class
         CLASSES['logs manager'] = LogsManager
@@ -67,6 +65,9 @@ class Session(RC_Session, QObject):
         self.threading_bridge__backend = SessionThreadInterface_Backend()
         self.threading_bridge__frontend = self.threading_bridge__backend.frontend
         self.threading_bridge__frontend.moveToThread(gui_parent.thread() if threaded else self.thread())
+
+        # SET COMPLETE_DATA FUNCTION (needs threading_bridge)
+        Base.complete_data_function = GUIBase.get_complete_data_function(self)
 
         # design
         app = QApplication.instance()
