@@ -21,7 +21,7 @@ class GUIBase:
             frontend components (instances of GUIBase)"""
 
             if isinstance(obj, dict):
-                if GID := obj.get('GID'):
+                if (GID := obj.get('GID')) is not None:
                     # find representative
                     if comp := GUIBase.FRONTEND_COMPONENT_ASSIGNMENTS.get(GID):
                         obj = session.threading_bridge__backend.run(

@@ -13,8 +13,11 @@ class Script(Base):
         self.logs_manager = None
         self._create_default_logs = create_default_logs
         self.vars_manager = None
-        self.title = title if not load_data else (load_data['title'] if 'title' in load_data else load_data['name'])
+        self.title = title
         self.flow = None
+
+        if title is None and load_data is not None:
+            self.title = load_data['title']
 
         self.init_data = load_data
         self.init_flow_data = None
