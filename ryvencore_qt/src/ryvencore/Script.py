@@ -17,7 +17,7 @@ class Script(Base):
         self.flow = None
 
         if title is None and load_data is not None:
-            self.title = load_data['title']
+            self.title = load_data['title'] if 'title' in load_data else load_data['name']
 
         self.init_data = load_data
         self.init_flow_data = None
