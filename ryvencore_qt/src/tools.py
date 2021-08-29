@@ -55,6 +55,13 @@ def shorten(s: str, max_chars: int, line_break: bool = False):
         return s
 
 
+def pointMappedF(p1, p2):
+    """adds the floating part of p2 to p1"""
+    p2.setX(p1.x() + p2.x()%1)
+    p2.setY(p1.y() + p2.y()%1)
+    return p2
+
+
 class MovementEnum(enum.Enum):
     # this should maybe get removed later
     mouse_clicked = 1

@@ -47,12 +47,10 @@ class TitleLabel(QGraphicsWidget):
         return QSizeF(self.width, self.height)
 
     def paint(self, painter, option, widget=None):
-
         self.node_item.session_design.flow_theme.paint_NI_title_label(
-            self.node,
-            painter, option, self.hovering,
-            self.design_style(), self.title_str, self.node_item.color,
-            self.boundingRect()
+            self.node, self.node_item.isSelected(), self.hovering, painter, option,
+            self.design_style(), self.title_str,
+            self.node_item.color, self.boundingRect()
         )
 
     def design_style(self):

@@ -1,10 +1,11 @@
 import json
 
-from qtpy.QtCore import Qt, QPointF, QPoint, QRectF, QSizeF, Signal, QTimer
+from qtpy.QtCore import Qt, QPointF, QPoint, QRectF, QSizeF, Signal, QTimer, QTimeLine
 from qtpy.QtGui import QPainter, QPen, QColor, QKeySequence, QTabletEvent, QImage, QGuiApplication, QFont
 from qtpy.QtWidgets import QGraphicsView, QGraphicsScene, QShortcut, QMenu, QGraphicsItem, QUndoStack
 
 from ..GUIBase import GUIBase
+from ..tools import *
 from ..ryvencore.Flow import Flow
 from .FlowCommands import MoveComponents_Command, PlaceNode_Command, \
     PlaceDrawing_Command, RemoveComponents_Command, ConnectPorts_Command, Paste_Command, FlowUndoCommand
@@ -81,6 +82,11 @@ class FlowView(GUIBase, QGraphicsView):
         self._pan_last_y = None
         self._current_scale = 1
         self._total_scale_div = 1
+        self._zoom_data = {
+            'viewport pos': None,
+            'scene pos': None,
+            'delta': 0,
+        }
 
         # CONNECTIONS TO FLOW
         self.create_node_request.connect(self.flow.create_node)
@@ -119,6 +125,9 @@ class FlowView(GUIBase, QGraphicsView):
         self.setAcceptDrops(True)
 
         self.centerOn(QPointF(self.viewport().width() / 2, self.viewport().height() / 2))
+
+        self.scene_rect_width = self.mapFromScene(self.sceneRect()).boundingRect().width()
+        self.scene_rect_height = self.mapFromScene(self.sceneRect()).boundingRect().height()
 
         # PLACE NODE WIDGET
         self._place_node_widget_proxy = FlowViewProxyWidget(self)
@@ -393,13 +402,26 @@ class FlowView(GUIBase, QGraphicsView):
 
     def wheelEvent(self, event):
 
-        # ZOOM
-        if event.modifiers() == Qt.CTRL and event.angleDelta().x() == 0:
-            self.zoom(event.pos(), self.mapToScene(event.pos()), event.angleDelta().y())
-            event.accept()
-            return True
+        self._zoom_data['viewport pos'] = event.posF()
+        self._zoom_data['scene pos'] = pointMappedF(self.mapToScene(event.pos()), event.posF())
+        self._zoom_data['delta'] += event.delta()
 
-        QGraphicsView.wheelEvent(self, event)
+        if self._zoom_data['delta'] * event.delta() < 0:
+            self._zoom_data['delta'] = event.delta()
+
+        anim = QTimeLine(100, self)
+        anim.setUpdateInterval(10)
+        anim.valueChanged.connect(self._scaling_time)
+        anim.start()
+
+    def _scaling_time(self, x):
+        delta = self._zoom_data['delta'] / 8
+        if abs(delta) <= 5:
+            delta = self._zoom_data['delta']
+        self._zoom_data['delta'] -= delta
+
+        self.zoom(self._zoom_data['viewport pos'], self._zoom_data['scene pos'], delta)
+
 
     def tabletEvent(self, event):
         """tabletEvent gets called by stylus operations.
@@ -556,19 +578,19 @@ class FlowView(GUIBase, QGraphicsView):
                 default_cubic_connection_path(pos1, pos2)
             )
 
-        # DRAW SELECTED NIs BORDER
-        for ni in self.selected_node_items():
-            pen = QPen(self.session.design.flow_theme.flow_highlight_pen_color)
-            pen.setWidth(3)
-            painter.setPen(pen)
-            painter.setBrush(Qt.NoBrush)
-
-            size_factor = 1.2
-            x = ni.pos().x() - ni.boundingRect().width() / 2 * size_factor
-            y = ni.pos().y() - ni.boundingRect().height() / 2 * size_factor
-            w = ni.boundingRect().width() * size_factor
-            h = ni.boundingRect().height() * size_factor
-            painter.drawRoundedRect(x, y, w, h, 10, 10)
+        # # DRAW SELECTED NIs BORDER
+        # for ni in self.selected_node_items():
+        #     pen = QPen(self.session.design.flow_theme.flow_highlight_pen_color)
+        #     pen.setWidth(3)
+        #     painter.setPen(pen)
+        #     painter.setBrush(Qt.NoBrush)
+        #
+        #     size_factor = 1.2
+        #     x = ni.pos().x() - ni.boundingRect().width() / 2 * size_factor
+        #     y = ni.pos().y() - ni.boundingRect().height() / 2 * size_factor
+        #     w = ni.boundingRect().width() * size_factor
+        #     h = ni.boundingRect().height() * size_factor
+        #     painter.drawRoundedRect(x, y, w, h, 10, 10)
 
         # DRAW SELECTED DRAWINGS BORDER
         for p_o in self.selected_drawings():
@@ -708,26 +730,21 @@ class FlowView(GUIBase, QGraphicsView):
         velocity = 2 * (1 / self._current_scale) + 0.5
         if velocity > 3:
             velocity = 3
+        if self._current_scale < 1:
+            velocity *= self._current_scale
 
-        direction = ''
-        if angle > 0:
-            by = 1 + (angle / 360 * 0.1 * velocity)
-            direction = 'in'
-        elif angle < 0:
-            by = 1 - (-angle / 360 * 0.1 * velocity)
-            direction = 'out'
+        zoom_dir_IN = angle>0
+        if zoom_dir_IN:
+            by = 1 + (angle / 4000)*velocity
         else:
-            by = 1
+            by = 1 - (-angle / 4000)*velocity
 
-        scene_rect_width = self.mapFromScene(self.sceneRect()).boundingRect().width()
-        scene_rect_height = self.mapFromScene(self.sceneRect()).boundingRect().height()
-
-        if direction == 'in':
+        if zoom_dir_IN:
             if self._current_scale * by < 3:
                 self.scale(by, by)
                 self._current_scale *= by
-        elif direction == 'out':
-            if scene_rect_width * by >= self.viewport().size().width() and scene_rect_height * by >= self.viewport().size().height():
+        else:
+            if self.scene_rect_width * by >= self.viewport().size().width() and self.scene_rect_height * by >= self.viewport().size().height():
                 self.scale(by, by)
                 self._current_scale *= by
 

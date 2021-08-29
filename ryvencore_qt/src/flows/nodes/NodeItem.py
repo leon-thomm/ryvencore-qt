@@ -299,6 +299,8 @@ class NodeItem(GUIBase, QGraphicsObject):  # QGraphicsItem, QObject):
 
         self.session_design.flow_theme.paint_NI(
             node=self.node,
+            selected=self.isSelected(),
+            hovered=self.hovered,
             node_style=self.node.style,
             painter=painter,
             option=option,
