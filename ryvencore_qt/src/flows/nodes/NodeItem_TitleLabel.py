@@ -2,12 +2,10 @@ from qtpy.QtCore import QRectF, QPointF, QSizeF, Property
 from qtpy.QtGui import QFont, QFontMetricsF, QColor
 from qtpy.QtWidgets import QGraphicsWidget, QGraphicsLayoutItem, QGraphicsItem
 
-from .tools import get_longest_line
+from ...tools import get_longest_line
 
 
 class TitleLabel(QGraphicsWidget):
-
-    # TODO: add NodeItem renaming on double click
 
     def __init__(self, node, node_item):
         super(TitleLabel, self).__init__(parent=node_item)
@@ -49,12 +47,10 @@ class TitleLabel(QGraphicsWidget):
         return QSizeF(self.width, self.height)
 
     def paint(self, painter, option, widget=None):
-
         self.node_item.session_design.flow_theme.paint_NI_title_label(
-            self.node,
-            painter, option, self.hovering,
-            self.design_style(), self.title_str, self.node_item.color,
-            self.boundingRect()
+            self.node, self.node_item.isSelected(), self.hovering, painter, option,
+            self.design_style(), self.title_str,
+            self.node_item.color, self.boundingRect()
         )
 
     def design_style(self):

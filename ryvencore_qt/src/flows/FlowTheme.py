@@ -2,7 +2,7 @@ from qtpy.QtCore import Qt, QPointF, QPoint, QRectF, QMargins, QMarginsF
 from qtpy.QtGui import QColor, QPainter, QBrush, QRadialGradient, QLinearGradient, QPen, QPainterPath, QFont, QPolygon
 from qtpy.QtWidgets import QStyle, QStyleOption
 
-from .tools import pythagoras
+from ..tools import pythagoras
 
 
 class FlowTheme:
@@ -75,8 +75,8 @@ NodeWidget {
     def build_node_selection_stylesheet(self):
         return self.node_selection_stylesheet__base + '\n' + self.node_selection_stylesheet
 
-    def paint_NI_title_label(self, node, painter: QPainter, option: QStyleOption, hovering: bool, node_style: str,
-                             node_title: str, node_color: QColor, node_item_bounding_rect):
+    def paint_NI_title_label(self, node, selected: bool, hovering: bool, painter: QPainter, option: QStyleOption,
+                             node_style: str, node_title: str, node_color: QColor, node_item_bounding_rect):
         pass
 
     def paint_PI_label(self, node, painter: QPainter, option: QStyleOption, type_: str, connected: bool, label_str: str,
@@ -87,22 +87,41 @@ NodeWidget {
                  rect: QRectF):  # padding, w, h):
         pass
 
-    def paint_NI(self, node, node_style: str,
+    def paint_NI(self, node,
+                 selected: bool, hovered: bool, node_style: str,
                  painter: QPainter, option: QStyleOption,
                  color: QColor, w, h, bounding_rect, title_rect):
 
         painter.setRenderHint(QPainter.Antialiasing)
 
         if node_style == 'normal':
-            self.draw_NI_normal(node, painter, color, w, h, bounding_rect, title_rect)
+            self.draw_NI_normal(node, selected, hovered, painter, color, w, h, bounding_rect, title_rect)
         elif node_style == 'small':
-            self.draw_NI_small(node, painter, color, w, h, bounding_rect)
+            self.draw_NI_small(node, selected, hovered, painter, color, w, h, bounding_rect)
 
-    def draw_NI_normal(self, node, painter: QPainter, c: QColor, w, h, bounding_rect, title_rect):
+    def draw_NI_normal(self, node, selected: bool, hovered: bool,
+                       painter: QPainter, c: QColor, w, h, bounding_rect, title_rect):
         pass
 
-    def draw_NI_small(self, node, painter: QPainter, c: QColor, w, h, bounding_rect, background_color=None):
+    def draw_NI_small(self, node, selected: bool, hovered: bool,
+                      painter: QPainter, c: QColor, w, h, bounding_rect, background_color=None):
         pass
+
+    def paint_NI_selection_border(self, ni, painter: QPainter, color: QColor, w, h, bounding_rect):
+        pen = QPen(self.flow_highlight_pen_color)
+        pen.setWidth(3)
+        painter.setPen(pen)
+        painter.setBrush(Qt.NoBrush)
+
+        size_factor = 1.2
+
+        rect = QRectF(bounding_rect)
+        rect.setWidth(w*size_factor)
+        rect.setHeight(h*size_factor)
+        rect.setX(rect.x() - w*size_factor/2)
+        rect.setY(rect.y() - h*size_factor/2)
+
+        painter.drawRoundedRect(rect, 10, 10)
 
     @staticmethod
     def paint_NI_title_label_default(painter: QPainter, node_style: str, title: str, color: QColor, pen_w: float,
@@ -178,6 +197,10 @@ NodeWidget {
         return None
 
     @staticmethod
+    def col(c: QColor, alpha=255):
+        return QColor(c.red(), c.green(), c.blue(), alpha)
+
+    @staticmethod
     def _parse_pen_style(s: str):
         if s == 'solid line':
             return Qt.SolidLine
@@ -208,7 +231,7 @@ class FlowTheme_Toy(FlowTheme):
 
     flow_background_brush = QBrush(QColor('#333333'))
 
-    def paint_NI_title_label(self, node, painter, option, hovering, node_style, node_title, node_color,
+    def paint_NI_title_label(self, node, selected, hovering, painter, option, node_style, node_title, node_color,
                              node_item_bounding_rect):
 
         if node_style == 'normal':
@@ -248,12 +271,16 @@ class FlowTheme_Toy(FlowTheme):
 
         painter.drawEllipse(rect)
 
-    def draw_NI_normal(self, node, painter: QPainter, c: QColor, w, h, bounding_rect, title_rect):
+    def draw_NI_normal(self, node, selected: bool, hovered: bool,
+                       painter: QPainter, c: QColor, w, h, bounding_rect, title_rect):
 
         # main rect
+        header_color = QColor(c.red() / 10 + 100, c.green() / 10 + 100, c.blue() / 10 + 100)
+        if selected:
+            header_color = header_color.lighter()
         body_gradient = QRadialGradient(bounding_rect.topLeft(), pythagoras(h, w))
-        body_gradient.setColorAt(0, QColor(c.red() / 10 + 100, c.green() / 10 + 100, c.blue() / 10 + 100, 200))
-        body_gradient.setColorAt(1, QColor(c.red() / 10 + 100, c.green() / 10 + 100, c.blue() / 10 + 100, 0))
+        body_gradient.setColorAt(0, self.col(header_color, alpha=200))
+        body_gradient.setColorAt(1, self.col(header_color, alpha=0))
 
         painter.setBrush(body_gradient)
         painter.setPen(Qt.NoPen)
@@ -267,7 +294,8 @@ class FlowTheme_Toy(FlowTheme):
         painter.setPen(Qt.NoPen)
         painter.drawRoundedRect(FlowTheme_Toy.get_header_rect(w, h, title_rect), 12, 12)
 
-    def draw_NI_small(self, node, painter: QPainter, c: QColor, w, h, bounding_rect, background_color=None):
+    def draw_NI_small(self, node, selected: bool, hovered: bool,
+                      painter: QPainter, c: QColor, w, h, bounding_rect, background_color=None):
 
         path = QPainterPath()
         path.moveTo(-w / 2, 0)
@@ -314,14 +342,14 @@ class FlowTheme_DarkTron(FlowTheme):
 
     flow_background_brush = QBrush(QColor('#333333'))
 
-    def paint_NI_title_label(self, node, painter, option, hovering, node_style, node_title, node_color,
+    def paint_NI_title_label(self, node, selected, hovering, painter, option, node_style, node_title, node_color,
                              node_item_bounding_rect):
         if node_style == 'normal':
             self.paint_NI_title_label_default(
                 painter=painter,
                 node_style=node_style,
                 title=node_title,
-                color=node_color if not hovering else node_color.lighter(),
+                color=node_color if not (hovering or selected) else node_color.lighter().lighter(),
                 pen_w=2,
                 font=QFont('Poppins', 15),
                 node_item_bounding_rect=node_item_bounding_rect
@@ -363,25 +391,26 @@ class FlowTheme_DarkTron(FlowTheme):
 
         painter.drawEllipse(rect)
 
-    def paint_NI(self, node, node_style,
-                 painter, option,
-                 color: QColor, w: int, h: int, bounding_rect, title_rect):
+    # def paint_NI(self, node, node_style,
+    #              painter, option,
+    #              color: QColor, w: int, h: int, bounding_rect, title_rect):
+    #
+    #     painter.setRenderHint(QPainter.Antialiasing)
+    #
+    #     if node_style == 'normal':
+    #         self.draw_NI_normal(node, painter, color, w, h, bounding_rect, title_rect)
+    #     elif node_style == 'small':
+    #         if option.state & QStyle.State_MouseOver:  # use special dark background color when mouse hovers
+    #             self.draw_NI_small(node, painter, color, w, h, bounding_rect, color.darker())
+    #         else:
+    #             self.draw_NI_small(node, painter, color, w, h, bounding_rect, QColor('#212429'))
 
-        painter.setRenderHint(QPainter.Antialiasing)
-
-        if node_style == 'normal':
-            self.draw_NI_normal(node, painter, color, w, h, bounding_rect, title_rect)
-        elif node_style == 'small':
-            if option.state & QStyle.State_MouseOver:  # use special dark background color when mouse hovers
-                self.draw_NI_small(node, painter, color, w, h, bounding_rect, color.darker())
-            else:
-                self.draw_NI_small(node, painter, color, w, h, bounding_rect, QColor('#212429'))
-
-    def draw_NI_normal(self, node, painter, c: QColor, w: int, h: int, bounding_rect, title_rect):
+    def draw_NI_normal(self, node, selected: bool, hovered: bool,
+                       painter, c: QColor, w: int, h: int, bounding_rect, title_rect):
 
         background_color = QColor('#212224')
         painter.setBrush(background_color)
-        pen = QPen(c)
+        pen = QPen(c if not selected else c.lighter())
         pen.setWidth(2)
         painter.setPen(pen)
         body_path = self.get_extended_body_path(w, h)
@@ -432,7 +461,13 @@ class FlowTheme_DarkTron(FlowTheme):
         path.closeSubpath()
         return path
 
-    def draw_NI_small(self, node, painter: QPainter, c: QColor, w, h, bounding_rect, background_color=None):
+    def draw_NI_small(self, node, selected: bool, hovered: bool,
+                      painter: QPainter, c: QColor, w, h, bounding_rect, background_color=None):
+
+        if hovered:
+            background_color = c.darker()
+        else:
+            background_color = QColor('#212429')
 
         c_s = 10  # corner size
 
@@ -496,7 +531,7 @@ class FlowTheme_Ghost(FlowTheme):
                 self.flow_background_color = self.hex_to_col(v)
                 self.flow_background_brush = QBrush(self.flow_background_color)
 
-    def paint_NI_title_label(self, node, painter, option, hovering, node_style, node_title, node_color,
+    def paint_NI_title_label(self, node, selected, hovering, painter, option, node_style, node_title, node_color,
                              node_item_bounding_rect):
 
         if node_style == 'normal':
@@ -555,21 +590,22 @@ class FlowTheme_Ghost(FlowTheme):
         painter.setPen(pen)
         painter.drawEllipse(rect.marginsRemoved(QMarginsF(3, 3, 3, 3)))
 
-    def paint_NI(self, node, node_style,
-                 painter, option,
-                 color: QColor, w: int, h: int, bounding_rect, title_rect):
+    # def paint_NI(self, node, node_style,
+    #              painter, option,
+    #              color: QColor, w: int, h: int, bounding_rect, title_rect):
+    #
+    #     painter.setRenderHint(QPainter.Antialiasing)
+    #
+    #     if node_style == 'normal':
+    #         self.draw_NI_normal(node, painter, color, w, h, bounding_rect, title_rect)
+    #     elif node_style == 'small':
+    #         if option.state & QStyle.State_MouseOver:  # use special dark background color when mouse hovers
+    #             self.draw_NI_small(node, painter, color, w, h, bounding_rect, background_color=color.darker())
+    #         else:
+    #             self.draw_NI_small(node, painter, color, w, h, bounding_rect)
 
-        painter.setRenderHint(QPainter.Antialiasing)
-
-        if node_style == 'normal':
-            self.draw_NI_normal(node, painter, color, w, h, bounding_rect, title_rect)
-        elif node_style == 'small':
-            if option.state & QStyle.State_MouseOver:  # use special dark background color when mouse hovers
-                self.draw_NI_small(node, painter, color, w, h, bounding_rect, background_color=color.darker())
-            else:
-                self.draw_NI_small(node, painter, color, w, h, bounding_rect)
-
-    def draw_NI_normal(self, node, painter, c, w, h, bounding_rect, title_rect):
+    def draw_NI_normal(self, node, selected: bool, hovered: bool,
+                       painter, c, w, h, bounding_rect, title_rect):
 
         background_color = self.node_color
 
@@ -584,7 +620,7 @@ class FlowTheme_Ghost(FlowTheme):
 
         painter.setBrush(background_color)
         pen = QPen(c.darker())
-        pen.setWidth(1)
+        pen.setWidth(1 if not selected else 5)
         painter.setPen(pen)
         body_path = self.get_extended_body_path(5, w, h)
         painter.drawPath(body_path)
@@ -604,7 +640,8 @@ class FlowTheme_Ghost(FlowTheme):
         path.closeSubpath()
         return path
 
-    def draw_NI_small(self, node, painter, c, w, h, bounding_rect, background_color=None):
+    def draw_NI_small(self, node, selected: bool, hovered: bool,
+                      painter, c, w, h, bounding_rect, background_color=None):
 
         background_color = self.node_small_color
         c_s = 10  # corner size
@@ -655,7 +692,7 @@ class FlowTheme_Blender(FlowTheme):
                 self.flow_background_color = self.hex_to_col(v)
                 self.flow_background_brush = QBrush(self.flow_background_color)
 
-    def paint_NI_title_label(self, node, painter, option, hovering, node_style, node_title, node_color,
+    def paint_NI_title_label(self, node, selected, hovering, painter, option, node_style, node_title, node_color,
                              node_item_bounding_rect):
         if node_style == 'normal':
             self.paint_NI_title_label_default(
@@ -713,10 +750,14 @@ class FlowTheme_Blender(FlowTheme):
         painter.setPen(pen)
         painter.drawEllipse(rect.marginsRemoved(QMarginsF(3, 3, 3, 3)))
 
-    def draw_NI_normal(self, node, painter, c, w, h, bounding_rect, title_rect):
+    def draw_NI_normal(self, node, selected: bool, hovered: bool,
+                       painter, c, w, h, bounding_rect, title_rect):
 
         background_color = self.node_color
         header_color = QColor(c.red(), c.green(), c.blue(), 180)
+        if selected:
+            header_color = header_color.lighter()
+
 
         rel_header_height = self.get_header_rect(w, h, title_rect).height() / h
         gradient = QLinearGradient(bounding_rect.topLeft(), bounding_rect.bottomLeft())
@@ -729,7 +770,8 @@ class FlowTheme_Blender(FlowTheme):
         painter.setPen(QPen(c.darker()))
         painter.drawRoundedRect(bounding_rect, 7, 7)
 
-    def draw_NI_small(self, node, painter, c, w, h, bounding_rect, background_color=None):
+    def draw_NI_small(self, node, selected: bool, hovered: bool,
+                      painter, c, w, h, bounding_rect, background_color=None):
 
         background_color = QColor('#212429')
         c_s = 15
@@ -778,7 +820,7 @@ class FlowTheme_Simple(FlowTheme):
                 self.flow_background_color = self.hex_to_col(v)
                 self.flow_background_brush = QBrush(self.flow_background_color)
 
-    def paint_NI_title_label(self, node, painter, option, hovering, node_style, node_title, node_color,
+    def paint_NI_title_label(self, node, selected, hovering, painter, option, node_style, node_title, node_color,
                              node_item_bounding_rect):
         if node_style == 'normal':
             self.paint_NI_title_label_default(
@@ -849,10 +891,15 @@ class FlowTheme_Simple(FlowTheme):
         painter.drawEllipse(rect.marginsRemoved(QMarginsF(2, 2, 2, 2)))
         # painter.drawEllipse(QRectF(padding+w/8, padding+h/8, 3*w/4, 3*h/4))
 
-    def draw_NI_normal(self, node, painter, c, w, h, bounding_rect, title_rect):
+    def draw_NI_normal(self, node, selected: bool, hovered: bool,
+                       painter, c, w, h, bounding_rect, title_rect):
 
         background_color = self.node_background_color
-        header_color = c
+
+        if selected:
+            header_color = c.lighter()
+        else:
+            header_color = c
 
         rel_header_height = self.get_header_rect(w, h, title_rect).height() / h
         gradient = QLinearGradient(bounding_rect.topLeft(), bounding_rect.bottomLeft())
@@ -865,7 +912,8 @@ class FlowTheme_Simple(FlowTheme):
         painter.setPen(Qt.NoPen)  # QPen(c.darker()))
         painter.drawRoundedRect(bounding_rect, 9, 9)
 
-    def draw_NI_small(self, node, painter, c, w, h, bounding_rect, background_color=None):
+    def draw_NI_small(self, node, selected: bool, hovered: bool,
+                      painter, c, w, h, bounding_rect, background_color=None):
 
         background_color = self.node_small_background_color
         c_s = 10
@@ -914,7 +962,7 @@ class FlowTheme_Ueli(FlowTheme):
                 self.flow_background_color = self.hex_to_col(v)
                 self.flow_background_brush = QBrush(self.flow_background_color)
 
-    def paint_NI_title_label(self, node, painter, option, hovering, node_style, node_title, node_color,
+    def paint_NI_title_label(self, node, selected, hovering, painter, option, node_style, node_title, node_color,
                              node_item_bounding_rect):
         if node_style == 'normal':
             painter.setPen(QPen(QColor(node_color.name())))
@@ -980,9 +1028,14 @@ class FlowTheme_Ueli(FlowTheme):
         painter.drawEllipse(rect.marginsRemoved(QMarginsF(2, 2, 2, 2)))
         # painter.drawEllipse(QRectF(padding+w/8, padding+h/8, 3*w/4, 3*h/4))
 
-    def draw_NI_normal(self, node, painter, c, w, h, bounding_rect: QRectF, title_rect):
+    def draw_NI_normal(self, node, selected: bool, hovered: bool,
+                       painter, c, w, h, bounding_rect: QRectF, title_rect):
 
-        background_color = self.nodes_background_color
+        if selected:
+            background_color = self.interpolate_color(self.nodes_background_color, c.darker(), 0.18)
+        else:
+            background_color = self.nodes_background_color
+
         header_color = c
 
         header_height = self.get_header_rect(w, h, title_rect).height()
@@ -1000,7 +1053,8 @@ class FlowTheme_Ueli(FlowTheme):
             bounding_rect.bottomRight()
         ), 6, 6)
 
-    def draw_NI_small(self, node, painter, c, w, h, bounding_rect, background_color=None):
+    def draw_NI_small(self, node, selected: bool, hovered: bool,
+                      painter, c, w, h, bounding_rect, background_color=None):
         background_color = self.small_nodes_background_color
         c_s = 10  # corner size
         painter.setBrush(self.interpolate_color(c, background_color, 0.97))
@@ -1053,7 +1107,7 @@ class FlowTheme_PureDark(FlowTheme):
             elif k == 'port pin pen color':
                 self.port_pin_pen_color = self.hex_to_col(v)
 
-    def paint_NI_title_label(self, node, painter, option, hovering, node_style, node_title, node_color,
+    def paint_NI_title_label(self, node, selected, hovering, painter, option, node_style, node_title, node_color,
                              node_item_bounding_rect):
 
         painter.setPen(QPen(self.node_title_color))
@@ -1096,9 +1150,13 @@ class FlowTheme_PureDark(FlowTheme):
         # painter.drawEllipse(rect)
         painter.drawEllipse(rect.marginsRemoved(QMarginsF(2, 2, 2, 2)))
 
-    def draw_NI_normal(self, node, painter, c, w, h, bounding_rect: QRectF, title_rect):
+    def draw_NI_normal(self, node, selected: bool, hovered: bool,
+                       painter, c, w, h, bounding_rect: QRectF, title_rect):
 
-        background_color = self.node_ext_background_color
+        if selected:
+            background_color = self.interpolate_color(self.node_ext_background_color, c.darker(), 0.18)
+        else:
+            background_color = self.node_ext_background_color
 
         header_height = self.get_header_rect(w, h, title_rect).height()
 
@@ -1117,7 +1175,8 @@ class FlowTheme_PureDark(FlowTheme):
             QPointF(bounding_rect.right(), bounding_rect.top() + header_height)
         )
 
-    def draw_NI_small(self, node, painter, c, w, h, bounding_rect, background_color=None):
+    def draw_NI_small(self, node, selected: bool, hovered: bool,
+                      painter, c, w, h, bounding_rect, background_color=None):
 
         painter.setBrush(QBrush(self.node_small_background_color))
         painter.setPen(Qt.NoPen)
@@ -1189,7 +1248,7 @@ class FlowTheme_Colorful(FlowTheme):
             elif k == 'port pin pen color':
                 self.port_pin_pen_color = self.hex_to_col(v)
 
-    def paint_NI_title_label(self, node, painter, option, hovering, node_style, node_title, node_color,
+    def paint_NI_title_label(self, node, selected, hovering, painter, option, node_style, node_title, node_color,
                              node_item_bounding_rect):
 
         painter.setPen(QPen(self.node_title_color))
@@ -1229,12 +1288,16 @@ class FlowTheme_Colorful(FlowTheme):
         painter.drawEllipse(rect.marginsRemoved(QMarginsF(2, 2, 2, 2)))
         # painter.drawEllipse(QRectF(padding + w / 8, padding + h / 8, 3 * w / 4, 3 * h / 4))
 
-    def draw_NI_normal(self, node, painter, c, w, h, bounding_rect: QRectF, title_rect):
+    def draw_NI_normal(self, node, selected: bool, hovered: bool,
+                       painter, c, w, h, bounding_rect: QRectF, title_rect):
 
         background_color = c
         background_color.setAlpha(150)
 
-        header_color = QColor(c.red(), c.green(), c.blue(), 130).darker()
+        if selected:
+            header_color = QColor(c.red(), c.green(), c.blue(), 130)
+        else:
+            header_color = QColor(c.red(), c.green(), c.blue(), 130).darker()
 
         rel_header_height = self.get_header_rect(w, h, title_rect).height() / h
         gradient = QLinearGradient(bounding_rect.topLeft(), bounding_rect.bottomLeft())
@@ -1247,7 +1310,8 @@ class FlowTheme_Colorful(FlowTheme):
         painter.setPen(Qt.NoPen)
         painter.drawRoundedRect(bounding_rect, 7, 7)
 
-    def draw_NI_small(self, node, painter, c, w, h, bounding_rect, background_color=None):
+    def draw_NI_small(self, node, selected: bool, hovered: bool,
+                      painter, c, w, h, bounding_rect, background_color=None):
 
         painter.setBrush(QBrush(QColor(c.red(), c.green(), c.blue(), 150)))
         painter.setPen(Qt.NoPen)
@@ -1284,7 +1348,7 @@ class FlowTheme_ColorfulLight(FlowTheme_Colorful):
 
         self.paint_PI_label_default(painter, label_str, c, QFont("Segoe UI", 10), bounding_rect)
 
-    def draw_NI_normal(self, node, painter, c, w, h, bounding_rect: QRectF, title_rect):
+    def draw_NI_normal(self, node, selected: bool, hovered: bool, painter, c, w, h, bounding_rect: QRectF, title_rect):
 
         background_color = c.lighter()
         background_color.setAlpha(150)
@@ -1302,7 +1366,8 @@ class FlowTheme_ColorfulLight(FlowTheme_Colorful):
         painter.setPen(Qt.NoPen)
         painter.drawRoundedRect(bounding_rect, 7, 7)
 
-    def draw_NI_small(self, node, painter, c, w, h, bounding_rect, background_color=None):
+    def draw_NI_small(self, node, selected: bool, hovered: bool,
+                      painter, c, w, h, bounding_rect, background_color=None):
 
         painter.setBrush(QBrush(QColor(c.red(), c.green(), c.blue(), 150)))
         painter.setPen(Qt.NoPen)
@@ -1328,7 +1393,7 @@ class FlowTheme_Industrial(FlowTheme):
     node_color = QColor(10, 10, 10, 250)
     node_item_shadow_color = QColor(0, 0, 0)
 
-    def paint_NI_title_label(self, node, painter, option, hovering, node_style, node_title, node_color,
+    def paint_NI_title_label(self, node, selected, hovering, painter, option, node_style, node_title, node_color,
                              node_item_bounding_rect):
         if node_style == 'normal':
             self.paint_NI_title_label_default(
@@ -1337,7 +1402,7 @@ class FlowTheme_Industrial(FlowTheme):
                 title=node_title,
                 color=QColor(200, 200, 200),
                 pen_w=1,
-                font=QFont('Segoe UI', 11),
+                font=QFont('Segoe UI', 11, QFont.Normal if not (hovering or selected) else QFont.Bold),
                 node_item_bounding_rect=node_item_bounding_rect
             )
         else:
@@ -1400,7 +1465,8 @@ class FlowTheme_Industrial(FlowTheme):
             painter.setBrush(Qt.NoBrush)
             painter.drawEllipse(outer_ellipse_rect)
 
-    def draw_NI_normal(self, node, painter, c, w, h, bounding_rect, title_rect):
+    def draw_NI_normal(self, node, selected: bool, hovered: bool,
+                       painter, c, w, h, bounding_rect, title_rect):
 
         background_color = QColor(14, 14, 14)
         header_color = QColor(105, 105, 105, 150)
@@ -1416,7 +1482,8 @@ class FlowTheme_Industrial(FlowTheme):
         painter.setPen(Qt.NoPen)  # QPen(c.darker())
         painter.drawRoundedRect(bounding_rect, 2, 2)
 
-    def draw_NI_small(self, node, painter, c, w, h, bounding_rect, background_color=None):
+    def draw_NI_small(self, node, selected: bool, hovered: bool,
+                      painter, c, w, h, bounding_rect, background_color=None):
 
         background_color = QColor(217, 217, 217, 50)
         c_s = 2

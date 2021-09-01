@@ -4,7 +4,7 @@ from qtpy.QtCore import QMimeData, Qt, QEvent, QByteArray
 
 import json
 
-from ryvencore_qt.src.GlobalAttributes import Location
+from ..GlobalAttributes import Location
 from .ListWidget_NameLineEdit import ListWidget_NameLineEdit
 from ..tools import shorten
 from .EditVal_Dialog import EditVal_Dialog

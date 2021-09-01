@@ -2,22 +2,24 @@ from qtpy.QtWidgets import QGraphicsItem, QGraphicsObject, QMenu, QGraphicsDropS
 from qtpy.QtCore import Qt, QRectF, QObject, QPointF
 from qtpy.QtGui import QColor
 
-from .ryvencore.NodePort import NodeInput, NodeOutput
+from ...GUIBase import GUIBase
+from ...ryvencore.NodePort import NodeInput, NodeOutput
 from .NodeItemAction import NodeItemAction
 from .NodeItemAnimator import NodeItemAnimator
 from .NodeItemWidget import NodeItemWidget
 from .PortItem import InputPortItem, OutputPortItem
-from .ryvencore.tools import serialize, deserialize
-from .tools import MovementEnum
+from ...tools import serialize, deserialize
+from ...tools import MovementEnum
 
 
-class NodeItem(QGraphicsObject):  # QGraphicsItem, QObject):
+class NodeItem(GUIBase, QGraphicsObject):  # QGraphicsItem, QObject):
     """The GUI representative for nodes. Unlike the Node class, this class is not subclassed individually and works
     the same for every node."""
 
     def __init__(self, node, params):
         # QGraphicsItem.__init__(self)
         # QObject.__init__(self)
+        GUIBase.__init__(self, representing_component=node)
         QGraphicsObject.__init__(self)
 
         self.node = node
@@ -297,6 +299,8 @@ class NodeItem(QGraphicsObject):  # QGraphicsItem, QObject):
 
         self.session_design.flow_theme.paint_NI(
             node=self.node,
+            selected=self.isSelected(),
+            hovered=self.hovered,
             node_style=self.node.style,
             painter=painter,
             option=option,
@@ -455,40 +459,15 @@ class NodeItem(QGraphicsObject):  # QGraphicsItem, QObject):
 
     # DATA
 
-    def complete_data(self, node_data):
-        """
-        Completes the node's data by adding all frontend related data
-        """
+    def complete_data(self, data: dict) -> dict:
+        """completes the node's data by adding all frontend info"""
 
-        # add input widgets data
-        for i in range(len(node_data['inputs'])):
-            inp_data = node_data['inputs'][i]
-            inp_item = self.inputs[i]
-
-            if inp_item.port.type_ == 'data':
-                if inp_item.widget:
-                    inp_data['has widget'] = True
-
-                    if inp_item.port.dtype:  # dtype widget
-                        # input_cfg['widget name'] = str(inp_item.widget)
-                        pass
-                    else:  # custom widget
-                        inp_data['widget name'] = inp_item.port.add_data['widget name']
-                        inp_data['widget pos'] = inp_item.port.add_data['widget pos']
-
-                    inp_data['widget data'] = serialize(inp_item.widget.get_state())
-                else:
-                    inp_data['has widget'] = False
-
-                node_data['inputs'][i] = inp_data
-
-        # add item properties
-        node_data['pos x'] = self.pos().x()
-        node_data['pos y'] = self.pos().y()
+        data['pos x'] = self.pos().x()
+        data['pos y'] = self.pos().y()
         if self.main_widget:
-            node_data['main widget data'] = serialize(self.main_widget.get_state())
+            data['main widget data'] = serialize(self.main_widget.get_state())
 
-        node_data['unconnected ports hidden'] = self.hiding_unconnected_ports
-        node_data['collapsed'] = self.collapsed
+        data['unconnected ports hidden'] = self.hiding_unconnected_ports
+        data['collapsed'] = self.collapsed
 
-        return node_data
+        return data

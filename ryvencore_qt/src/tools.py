@@ -2,8 +2,28 @@ import enum
 import json
 import os
 from math import sqrt
+from waiting import wait
 
 from .ryvencore.tools import serialize, deserialize
+
+
+class Container:
+    """used for threading; accessed from multiple threads"""
+
+    def __init__(self):
+        self.payload = None
+        self.has_been_set = False
+
+    def set(self, val):
+        self.payload = val
+        self.has_been_set = True
+
+    def is_set(self):
+        return self.has_been_set
+
+
+def wait_until(func):
+    return wait(func, sleep_seconds=0.001)
 
 
 def pythagoras(a, b):
@@ -35,6 +55,13 @@ def shorten(s: str, max_chars: int, line_break: bool = False):
         return s
 
 
+def pointMappedF(p1, p2):
+    """adds the floating part of p2 to p1"""
+    p2.setX(p1.x() + p2.x()%1)
+    p2.setY(p1.y() + p2.y()%1)
+    return p2
+
+
 class MovementEnum(enum.Enum):
     # this should maybe get removed later
     mouse_clicked = 1
@@ -43,7 +70,7 @@ class MovementEnum(enum.Enum):
 
 
 def change_svg_color(filepath: str, color_hex: str):
-
+    # doesnt seem to work properly yet :(
 
     from qtpy.QtSvg import QSvgRenderer
     from qtpy.QtGui import QPixmap, QPainter

@@ -20,8 +20,15 @@ setup(
         'ryvencore_qt.resources',
 
         'ryvencore_qt.src',
+
+        'ryvencore_qt.src.flows',
+        'ryvencore_qt.src.flows.node_selection_widget',
+        'ryvencore_qt.src.flows.connections',
+        'ryvencore_qt.src.flows.drawings',
+        'ryvencore_qt.src.flows.nodes',
         'ryvencore_qt.src.conv_gui',
-        'ryvencore_qt.src.node_selection_widget',
+
+        'ryvencore_qt.src.core_wrapper',
 
         'ryvencore_qt.src.ryvencore',
         'ryvencore_qt.src.ryvencore.logging',

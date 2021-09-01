@@ -2,7 +2,7 @@ from qtpy.QtWidgets import QWidget, QVBoxLayout, QLineEdit, QLabel, QScrollArea
 from qtpy.QtCore import Qt
 from qtpy.QtGui import QFont
 
-from ..ryvencore.InfoMsgs import InfoMsgs
+from ryvencore_qt.src.ryvencore.InfoMsgs import InfoMsgs
 from ..node_selection_widget.NodeWidget import NodeWidget
 
 

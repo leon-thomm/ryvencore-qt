@@ -34,7 +34,7 @@ class RandNode(rc.Node):
 
     title = 'Rand'
     init_inputs = [
-        rc.NodeInputBP(dtype=rc.dtypes.Float(default=1.0, bounds=(0, 100)))
+        rc.NodeInputBP(dtype=rc.dtypes.Data(default=1))
     ]
     init_outputs = [
         rc.NodeOutputBP()
