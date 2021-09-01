@@ -1,7 +1,5 @@
-from qtpy.QtCore import Signal
 from qtpy.QtGui import QFontMetrics, QFont
-from qtpy.QtWidgets import QSpinBox, QLineEdit, QSlider, QCheckBox, QComboBox
-
+from qtpy.QtWidgets import QSpinBox, QLineEdit, QCheckBox, QComboBox
 
 from .WidgetBaseClasses import IWB
 

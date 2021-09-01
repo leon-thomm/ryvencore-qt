@@ -33,12 +33,11 @@ class NodePort(Base):
         return self.node.flow.alg_mode in (FlowAlg.DATA, FlowAlg.DATA_OPT)
 
     def data(self) -> dict:
-        data_dict = {
+        return {
             'type': self.type_,
-            'label': self.label_str
+            'label': self.label_str,
+            'GID': self.GLOBAL_ID,
         }
-
-        return data_dict
 
 
 class NodeInput(NodePort):

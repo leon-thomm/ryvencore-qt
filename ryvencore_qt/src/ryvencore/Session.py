@@ -205,20 +205,18 @@ class Session(Base):
 
         return new_scripts + new_macro_scripts
 
-
-    def data(self) -> dict:
+    def serialize(self):
         """Returns the project as JSON compatible dict to be saved and loaded again using load()"""
 
-        data = {}
+        return self.complete_data(self.data())
 
-        macro_scripts_list = []
-        for m_script in self.macro_scripts:
-            macro_scripts_list.append(m_script.data())
-        data['macro scripts'] = macro_scripts_list
 
-        scripts_list = []
-        for script in set(self.scripts) - set(self.macro_scripts):  # exclude macro scripts
-            scripts_list.append(script.data())
-        data['scripts'] = scripts_list
-
-        return data
+    def data(self) -> dict:
+        return {
+            'macro scripts': [
+                m_s.data() for m_s in self.macro_scripts
+            ],
+            'scripts': [
+                s.data() for s in set(self.scripts) - set(self.macro_scripts)
+            ],
+        }

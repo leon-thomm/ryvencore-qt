@@ -121,10 +121,11 @@ class MacroScript(Script):
             mn.delete_output(index)
 
     def data(self) -> dict:
-        script_dict = super().data()
+        return {
+            **super().data(),
 
-        script_dict['parameters'] = self.parameters
-        script_dict['returns'] = self.returns
-        script_dict['ID'] = self.ID
-
-        return script_dict
+            'parameters': self.parameters,
+            'returns': self.returns,
+            'ID': self.ID,
+            'GID': self.GLOBAL_ID,
+        }

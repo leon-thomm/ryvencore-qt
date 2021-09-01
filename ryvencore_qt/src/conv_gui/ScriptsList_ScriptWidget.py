@@ -4,7 +4,7 @@ from qtpy.QtCore import Qt, QEvent
 
 import json
 
-from ryvencore_qt.src.GlobalAttributes import Location
+from ..GlobalAttributes import Location
 from .ListWidget_NameLineEdit import ListWidget_NameLineEdit
 from ..ryvencore.MacroScript import MacroScript
 

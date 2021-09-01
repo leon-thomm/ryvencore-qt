@@ -5,8 +5,6 @@ from qtpy.QtWidgets import QGraphicsItem
 
 class NodeItemAnimator(QObject):
 
-    # TODO: make this work again...
-
     def __init__(self, node_item):
         super(NodeItemAnimator, self).__init__()
 

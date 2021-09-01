@@ -18,6 +18,7 @@ class Flow(Base):
         self.script = script
         self.nodes: [Node] = []
         self.connections: [Connection] = []
+
         self.alg_mode = FlowAlg.DATA_OPT
 
         self.executor_data_opt = DataFlowOptimized(self)
@@ -243,27 +244,22 @@ class Flow(Base):
 
 
     def data(self) -> dict:
-
-        data = {
+        return {
             'algorithm mode': FlowAlg.str(self.alg_mode),
             'nodes': self.gen_nodes_data(self.nodes),
-            'connections': self.gen_conns_data(self.nodes)
+            'connections': self.gen_conns_data(self.nodes),
+            'GID': self.GLOBAL_ID,
         }
-
-        self._tmp_data = data
-        return data
 
 
     def gen_nodes_data(self, nodes: [Node]) -> [dict]:
-        data = [n.data() for n in nodes]
-        self._tmp_data = data
-        return data
+        return [n.data() for n in nodes]
 
 
     def gen_conns_data(self, nodes: [Node]) -> [dict]:
         # notice that this is intentionally not part of Connection, because connection data
         # is generated always for a specific set of nodes (like all currently selected ones)
-        # and the data dict has therefore refer to the indices of the nodes in the nodes list
+        # and the data dict therefore has the refer to the indices of the nodes in the nodes list
 
         data = []
         for i in range(len(nodes)):
@@ -279,11 +275,11 @@ class Flow(Base):
                         continue
 
                     data.append({
+                        'GID': c.GLOBAL_ID,
                         'parent node index': i,
                         'output port index': j,
                         'connected node': nodes.index(connected_node),
                         'connected input port index': connected_node.inputs.index(connected_port)
                     })
 
-        self._tmp_data = data
         return data

@@ -120,5 +120,5 @@ class VarsManager(Base):
     def data(self) -> dict:
         vars_dict = {}
         for v in self.variables:
-            vars_dict[v.name] = {'serialized': v.serialized()}
+            vars_dict[v.name] = {'serialized': v.serialize()}
         return vars_dict
