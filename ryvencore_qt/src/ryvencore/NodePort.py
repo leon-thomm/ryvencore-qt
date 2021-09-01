@@ -29,6 +29,9 @@ class NodePort(Base):
     def disconnected(self):
         pass
 
+    def flow_alg_data_mode(self):
+        return self.node.flow.alg_mode in (FlowAlg.DATA, FlowAlg.DATA_OPT)
+
     def data(self) -> dict:
         data_dict = {
             'type': self.type_,
@@ -49,15 +52,21 @@ class NodeInput(NodePort):
         # optional dtype
         self.dtype: DType = dtype
 
+    def connected(self):
+        super().connected()
+        self.val = self.connections[0].get_val()
+        if self.type_ == 'data' and self.flow_alg_data_mode():
+            self.node.update(self.node.inputs.index(self))
+
     def disconnected(self):
         super().disconnected()
-        if self.type_ == 'data' and self.node.flow.alg_mode == FlowAlg.DATA:
+        if self.type_ == 'data' and self.flow_alg_data_mode():
             self.node.update(self.node.inputs.index(self))
 
     def get_val(self):
         InfoMsgs.write('getting value of node input')
 
-        if self.node.flow.alg_mode == FlowAlg.DATA or len(self.connections) == 0:
+        if self.flow_alg_data_mode() or len(self.connections) == 0:
             return self.val
         else:  # len(self.connections) > 0:
             return self.connections[0].get_val()
@@ -97,18 +106,19 @@ class NodeOutput(NodePort):
 
         if self.node.flow.alg_mode == FlowAlg.EXEC:
             self.node.update()
+
         return self.val
 
     def set_val(self, val):
+        InfoMsgs.write('setting value in node output')
 
-        # in case val isn't of complex type
         self.val = val
 
-        if self.node.flow.alg_mode == FlowAlg.DATA:
+        if self.flow_alg_data_mode():
             for c in self.connections:
                 c.activate(data=val)
 
-    def connected(self):
-        super().connected()
-        if self.type_ == 'data' and self.node.flow.alg_mode == FlowAlg.DATA:
-            self.set_val(self.val)  # update output
+    # def connected(self):
+    #     super().connected()
+    #     if self.type_ == 'data' and self.node.flow.alg_mode == FlowAlg.DATA:
+    #         self.set_val(self.val)  # update output

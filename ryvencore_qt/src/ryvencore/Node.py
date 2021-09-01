@@ -1,6 +1,7 @@
 import logging
 import traceback
 
+from . import FlowAlg
 from .Base import Base
 
 from .NodePort import NodeInput, NodeOutput
@@ -36,6 +37,10 @@ class Node(Base):
             cls.identifier = cls.__name__
 
         cls.identifier = full_prefix + cls.identifier
+
+        for ic in cls.identifier_comp:
+            cls.identifier_comp.remove(ic)
+            cls.identifier_comp.append(full_prefix + ic)
 
 
     def __init__(self, params):
@@ -134,11 +139,14 @@ class Node(Base):
 
         InfoMsgs.write('update in', self.title, 'node on input', inp)
 
-        try:
-            self.update_event(inp)
-        except Exception as e:
-
-            InfoMsgs.write_err('EXCEPTION in', self.title, '\n', traceback.format_exc())
+        # invoke update_event
+        if self.flow_in_data_opt_mode():
+            self.flow.executor_data_opt.update_node(self, inp)
+        else:
+            try:
+                self.update_event(inp)
+            except Exception as e:
+                InfoMsgs.write_err('EXCEPTION in', self.title, '\n', traceback.format_exc())
 
     # OVERRIDE
     def update_event(self, inp=-1):
@@ -156,13 +164,17 @@ class Node(Base):
 
     def exec_output(self, index: int):
         """Executes an exec output, causing activation of all connections"""
-
-        self.outputs[index].exec()
+        if self.flow_in_data_opt_mode():
+            self.flow.executor_data_opt.exec_output(self, index)
+        else:
+            self.outputs[index].exec()
 
     def set_output_val(self, index, val):
         """Sets the value of a data output causing activation of all connections in data mode"""
-
-        self.outputs[index].set_val(val)
+        if self.flow_in_data_opt_mode():
+            self.flow.executor_data_opt.set_output_val(self, index, val)
+        else:
+            self.outputs[index].set_val(val)
 
     # OVERRIDE
     def place_event(self):
@@ -391,6 +403,10 @@ class Node(Base):
             if o.type_ == 'exec':
                 return True
         return False
+
+
+    def flow_in_data_opt_mode(self):
+        return self.flow.alg_mode == FlowAlg.DATA_OPT
 
 
     def data(self) -> dict:

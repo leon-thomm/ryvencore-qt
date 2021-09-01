@@ -20,6 +20,7 @@ class Data_IW(DType_IW_Base, QLineEdit):  # virtual
         QLineEdit.__init__(self)
 
         dtype = self.input.dtype
+        self.last_val = None
 
         self.setFont(QFont('source code pro', 10))
         self.val_update_event(dtype.default)
@@ -47,7 +48,10 @@ class Data_IW(DType_IW_Base, QLineEdit):  # virtual
         self.node.update_shape()
 
     def editing_finished(self):
-        self.update_node_input(self.get_val())
+        v = self.get_val()
+        if v != self.last_val:
+            self.update_node_input(v)
+            self.last_val = v
 
     def get_val(self):
         try:
@@ -95,6 +99,7 @@ class String_IW(DType_IW_Base, QLineEdit):  # virtual
         QLineEdit.__init__(self)
 
         dtype = self.input.dtype
+        self.last_val = None
 
         self.setFont(QFont('source code pro', 10))
         self.setText(dtype.default)
@@ -106,7 +111,10 @@ class String_IW(DType_IW_Base, QLineEdit):  # virtual
 
     def editing_finished(self):
         if not self.block:
-            self.update_node_input(self.get_val())
+            v = self.get_val()
+            if v != self.last_val:
+                self.update_node_input(v)
+                self.last_val = v
 
     def get_val(self):
         return self.text()
@@ -167,6 +175,8 @@ class Integer_IW(DType_IW_Base, QSpinBox):
         self.block = True
         try:
             self.setValue(val)
+        except Exception as e:
+            pass
         finally:
             self.block = False
 
@@ -204,6 +214,8 @@ class Float_IW(DType_IW_Base, QLineEdit):
         self.block = True
         try:
             self.setText(str(val))
+        except Exception as e:
+            pass
         finally:
             self.block = False
 
@@ -240,6 +252,8 @@ class Boolean_IW(DType_IW_Base, QCheckBox):
         self.block = True
         try:
             self.setChecked(bool(val))
+        except Exception as e:
+            pass
         finally:
             self.block = False
 
@@ -275,6 +289,8 @@ class Choice_IW(DType_IW_Base, QComboBox):
         self.block = True
         try:
             self.setCurrentText(val)
+        except Exception as e:
+            pass
         finally:
             self.block = False
 

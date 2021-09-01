@@ -8,6 +8,7 @@ class FlowAlg(IntEnum):
 
     DATA = 1
     EXEC = 2
+    DATA_OPT = 3
 
     @staticmethod
     def str(mode):
@@ -17,6 +18,8 @@ class FlowAlg(IntEnum):
             return 'data'
         elif mode == FlowAlg.EXEC:
             return 'exec'
+        elif mode == FlowAlg.DATA_OPT:
+            return 'data opt'
 
         return None
 
@@ -26,6 +29,8 @@ class FlowAlg(IntEnum):
             return FlowAlg.DATA
         elif mode == 'exec':
             return FlowAlg.EXEC
+        elif mode == 'data opt':
+            return FlowAlg.DATA_OPT
 
         return None
 

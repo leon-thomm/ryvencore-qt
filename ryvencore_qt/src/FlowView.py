@@ -1,8 +1,8 @@
 import time
 import json
 
-from qtpy.QtCore import Qt, QPointF, QPoint, QRectF, QSizeF, Signal, QTimer
-from qtpy.QtGui import QPainter, QPen, QColor, QKeySequence, QTabletEvent, QImage, QGuiApplication, QFont
+from qtpy.QtCore import Qt, QPointF, QPoint, QRectF, QSizeF, Signal, QTimer, QTimeLine, QEvent
+from qtpy.QtGui import QPainter, QPen, QColor, QKeySequence, QTabletEvent, QImage, QGuiApplication, QFont, QTouchEvent
 from qtpy.QtWidgets import QGraphicsView, QGraphicsScene, QShortcut, QMenu, QGraphicsItem, QUndoStack
 
 from .ryvencore.Flow import Flow
@@ -164,6 +164,8 @@ class FlowView(QGraphicsView):
         # recognizer = PanGestureRecognizer()
         # pan_gesture_id = QGestureRecognizer.registerRecognizer(recognizer) <--- CRASH HERE
         # self.grabGesture(pan_gesture_id)
+        self.viewport().setAttribute(Qt.WA_AcceptTouchEvents)
+        self.last_pinch_points_dist = 0
 
         # DESIGN
         self.session.design.flow_theme_changed.connect(self._theme_changed)
@@ -179,12 +181,16 @@ class FlowView(QGraphicsView):
 
         # DATA
         if load_data is not None:
+            if 'flow view' in load_data:
+                view_data = load_data['flow view']
+            else:
+                view_data = load_data  # backwards compatibility
 
-            if 'drawings' in load_data:  # not all (old) project files have drawings arr
-                self.place_drawings_from_data(load_data['drawings'])
+            if 'drawings' in view_data:  # not all (old) project files have drawings arr
+                self.place_drawings_from_data(view_data['drawings'])
 
-            if 'view size' in load_data:
-                self.setSceneRect(0, 0, load_data['view size'][0], load_data['view size'][1])
+            if 'view size' in view_data:
+                self.setSceneRect(0, 0, view_data['view size'][0], view_data['view size'][1])
 
             self._undo_stack.clear()
 
@@ -195,7 +201,7 @@ class FlowView(QGraphicsView):
             self.add_connection(c)
 
     def show_framerate(self, show: bool = True, m_sec_interval: int = 1000):
-        self._showing_framerate = show
+        self._showing_framerate = showy
         self.framerate_timer.setInterval(m_sec_interval)
         self.framerate_timer.start()
 
@@ -402,13 +408,64 @@ class FlowView(QGraphicsView):
 
     def wheelEvent(self, event):
 
-        # ZOOM
-        if event.modifiers() == Qt.CTRL and event.angleDelta().x() == 0:
-            self.zoom(event.pos(), self.mapToScene(event.pos()), event.angleDelta().y())
-            event.accept()
+        self._zoom_data['viewport pos'] = event.posF()
+        self._zoom_data['scene pos'] = pointF_mapped(self.mapToScene(event.pos()), event.posF())
+        self._zoom_data['delta'] += event.delta()
+
+        if self._zoom_data['delta'] * event.delta() < 0:
+            self._zoom_data['delta'] = event.delta()
+
+        anim = QTimeLine(100, self)
+        anim.setUpdateInterval(10)
+        anim.valueChanged.connect(self._scaling_time)
+        anim.start()
+
+    def _scaling_time(self, x):
+        delta = self._zoom_data['delta'] / 8
+        if abs(delta) <= 5:
+            delta = self._zoom_data['delta']
+        self._zoom_data['delta'] -= delta
+
+        self.zoom(self._zoom_data['viewport pos'], self._zoom_data['scene pos'], delta)
+
+    def viewportEvent(self, event: QEvent) -> bool:
+        """handling some touch features here"""
+
+        if event.type() == QEvent.TouchBegin:
+            self.setDragMode(QGraphicsView.NoDrag)
+            return True
+        elif event.type() == QEvent.TouchUpdate:
+            event: QTouchEvent
+            if len(event.touchPoints()) == 2:
+
+                tp0, tp1 = event.touchPoints()[0], event.touchPoints()[1]
+
+                p0, p1 = tp0.pos(), tp1.pos()
+                # sp0, sp1 = tp0.scenePos(), tp1.scenePos()
+
+                pinch_points_dist = points_dist(p0, p1)
+
+                if self.last_pinch_points_dist == 0:
+                    self.last_pinch_points_dist = pinch_points_dist
+
+                center = middle_point(p0, p1)
+                self.zoom(
+                    p_abs=center,
+                    p_mapped=self.mapToScene(center.toPoint()),
+                    angle=((pinch_points_dist / self.last_pinch_points_dist)**10 - 1) * 100,
+                )
+
+                self.last_pinch_points_dist = pinch_points_dist
+
             return True
 
-        QGraphicsView.wheelEvent(self, event)
+        elif event.type() == QEvent.TouchEnd:
+            self.last_pinch_points_dist = 0
+            self.setDragMode(QGraphicsView.RubberBandDrag)
+            return True
+
+        else:
+            return super().viewportEvent(event)
 
     def tabletEvent(self, event):
         """tabletEvent gets called by stylus operations.
@@ -713,6 +770,8 @@ class FlowView(QGraphicsView):
         self.zoom(local_viewport_center, self.mapToScene(local_viewport_center), -amount)
 
     def zoom(self, p_abs, p_mapped, angle):
+        # print(f'zooming to {p_abs} / {p_mapped} with angle: {angle}')
+
         by = 0
         velocity = 2 * (1 / self._current_scale) + 0.5
         if velocity > 3:

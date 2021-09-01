@@ -4,6 +4,7 @@ import os
 from math import sqrt
 
 from .ryvencore.tools import serialize, deserialize
+from qtpy.QtCore import QPointF
 
 
 def pythagoras(a, b):
@@ -33,6 +34,19 @@ def shorten(s: str, max_chars: int, line_break: bool = False):
         return left+insert+right
     else:
         return s
+
+
+def pointF_mapped(p1, p2):
+    """adds the floating part of p2 to p1"""
+    p2.setX(p1.x() + p2.x()%1)
+    p2.setY(p1.y() + p2.y()%1)
+    return p2
+
+def points_dist(p1, p2):
+    return sqrt(abs(p1.x() - p2.x())**2 + abs(p1.y() - p2.y())**2)
+
+def middle_point(p1, p2):
+    return QPointF((p1.x() + p2.x())/2, (p1.y() + p2.y())/2)
 
 
 class MovementEnum(enum.Enum):

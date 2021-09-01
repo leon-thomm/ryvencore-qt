@@ -1,5 +1,6 @@
 from .Base import Base
 from .Connection import Connection
+from .FlowExecutor import DataFlowOptimized
 from .Node import Node
 from .NodePort import NodePort
 from .RC import FlowAlg, PortObjPos, CLASSES
@@ -17,8 +18,10 @@ class Flow(Base):
         self.script = script
         self.nodes: [Node] = []
         self.connections: [Connection] = []
-        self.alg_mode = FlowAlg.DATA
-        self._tmp_data = None
+        self.alg_mode = FlowAlg.DATA_OPT
+
+        self.executor_data_opt = DataFlowOptimized(self)
+        self.node_successors = {}
 
 
     def load(self, data):
@@ -99,16 +102,10 @@ class Flow(Base):
     def add_node(self, node: Node):
         """Stores a node object and causes the node's place_event()"""
 
-        # IMPORTANT: I moved this to create_node(), I am not sure why I put it here in the first place
-        #            but it should definitely happen before node.load_user_data(), otherwise the
-        #            ports are not yet initialized which of course leads to errors when loading data
-        #
-        # if not node.initialized:
-        #     node.finish_initialization()
-
         self.nodes.append(node)
-
+        self.node_successors[node] = []
         node.prepare_placement()
+        self.flow_changed()
 
 
     def node_view_placed(self, node: Node):
@@ -122,6 +119,8 @@ class Flow(Base):
 
         node.prepare_removal()
         self.nodes.remove(node)
+        del self.node_successors[node]
+        self.flow_changed()
 
 
     def connect_nodes_from_data(self, nodes: [Node], data: list):
@@ -129,20 +128,23 @@ class Flow(Base):
 
         for c in data:
 
-            c_parent_node_index = -1
-            if 'parent node instance index' in c:  # backwards compatibility
-                c_parent_node_index = c['parent node instance index']
-            else:
-                c_parent_node_index = c['parent node index']
+            # c_parent_node_index = -1
+            # if 'parent node instance index' in c:  # backwards compatibility
+            #     c_parent_node_index = c['parent node instance index']
+            # else:
+            #     c_parent_node_index = c['parent node index']
+            #
+            # c_output_port_index = c['output port index']
+            #
+            # c_connected_node_index = -1
+            # if 'connected node instance' in c:  # backwards compatibility
+            #     c_connected_node_index = c['connected node instance']
+            # else:
+            #     c_connected_node_index = c['connected node']
 
+            c_parent_node_index = c['parent node index']
+            c_connected_node_index = c['connected node']
             c_output_port_index = c['output port index']
-
-            c_connected_node_index = -1
-            if 'connected node instance' in c:  # backwards compatibility
-                c_connected_node_index = c['connected node instance']
-            else:
-                c_connected_node_index = c['connected node']
-
             c_connected_input_port_index = c['connected input port index']
 
             if c_connected_node_index is not None:  # which can be the case when pasting
@@ -175,7 +177,6 @@ class Flow(Base):
 
         if not self.check_connection_validity(p1, p2):
             return None
-            # raise Exception('Illegal connection request. Use check_connection_validity to check if a request is legal.')
 
         out = p1
         inp = p2
@@ -208,6 +209,9 @@ class Flow(Base):
         c.inp.connected()
         self.connections.append(c)
 
+        self.node_successors[c.out.node].append(c.inp.node)
+        self.flow_changed()
+
 
     def remove_connection(self, c: Connection):
         """Removes a connection object without deleting it"""
@@ -217,6 +221,9 @@ class Flow(Base):
         c.out.disconnected()
         c.inp.disconnected()
         self.connections.remove(c)
+
+        self.node_successors[c.out.node].remove(c.inp.node)
+        self.flow_changed()
 
 
     def algorithm_mode(self) -> str:
@@ -229,6 +236,10 @@ class Flow(Base):
         """Sets the algorithm mode of the flow, possible values are 'data' and 'exec'"""
 
         self.alg_mode = FlowAlg.from_str(mode)
+
+
+    def flow_changed(self):
+        self.executor_data_opt.flow_changed = True
 
 
     def data(self) -> dict:
