@@ -662,20 +662,22 @@ class FlowTheme_Blender(FlowTheme):
 
     node_selection_stylesheet = ''
 
-    header_padding = (8, 6, 10, 2)
+    header_padding = (5, 0, 0, 0)
 
     exec_conn_color = QColor(0, 17, 25)
-    exec_conn_width = 2
+    exec_conn_width = 3
     exec_conn_pen_style = Qt.SolidLine
 
-    data_conn_color = QColor(0, 17, 25)
-    data_conn_width = 2
-    data_conn_pen_style = Qt.DashLine
+    data_conn_color = QColor(200, 200, 200)
+    data_conn_width = 2.5
+    data_conn_pen_style = Qt.SolidLine
 
-    flow_background_color = QColor('#333333')
+    flow_background_color = QColor('#232323')
     flow_background_brush = QBrush(flow_background_color)
 
-    node_color = QColor(100, 100, 100, 150)
+    node_color = QColor('#3f3f3f')
+    corner_radius_normal = 5
+    corner_radius_small = 10
 
     EXPORT = [
         'nodes color',
@@ -701,7 +703,7 @@ class FlowTheme_Blender(FlowTheme):
                 title=node_title,
                 color=QColor('#FFFFFF'),
                 pen_w=2,
-                font=QFont('Poppins', 15),
+                font=QFont('Segoe UI', 11),
                 node_item_bounding_rect=node_item_bounding_rect
             )
         else:
@@ -711,7 +713,7 @@ class FlowTheme_Blender(FlowTheme):
                 title=node_title,
                 color=node_color,
                 pen_w=2,
-                font=QFont('K2D', 20, QFont.Bold, True),
+                font=QFont('Segoe UI', 15, QFont.Bold, True),
                 node_item_bounding_rect=node_item_bounding_rect
             )
 
@@ -727,28 +729,30 @@ class FlowTheme_Blender(FlowTheme):
 
         color = QColor('#FFFFFF') if type_ == 'exec' else node_color
 
-        if type_ == 'exec':
-            if connected or \
-                    option.state & QStyle.State_MouseOver:  # also fill when mouse hovers
-                brush = QBrush(QColor(255, 255, 255, 100))
-                painter.setBrush(brush)
-            else:
-                painter.setBrush(Qt.NoBrush)
-        elif type_ == 'data':
-            if connected or \
-                    option.state & QStyle.State_MouseOver:  # also fill when mouse hovers
-                r = node_color.red()
-                g = node_color.green()
-                b = node_color.blue()
-                brush = QBrush(QColor(r, g, b, 100))
-                painter.setBrush(brush)
-            else:
-                painter.setBrush(Qt.NoBrush)
+        painter.setBrush(QBrush(color))
+
+        # if type_ == 'exec':
+        #     if connected or \
+        #             option.state & QStyle.State_MouseOver:  # also fill when mouse hovers
+        #         brush = QBrush(QColor(255, 255, 255, 100))
+        #         painter.setBrush(brush)
+        #     else:
+        #         painter.setBrush(Qt.NoBrush)
+        # elif type_ == 'data':
+        #     if connected or \
+        #             option.state & QStyle.State_MouseOver:  # also fill when mouse hovers
+        #         r = node_color.red()
+        #         g = node_color.green()
+        #         b = node_color.blue()
+        #         brush = QBrush(QColor(r, g, b, 100))
+        #         painter.setBrush(brush)
+        #     else:
+        #         painter.setBrush(Qt.NoBrush)
 
         pen = QPen(color)
         pen.setWidth(1)
         painter.setPen(pen)
-        painter.drawEllipse(rect.marginsRemoved(QMarginsF(3, 3, 3, 3)))
+        painter.drawEllipse(rect.marginsRemoved(QMarginsF(2, 2, 2, 2)))
 
     def draw_NI_normal(self, node, selected: bool, hovered: bool,
                        painter, c, w, h, bounding_rect, title_rect):
@@ -767,17 +771,24 @@ class FlowTheme_Blender(FlowTheme):
         gradient.setColorAt(1, background_color)
 
         painter.setBrush(gradient)
-        painter.setPen(QPen(c.darker()))
-        painter.drawRoundedRect(bounding_rect, 7, 7)
+        painter.setPen(
+            Qt.NoPen
+            if not selected else
+            QPen(QColor(200, 200, 200))
+        )
+        painter.drawRoundedRect(bounding_rect, self.corner_radius_normal, self.corner_radius_normal)
 
     def draw_NI_small(self, node, selected: bool, hovered: bool,
                       painter, c, w, h, bounding_rect, background_color=None):
 
         background_color = QColor('#212429')
-        c_s = 15
         painter.setBrush(self.interpolate_color(c, background_color, 0.97))
-        painter.setPen(QPen(c))
-        painter.drawRoundedRect(bounding_rect, c_s, c_s)
+        painter.setPen(
+            QPen(c)
+            if not selected else
+            QPen(QColor(200, 200, 200))
+        )
+        painter.drawRoundedRect(bounding_rect, self.corner_radius_small, self.corner_radius_small)
 
 
 class FlowTheme_Simple(FlowTheme):
