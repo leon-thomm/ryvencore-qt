@@ -46,5 +46,5 @@ setup(
         "Programming Language :: Python :: 3.9",
     ],
     python_requires='>=3.6',
-    install_requires=['PySide2', 'QtPy'],
+    install_requires=['PySide2', 'QtPy', 'waiting'],
 )
