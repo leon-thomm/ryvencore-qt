@@ -15,7 +15,8 @@ PlaceNodeWidget {
     background: transparent;
 }
 QScrollArea {
-    border-radius: 8px;
+    border: 1px solid grey;
+    border-radius: 0px;
 }
 NodeWidget {
 
