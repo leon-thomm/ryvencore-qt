@@ -53,9 +53,10 @@ class NodeInput(NodePort):
 
     def connected(self):
         super().connected()
-        self.val = self.connections[0].get_val()
-        if self.type_ == 'data' and self.flow_alg_data_mode():
-            self.node.update(self.node.inputs.index(self))
+        if self.type_ == 'data':
+            self.val = self.connections[0].get_val()
+            if self.flow_alg_data_mode():
+                self.node.update(self.node.inputs.index(self))
 
     def disconnected(self):
         super().disconnected()

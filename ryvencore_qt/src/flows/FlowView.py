@@ -408,18 +408,24 @@ class FlowView(GUIBase, QGraphicsView):
 
     def wheelEvent(self, event):
 
-        self._zoom_data['viewport pos'] = event.posF()
-        self._zoom_data['scene pos'] = pointF_mapped(self.mapToScene(event.pos()), event.posF())
+        if event.modifiers() & Qt.ControlModifier:
+            event.accept()
 
-        self._zoom_data['delta'] += event.delta()
+            self._zoom_data['viewport pos'] = event.posF()
+            self._zoom_data['scene pos'] = pointF_mapped(self.mapToScene(event.pos()), event.posF())
 
-        if self._zoom_data['delta'] * event.delta() < 0:
-            self._zoom_data['delta'] = event.delta()
+            self._zoom_data['delta'] += event.delta()
 
-        anim = QTimeLine(100, self)
-        anim.setUpdateInterval(10)
-        anim.valueChanged.connect(self._scaling_time)
-        anim.start()
+            if self._zoom_data['delta'] * event.delta() < 0:
+                self._zoom_data['delta'] = event.delta()
+
+            anim = QTimeLine(100, self)
+            anim.setUpdateInterval(10)
+            anim.valueChanged.connect(self._scaling_time)
+            anim.start()
+
+        else:
+            super().wheelEvent(event)
 
     def _scaling_time(self, x):
         delta = self._zoom_data['delta'] / 8
