@@ -1,36 +1,124 @@
+"""
+While standard flow execution (data-flow or exec-flow) is implemented inside the classes (like Node),
+this module provides special FlowExecutors which take over most of the work and implement more
+sophisticated and optimized flow execution.
+"""
 
 
-class DataFlowOptimized:
+class FlowExecutor:
     """
-    A special flow executor with implements some node functions to optimise flow execution.
+    Base class for special flow execution algorithms.
+    """
+
+    def __init__(self, flow):
+        self.flow = flow
+
+    # Node.update() =>
+    def update_node(self, node, inp):
+        pass
+
+    # Node.input() =>
+    def input(self, node, index):
+        pass
+
+    # Node.set_output_val() =>
+    def set_output_val(self, node, index, val):
+        pass
+
+    # Node.exec_output() =>
+    def exec_output(self, node, index):
+        pass
+
+
+class DataFlowOptimized(FlowExecutor):
+    """
+    A special flow executor which implements some node functions to optimise flow execution.
     Whenever a new execution is invoked somewhere (some node or output is updated), it
-    analyses the graph and create a few data structure to reverse engineer how many input
-    updates every node possibly receives in this execution. A node's outputs are then only
-    propagated when no input can still received new data from a predecessor node.
+    analyses the graph's connected component (of successors) where the execution was invoked
+    and creates a few data structures to reverse engineer how many input
+    updates every node possibly receives in this execution. A node's outputs are
+    propagated once no input can still receive new data from a predecessor node.
     Therefore, while a node gets updated every time an input receives some data,
     every OUTPUT is only updated ONCE.
     This implies that every connection is activated at most once in an execution.
     This can result in asymptotic speedup in large data flows compared to normal data flow
     execution where any two executed branches which merge again in the future result in two
     complete executions of everything that comes after the merge, which quickly produces
-    performance issues.
+    exponential performance issues.
     """
 
     def __init__(self, flow):
-        self.flow = flow
+        super().__init__(flow)
+
         self.output_updated = {}
         self.waiting_count = {}
+        self.node_waiting = {}
         self.num_conns_from_predecessors = None
         self.last_execution_root = None     # for reuse when a same execution is invoked many times consecutively
         self.execution_root = None          # can be Node or NodeOutput
         self.execution_root_node = None     # the updated Node or the updated NodeOutput's Node
         self.flow_changed = True
 
-    def node_output_added(self, out):
-        self.output_updated[out] = False
+    # NODE FUNCTIONS
 
-    def node_output_removed(self, out):
-        del self.output_updated[out]
+    # Node.update() =>
+    def update_node(self, node, inp=-1):
+        if self.execution_root_node is None:  # execution starter!
+            self.start_execution(root_node=node)
+            self.invoke_node_update_event(node, inp)
+            self.propagate_outputs(node)
+            self.stop_execution()
+        else:
+            self.invoke_node_update_event(node, inp)
+
+    # Node.input() =>
+    def input(self, node, index):
+        return node.inputs[index].get_val()
+
+    # Node.set_output_val() =>
+    def set_output_val(self, node, index, val):
+        out = node.outputs[index]
+
+        if self.execution_root_node is None:  # execution starter!
+            self.start_execution(root_output=out)
+
+            out.val = val
+            self.output_updated[out] = True
+            self.propagate_output(out)
+
+            self.stop_execution()
+
+        else:
+
+            if not self.node_waiting[out.node]:
+                # the output's node might not be part of the analyzed graph!
+                # in this case we immediately push the value
+                # there are other possible solutions to this, including running
+                # a new execution analysis of this graph here
+
+                out.set_val(val)
+
+            else:
+                out.val = val
+                self.output_updated[out] = True
+
+
+    # Node.exec_output() =>
+    def exec_output(self, node, index):
+        out = node.outputs[index]
+
+        if self.execution_root_node is None:  # execution starter!
+            self.start_execution(root_output=out)
+
+            self.output_updated[out] = True
+            self.propagate_output(out)
+
+            self.stop_execution()
+
+        else:
+            self.output_updated[out] = True
+
+    # ----------------------------------------------------------
 
     def start_execution(self, root_node=None, root_output=None):
 
@@ -95,6 +183,8 @@ class DataFlowOptimized:
                 successors.add(s)
             visited[n] = True
 
+        self.node_waiting = visited
+
         return self.num_conns_from_predecessors.copy()
 
     def invoke_node_update_event(self, node, inp):
@@ -102,55 +192,6 @@ class DataFlowOptimized:
             node.update_event(inp)
         except Exception:
             pass
-
-
-    # ----------------------------------------------------------
-
-    # NODE FUNCTIONS
-
-    # Node.update() =>
-    def update_node(self, node, inp=-1):
-        if self.execution_root_node is None:  # execution starter!
-            self.start_execution(root_node=node)
-            self.invoke_node_update_event(node, inp)
-            self.propagate_outputs(node)
-            self.stop_execution()
-        else:
-            self.invoke_node_update_event(node, inp)
-
-    # Node.set_output_val() =>
-    def set_output_val(self, node, index, val):
-        out = node.outputs[index]
-
-        if self.execution_root_node is None:  # execution starter!
-            self.start_execution(root_output=out)
-
-            out.val = val
-            self.output_updated[out] = True
-            self.propagate_output(out)
-
-            self.stop_execution()
-
-        else:
-            out.val = val
-            self.output_updated[out] = True
-
-    # Node.exec_output() =>
-    def exec_output(self, node, index):
-        out = node.outputs[index]
-
-        if self.execution_root_node is None:  # execution starter!
-            self.start_execution(root_output=out)
-
-            self.output_updated[out] = True
-            self.propagate_output(out)
-
-            self.stop_execution()
-
-        else:
-            self.output_updated[out] = True
-
-    # ----------------------------------------------------------
 
     def decrease_wait(self, node):
         """decreases the wait count of the node;

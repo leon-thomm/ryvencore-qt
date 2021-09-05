@@ -28,6 +28,8 @@ class Node(Base):
 
     identifier_prefix: str = None  # becomes part of identifier if set
 
+    # INITIALIZATION ---------------------------------------------------------------------------------------------------
+
     @classmethod
     def build_identifier(cls):
 
@@ -41,7 +43,6 @@ class Node(Base):
         for ic in cls.identifier_comp:
             cls.identifier_comp.remove(ic)
             cls.identifier_comp.append(full_prefix + ic)
-
 
     def __init__(self, params):
         Base.__init__(self)
@@ -93,7 +94,6 @@ class Node(Base):
                 InfoMsgs.write_err(
                     'Exception while setting data in', self.title, 'node:', e, ' (was this intended?)')
 
-
     def setup_ports(self, inputs_data=None, outputs_data=None):
 
         if not inputs_data and not outputs_data:
@@ -127,7 +127,23 @@ class Node(Base):
             for out in outputs_data:
                 self.create_output(out['label'], out['type'])
 
-    # -----------------------------------------------------------------------------------------------------------------
+    def prepare_placement(self):
+        """Called from Flow when the nodes gets added"""
+
+        self.enable_loggers()
+        self.place_event()
+
+    def prepare_removal(self):
+        """Called from Flow when the node gets removed"""
+
+        self.remove_event()
+        self.disable_loggers()
+
+    # ALGORITHM --------------------------------------------------------------------------------------------------------
+
+    # notice that all the below methods check whether the flow currently 'runs with an executor', which means
+    # the flow is running in a special execution mode, in which case all the algorithm-related methods below are
+    # handled by the according executor
 
     def update(self, inp=-1):  # , output_called=-1):
         """'Activates' the node, causing an update_event(); prints an exception if something crashed, but prevents
@@ -140,19 +156,13 @@ class Node(Base):
         InfoMsgs.write('update in', self.title, 'node on input', inp)
 
         # invoke update_event
-        if self.flow_in_data_opt_mode():
-            self.flow.executor_data_opt.update_node(self, inp)
+        if self.flow.running_with_executor:
+            self.flow.executor.update_node(self, inp)
         else:
             try:
                 self.update_event(inp)
             except Exception as e:
                 InfoMsgs.write_err('EXCEPTION in', self.title, '\n', traceback.format_exc())
-
-    # OVERRIDE
-    def update_event(self, inp=-1):
-        """Gets called when an input received a signal or some node requested data of an output in exec mode"""
-
-        pass
 
     def input(self, index: int):
         """Returns the value of a data input.
@@ -160,23 +170,34 @@ class Node(Base):
         If not, the value of the widget is used."""
 
         InfoMsgs.write('input called in', self.title, 'Node:', index)
-        return self.inputs[index].get_val()
+
+        if self.flow.running_with_executor:
+            return self.flow.executor.input(self, index)
+        else:
+            return self.inputs[index].get_val()
 
     def exec_output(self, index: int):
         """Executes an exec output, causing activation of all connections"""
-        if self.flow_in_data_opt_mode():
-            self.flow.executor_data_opt.exec_output(self, index)
+        if self.flow.running_with_executor:
+            self.flow.executor.exec_output(self, index)
         else:
             self.outputs[index].exec()
 
     def set_output_val(self, index, val):
         """Sets the value of a data output causing activation of all connections in data mode"""
-        if self.flow_in_data_opt_mode():
-            self.flow.executor_data_opt.set_output_val(self, index, val)
+        if self.flow.running_with_executor:
+            self.flow.executor.set_output_val(self, index, val)
         else:
             self.outputs[index].set_val(val)
 
-    # OVERRIDE
+    # EVENTS -----------------------------------------------------------------------------------------------------------
+    # these methods get implemented by node implementations
+
+    def update_event(self, inp=-1):
+        """Gets called when an input received a signal or some node requested data of an output in exec mode"""
+
+        pass
+
     def place_event(self):
         """
         place_event() is called once the node object has been fully initialized and placed in the flow.
@@ -190,7 +211,6 @@ class Node(Base):
 
         pass
 
-    # OVERRIDE
     def view_place_event(self):
         """
         view_place_event() is called once all GUI for the node has been created by the frontend.
@@ -200,32 +220,27 @@ class Node(Base):
 
         pass
 
-    # OVERRIDE
     def remove_event(self):
         """Called when the node is removed from the flow; useful for stopping threads and timers etc."""
 
         pass
 
-    # OVERRIDE
     def _initialized(self):  # not used currently
 
         """Called once all the node's components (including inputs, outputs) have been initialized"""
 
         pass
 
-    # OVERRIDE
     def additional_data(self) -> dict:
         """Convenience method for wrappers for saving some std data for all nodes in an editor.
         get_state()/set_state() then stays clean for all specific node subclasses"""
 
         return {}
 
-    # OVERRIDE
     def load_custom_data(self, data: dict):
         """For loading the data returned by custom_data()"""
         pass
 
-    # OVERRIDE
     def get_state(self) -> dict:
         """
         Used to store node-specific custom data that needs to be reloaded when loading a project or pasting copied
@@ -234,20 +249,15 @@ class Node(Base):
         """
         return {}
 
-    # OVERRIDE
     def set_state(self, data: dict):
         """
         Used for reloading node-specific custom data which has been previously returned by get_state()
         """
         pass
 
-    # -----------------------------------------------------------------------------------------------------------------
-
-    # API
-
+    # API --------------------------------------------------------------------------------------------------------------
 
     #   LOGGING
-
 
     def new_logger(self, title) -> Logger:
         """Requesting a new custom Log"""
@@ -270,9 +280,7 @@ class Node(Base):
             logger.enable()
             # logger.enabled = True
 
-
     #   PORTS
-
 
     def create_input(self, label: str = '', type_: str = 'data', add_data={}, insert: int = None):
         """Creates and adds a new input at index pos"""
@@ -289,7 +297,6 @@ class Node(Base):
             self.inputs.insert(insert, inp)
         else:
             self.inputs.append(inp)
-
 
     def create_input_dt(self, dtype: DType, label: str = '', add_data={}, insert: int = None):
         """Creates and adds a new data input with a DType"""
@@ -308,7 +315,6 @@ class Node(Base):
         else:
             self.inputs.append(inp)
 
-
     def delete_input(self, index: int):
         """Disconnects and removes input"""
 
@@ -319,7 +325,6 @@ class Node(Base):
             self.flow.connect_nodes(c.out, inp)
 
         self.inputs.remove(inp)
-
 
     def create_output(self, label: str = '', type_: str = 'data', insert: int = None):
         """Creates and adds a new output"""
@@ -335,7 +340,6 @@ class Node(Base):
         else:
             self.outputs.append(out)
 
-
     def delete_output(self, index: int):
         """Disconnects and removes output"""
 
@@ -347,9 +351,7 @@ class Node(Base):
 
         self.outputs.remove(out)
 
-
     #   VARIABLES
-
 
     def get_vars_manager(self):
         """Returns a ref to the script's variables manager"""
@@ -377,23 +379,7 @@ class Node(Base):
 
         self.get_vars_manager().unregister_receiver(self, name, method)
 
-
     # -----------------------------------------------------------------------------------------------------------------
-
-
-    def prepare_placement(self):
-        """Called from Flow when the nodes gets added"""
-
-        self.enable_loggers()
-        self.place_event()
-
-
-    def prepare_removal(self):
-        """Called from Flow when the node gets removed"""
-
-        self.remove_event()
-        self.disable_loggers()
-
 
     def is_active(self):
         for i in self.inputs:
@@ -404,10 +390,8 @@ class Node(Base):
                 return True
         return False
 
-
     def flow_in_data_opt_mode(self):
         return self.flow.alg_mode == FlowAlg.DATA_OPT
-
 
     def data(self) -> dict:
         """
