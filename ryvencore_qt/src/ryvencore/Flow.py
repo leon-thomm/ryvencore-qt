@@ -1,6 +1,6 @@
 from .Base import Base
 from .Connection import Connection
-from .FlowExecutor import DataFlowOptimized
+from .FlowExecutor import DataFlowOptimized, FlowExecutor
 from .Node import Node
 from .NodePort import NodePort
 from .RC import FlowAlg, PortObjPos, CLASSES
@@ -19,9 +19,14 @@ class Flow(Base):
         self.nodes: [Node] = []
         self.connections: [Connection] = []
 
-        self.alg_mode = FlowAlg.DATA_OPT
+        self.alg_mode = FlowAlg.DATA
 
+        # special executors
         self.executor_data_opt = DataFlowOptimized(self)
+        self.executor: FlowExecutor = None
+        self.running_with_executor = False
+        self._update_running_with_executor()
+        #   additional data structures for executors
         self.node_successors = {}
 
 
@@ -237,6 +242,17 @@ class Flow(Base):
         """Sets the algorithm mode of the flow, possible values are 'data' and 'exec'"""
 
         self.alg_mode = FlowAlg.from_str(mode)
+        self._update_running_with_executor()
+
+
+    def _update_running_with_executor(self):
+        self.running_with_executor = self.alg_mode in (FlowAlg.DATA_OPT, )
+
+        if self.running_with_executor:
+            if self.alg_mode == FlowAlg.DATA_OPT:
+                self.executor = self.executor_data_opt
+        else:
+            self.executor = None
 
 
     def flow_changed(self):

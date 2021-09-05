@@ -53,7 +53,6 @@ class NodeWidget(QWidget):
 
 
     def mousePressEvent(self, event):
-        print('emitting')
         self.custom_focused_from_inside.emit()
 
     def mouseReleaseEvent(self, event):
