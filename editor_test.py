@@ -101,7 +101,7 @@ if __name__ == "__main__":
 
     # creating the session, registering, creating script
     session = rc.Session()
-    session.design.set_flow_theme(name='pure dark')
+    session.design.set_flow_theme(name='pure light')
     session.register_nodes([PrintNode, RandNode])
     session.load(example_project)
     script = session.create_script('hello world', flow_view_size=[8000, 5000])
