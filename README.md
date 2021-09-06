@@ -61,12 +61,14 @@ You can register and unregister nodes at any time. Registered nodes can be place
 my_session.register_nodes( [ <your_nodes> ] )
 ```
 
+<!--
 #### macros / subgraphs  
 You can define *macros* which have their own flow plus input and output node, which get registered as nodes themselves, just like this
 
 ![](./docs/img/macro.png)
 Macros are like normal scripts plus input and output node
 ![](./docs/img/macro2.png)
+-->
 
 #### right click operations system for nodes  
 which can be edited through the API at any time
@@ -134,8 +136,10 @@ class MyNode(rc.Node):
         self.my_logger.log(logging.INFO, f'received msg: {msgs[-1]}')
 ```
 
+<!--
 #### threading compatibility  
 All communication between frontend (`ryvencore-qt`) and backend (`ryvencore`) is based on Qt signals. Therefore, there exists rudimentary threading compatibility, i.e. you can keep your session object in a separate thread to improve concurrency and prevent the backend from being slown down signicantly by the frontend, and all changes you perform directly on the backend are automatically noticed by the frontend. While this is currently extremely experimental and far from production ready, it opens the door to the world of realtime data processing and first successful tests have been made.
+-->
 
 ### Usage
 
