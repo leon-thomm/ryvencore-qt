@@ -4,6 +4,7 @@ from .FlowExecutor import DataFlowOptimized, FlowExecutor
 from .Node import Node
 from .NodePort import NodePort
 from .RC import FlowAlg, PortObjPos, CLASSES
+from .tools import node_from_identifier
 
 
 class Flow(Base):
@@ -63,25 +64,10 @@ class Flow(Base):
         for n_c in nodes_data:
 
             # find class
-            node_class = None
-
-            for nc in self.session.nodes + self.session.invisible_nodes:
-                if n_c['identifier'] == nc.identifier:
-                    node_class = nc
-                    break
-            else:  # couldn't find a node with this identifier => search for identifier_comp
-                for nc in self.session.nodes + self.session.invisible_nodes:
-                    if n_c['identifier'] in nc.identifier_comp:
-                        node_class = nc
-                        break
-                else:
-                    raise Exception(f'could not find node class with identifier {n_c["identifier"]}. '
-                                    f'if you changed your node\'s class name, make sure to add the old '
-                                    f'identifier to the identifier_comp list attribute to provide '
-                                    f'backwards compatibility.')
-
-            if node_class is None:
-                raise Exception(f"Couldn't find a registered node with identifier {n_c['identifier']}.")
+            node_class = node_from_identifier(
+                n_c['identifier'],
+                self.session.nodes + self.session.invisible_nodes
+            )
 
             node = self.create_node(node_class, n_c)
             nodes.append(node)

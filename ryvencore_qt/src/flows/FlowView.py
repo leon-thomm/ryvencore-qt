@@ -5,6 +5,7 @@ from qtpy.QtGui import QPainter, QPen, QColor, QKeySequence, QTabletEvent, QImag
 from qtpy.QtWidgets import QGraphicsView, QGraphicsScene, QShortcut, QMenu, QGraphicsItem, QUndoStack
 
 from ..GUIBase import GUIBase
+from ..ryvencore.tools import node_from_identifier
 from ..tools import *
 from ..ryvencore.Flow import Flow
 from .FlowCommands import MoveComponents_Command, PlaceNode_Command, \
@@ -13,7 +14,7 @@ from .FlowViewProxyWidget import FlowViewProxyWidget
 from .FlowViewStylusModesWidget import FlowViewStylusModesWidget
 from ..ryvencore.Node import Node
 from ..ryvencore.NodePort import NodePort
-from ryvencore_qt.src.flows.node_selection_widget.PlaceNodeWidget import PlaceNodeWidget
+from .node_list_widget.NodeListWidget import NodeListWidget
 from .nodes.NodeItem import NodeItem
 from .nodes.PortItem import PortItemPin, PortItem
 from ..ryvencore.Connection import Connection, DataConnection
@@ -129,13 +130,19 @@ class FlowView(GUIBase, QGraphicsView):
         self.scene_rect_width = self.mapFromScene(self.sceneRect()).boundingRect().width()
         self.scene_rect_height = self.mapFromScene(self.sceneRect()).boundingRect().height()
 
-        # PLACE NODE WIDGET
-        self._place_node_widget_proxy = FlowViewProxyWidget(self)
-        self._place_node_widget_proxy.setZValue(1000)
-        self._place_node_widget = PlaceNodeWidget(self, self.session.nodes)
-        self._place_node_widget_proxy.setWidget(self._place_node_widget)
-        self.scene().addItem(self._place_node_widget_proxy)
-        self.hide_place_node_widget()
+        # NODE LIST WIDGET
+        self._node_list_widget = NodeListWidget(self.session)
+        self._node_list_widget.setMinimumWidth(260)
+        self._node_list_widget.setFixedHeight(300)
+        self._node_list_widget.escaped.connect(self.hide_node_list_widget)
+        self._node_list_widget.node_chosen.connect(self.create_node__cmd)
+
+        self._node_list_widget_proxy = FlowViewProxyWidget(self)
+        self._node_list_widget_proxy.setZValue(1000)
+        self._node_list_widget_proxy.setWidget(self._node_list_widget)
+        self.scene().addItem(self._node_list_widget_proxy)
+
+        self.hide_node_list_widget()
 
         # ZOOM WIDGET
         # self._zoom_proxy = FlowViewProxyWidget(self)
@@ -235,7 +242,7 @@ class FlowView(GUIBase, QGraphicsView):
         redo_shortcut.activated.connect(self._redo_activated)
 
     def _theme_changed(self, t):
-        self._place_node_widget.setStyleSheet(self.session.design.node_selection_stylesheet)
+        self._node_list_widget.setStyleSheet(self.session.design.node_selection_stylesheet)
         for n, ni in self.node_items.items():
             ni.widget.rebuild_ui()
 
@@ -301,8 +308,8 @@ class FlowView(GUIBase, QGraphicsView):
             return
 
         if event.button() == Qt.LeftButton:
-            if self._place_node_widget_proxy.isVisible():
-                self.hide_place_node_widget()
+            if self._node_list_widget_proxy.isVisible():
+                self.hide_node_list_widget()
 
         elif event.button() == Qt.RightButton:
             self._right_mouse_pressed_in_flow = True
@@ -349,7 +356,6 @@ class FlowView(GUIBase, QGraphicsView):
         elif event.button() == Qt.RightButton:
             self._right_mouse_pressed_in_flow = False
             if self._mouse_press_pos == self._last_mouse_move_pos:
-                self._place_node_widget.reset_list()
                 self.show_place_node_widget(event.pos())
                 return
 
@@ -546,30 +552,26 @@ class FlowView(GUIBase, QGraphicsView):
     """
 
     def dragEnterEvent(self, event):
-        if event.mimeData().hasFormat('text/plain'):
+        if event.mimeData().hasFormat('application/json'):
             event.acceptProposedAction()
 
     def dragMoveEvent(self, event):
-        if event.mimeData().hasFormat('text/plain'):
+        if event.mimeData().hasFormat('application/json'):
             event.acceptProposedAction()
 
-    # def dropEvent(self, event):
-    #     text = event.mimeData().text()
-    #     item: QListWidgetItem = event.mimeData()
-    #     InfoMsgs.write('drop received in Flow:', text)
-    #
-    #     j_obj = None
-    #     type = ''
-    #     try:
-    #         j_obj = json.loads(text)
-    #         type = j_obj['type']
-    #     except Exception:
-    #         return
-    #
-    #     if type == 'variable':
-    #         self.show_node_choice_widget(event.pos(),  # only show get_var and set_var nodes
-    #                                      [n for n in self.session.nodes if find_type_in_object(n, GetVar_Node) or
-    #                                       find_type_in_object(n, SetVar_Node)])
+    def dropEvent(self, event):
+
+        try:
+            text = str(event.mimeData().data('application/json'), 'utf-8')
+            data: dict = json.loads(text)
+
+            if data['type'] == 'node':
+                self._node_place_pos = event.posF()
+                self.create_node__cmd(
+                    node_from_identifier(data['node identifier'], self.session.nodes)
+                )
+        except Exception:
+            pass
 
     # PAINTING
     def drawBackground(self, painter, rect):
@@ -720,27 +722,27 @@ class FlowView(GUIBase, QGraphicsView):
         self._node_place_pos = self.mapToScene(pos)
         dialog_pos = QPoint(pos.x() + 1, pos.y() + 1)
 
-        # ensure that the node_selection_widget stays in the viewport
-        if dialog_pos.x() + self._place_node_widget.width() / self._total_scale_div > self.viewport().width():
+        # ensure that the node_list_widget stays in the viewport
+        if dialog_pos.x() + self._node_list_widget.width() / self._total_scale_div > self.viewport().width():
             dialog_pos.setX(dialog_pos.x() - (
-                    dialog_pos.x() + self._place_node_widget.width() / self._total_scale_div - self.viewport().width()))
-        if dialog_pos.y() + self._place_node_widget.height() / self._total_scale_div > self.viewport().height():
+                    dialog_pos.x() + self._node_list_widget.width() / self._total_scale_div - self.viewport().width()))
+        if dialog_pos.y() + self._node_list_widget.height() / self._total_scale_div > self.viewport().height():
             dialog_pos.setY(dialog_pos.y() - (
-                    dialog_pos.y() + self._place_node_widget.height() / self._total_scale_div - self.viewport().height()))
+                    dialog_pos.y() + self._node_list_widget.height() / self._total_scale_div - self.viewport().height()))
         dialog_pos = self.mapToScene(dialog_pos)
 
         # open nodes dialog
-        # the dialog emits 'node_chosen' which is connected to self.place_node,
-        # so this all continues at self.place_node below
-        self._place_node_widget.update_list(nodes if nodes is not None else self.session.nodes)
-        self._place_node_widget.update_view()
-        self._place_node_widget_proxy.setPos(dialog_pos)
-        self._place_node_widget_proxy.show()
-        self._place_node_widget.refocus()
+        # the dialog emits 'node_chosen' which is connected to self.place_node__cmd
+        self._node_list_widget.update_list(
+            nodes if nodes is not None else self.session.nodes
+        )
+        self._node_list_widget_proxy.setPos(dialog_pos)
+        self._node_list_widget_proxy.show()
+        self._node_list_widget.refocus()
 
-    def hide_place_node_widget(self):
-        self._place_node_widget_proxy.hide()
-        self._place_node_widget.clearFocus()
+    def hide_node_list_widget(self):
+        self._node_list_widget_proxy.hide()
+        self._node_list_widget.clearFocus()
         self._auto_connection_pin = None
 
     def _place_new_node_by_shortcut(self):  # Shift+P
@@ -757,7 +759,6 @@ class FlowView(GUIBase, QGraphicsView):
             point_in_viewport = QPointF(viewport_x, viewport_y).toPoint()
             self._node_place_pos = self.mapToScene(point_in_viewport)
 
-        self._place_node_widget.reset_list()
         self.show_place_node_widget(point_in_viewport)
 
     # PAN

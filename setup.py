@@ -22,7 +22,7 @@ setup(
         'ryvencore_qt.src',
 
         'ryvencore_qt.src.flows',
-        'ryvencore_qt.src.flows.node_selection_widget',
+        'ryvencore_qt.src.flows.node_list_widget',
         'ryvencore_qt.src.flows.connections',
         'ryvencore_qt.src.flows.drawings',
         'ryvencore_qt.src.flows.nodes',

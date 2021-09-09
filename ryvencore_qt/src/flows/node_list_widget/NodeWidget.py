@@ -1,6 +1,8 @@
+import json
+
 from qtpy.QtWidgets import QLineEdit, QWidget, QLabel, QGridLayout, QHBoxLayout, QSpacerItem, QSizePolicy, QStyleOption, QStyle
-from qtpy.QtGui import QFont, QPainter, QColor
-from qtpy.QtCore import Signal
+from qtpy.QtGui import QFont, QPainter, QColor, QDrag
+from qtpy.QtCore import Signal, Qt, QMimeData
 
 
 class NodeWidget(QWidget):
@@ -13,6 +15,8 @@ class NodeWidget(QWidget):
 
         self.custom_focused = False
         self.node = node
+
+        self.left_mouse_pressed_on_me = False
 
         # UI
         main_layout = QGridLayout()
@@ -54,8 +58,24 @@ class NodeWidget(QWidget):
 
     def mousePressEvent(self, event):
         self.custom_focused_from_inside.emit()
+        if event.button() == Qt.LeftButton:
+            self.left_mouse_pressed_on_me = True
+
+    def mouseMoveEvent(self, event):
+        if self.left_mouse_pressed_on_me:
+            drag = QDrag(self)
+            mime_data = QMimeData()
+            mime_data.setData('application/json', bytes(json.dumps(
+                {
+                    'type': 'node',
+                    'node identifier': self.node.identifier,
+                }
+            ), encoding='utf-8'))
+            drag.setMimeData(mime_data)
+            drop_action = drag.exec_()
 
     def mouseReleaseEvent(self, event):
+        self.left_mouse_pressed_on_me = False
         if self.geometry().contains(self.mapToParent(event.pos())):
             self.chosen.emit()
 

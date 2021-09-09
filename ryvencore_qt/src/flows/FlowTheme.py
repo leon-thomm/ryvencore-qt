@@ -11,11 +11,8 @@ class FlowTheme:
     type_ = 'dark'
 
     node_selection_stylesheet__base = '''
-PlaceNodeWidget {
-    background: transparent;
-}
 QScrollArea {
-    border: 1px solid grey;
+    border: 0px solid grey;
     border-radius: 0px;
 }
 NodeWidget {
