@@ -566,7 +566,7 @@ class FlowView(GUIBase, QGraphicsView):
             data: dict = json.loads(text)
 
             if data['type'] == 'node':
-                self._node_place_pos = event.posF()
+                self._node_place_pos = self.mapToScene(event.pos())
                 self.create_node__cmd(
                     node_from_identifier(data['node identifier'], self.session.nodes)
                 )

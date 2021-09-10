@@ -1564,7 +1564,7 @@ class FlowTheme_Fusion(FlowTheme):
         else:
             draw_rect = rect.marginsRemoved(QMarginsF(3, 3, 3, 3))
             path = QPainterPath(draw_rect.topLeft())
-            path.lineTo(QPointF(draw_rect.right(), 0))
+            path.lineTo(QPointF(draw_rect.right(), draw_rect.center().y()))
             path.lineTo(draw_rect.bottomLeft())
             path.closeSubpath()
 
@@ -1575,23 +1575,22 @@ class FlowTheme_Fusion(FlowTheme):
                        painter, c, w, h, bounding_rect: QRectF, title_rect):
 
         pen = QPen(c)
-        col1 = self.node_normal_bg_col
+        col_top = self.node_normal_bg_col.lighter(105)
+        col_bottom = self.node_normal_bg_col
 
         if not selected:
             pen.setWidthF(1)
         else:
             pen.setWidthF(2.5)
-            col1 = QColor(255, 255, 255)
-
-        col2 = col1.lighter()
+            col_bottom = QColor(255, 255, 255)
 
         header_height = self.get_header_rect(w, h, title_rect).height()
         header_fraction = header_height / bounding_rect.height()
 
         gradient = QLinearGradient(bounding_rect.topLeft(), bounding_rect.bottomLeft())
-        gradient.setColorAt(0, col1)
-        gradient.setColorAt(header_fraction, self.interpolate_color(col1, col2, 0.7))
-        gradient.setColorAt(1, col2)
+        gradient.setColorAt(0, col_top)
+        gradient.setColorAt(header_fraction, self.interpolate_color(col_top, col_bottom, 0.7))
+        gradient.setColorAt(1, col_bottom)
 
         painter.setBrush(QBrush(gradient))
         painter.setPen(pen)

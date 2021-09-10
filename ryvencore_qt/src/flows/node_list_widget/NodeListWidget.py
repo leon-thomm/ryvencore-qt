@@ -44,11 +44,14 @@ class NodeListWidget(QWidget):
         self.list_scroll_area.setVerticalScrollBarPolicy(Qt.ScrollBarAsNeeded)
         self.list_scroll_area.setHorizontalScrollBarPolicy(Qt.ScrollBarAsNeeded)
         self.list_scroll_area.setWidgetResizable(True)
+        self.list_scroll_area.setContentsMargins(0, 0, 0, 0)
 
         self.list_scroll_area_widget = QWidget()
+        self.list_scroll_area_widget.setContentsMargins(0, 0, 0, 0)
         self.list_scroll_area.setWidget(self.list_scroll_area_widget)
 
         self.list_layout = QVBoxLayout()
+        self.list_layout.setContentsMargins(0, 0, 0, 0)
         self.list_layout.setAlignment(Qt.AlignTop)
         self.list_scroll_area_widget.setLayout(self.list_layout)
 
