@@ -1091,8 +1091,8 @@ class FlowTheme_PureDark(FlowTheme):
 
     node_item_shadow_color = QColor('#101010')
 
-    node_ext_background_color = QColor('#0C1116')
-    node_small_background_color = QColor('#363c41')
+    node_normal_bg_col = QColor('#0C1116')
+    node_small_bg_col = QColor('#363c41')
     node_title_color = QColor('#ffffff')
     port_pin_pen_color = QColor('#ffffff')
 
@@ -1108,9 +1108,9 @@ class FlowTheme_PureDark(FlowTheme):
 
         for k, v in imported.items():
             if k == 'extended node background color':
-                self.node_ext_background_color = self.hex_to_col(v)
+                self.node_normal_bg_col = self.hex_to_col(v)
             elif k == 'small node background color':
-                self.node_small_background_color = self.hex_to_col(v)
+                self.node_small_bg_col = self.hex_to_col(v)
             elif k == 'node title color':
                 self.node_title_color = self.hex_to_col(v)
             elif k == 'port pin pen color':
@@ -1163,9 +1163,9 @@ class FlowTheme_PureDark(FlowTheme):
                        painter, c, w, h, bounding_rect: QRectF, title_rect):
 
         if selected:
-            background_color = self.interpolate_color(self.node_ext_background_color, c.darker(), 0.18)
+            background_color = self.interpolate_color(self.node_normal_bg_col, c.darker(), 0.18)
         else:
-            background_color = self.node_ext_background_color
+            background_color = self.node_normal_bg_col
 
         header_height = self.get_header_rect(w, h, title_rect).height()
 
@@ -1187,7 +1187,7 @@ class FlowTheme_PureDark(FlowTheme):
     def draw_NI_small(self, node, selected: bool, hovered: bool,
                       painter, c, w, h, bounding_rect, background_color=None):
 
-        painter.setBrush(QBrush(self.node_small_background_color))
+        painter.setBrush(QBrush(self.node_small_bg_col))
         painter.setPen(Qt.NoPen)
         painter.drawRoundedRect(bounding_rect, 4, 4)
 
@@ -1214,8 +1214,8 @@ NodeWidget {
     flow_background_brush = QBrush(QColor('#ffffff'))
     flow_background_grid = ('points', QColor('#dddddd'), 2, 20, 20)
 
-    node_ext_background_color = QColor('#cdcfd1')
-    node_small_background_color = QColor('#bebfc1')
+    node_normal_bg_col = QColor('#cdcfd1')
+    node_small_bg_col = QColor('#bebfc1')
     node_title_color = QColor('#1f1f1f')
     port_pin_pen_color = QColor('#1f1f1f')
 
@@ -1500,3 +1500,107 @@ class FlowTheme_Industrial(FlowTheme):
         pen = QPen(QColor(130, 130, 130))
         painter.setPen(pen)
         painter.drawRoundedRect(bounding_rect, c_s, c_s)
+
+
+class FlowTheme_Fusion(FlowTheme):
+    name = 'Fusion'
+    type_ = 'light'
+
+    node_selection_stylesheet = '''
+    NodeSelectionWidget {
+        background-color: white;
+    }
+    NodeWidget {
+        background-color: white;
+    }
+        '''
+
+    exec_conn_color = QColor('#1f1f1f')
+    exec_conn_width = 2
+
+    data_conn_color = QColor('#1f1f1f')
+    data_conn_width = 2
+
+    flow_background_brush = QBrush(QColor('#ffffff'))
+
+    node_normal_bg_col = QColor('#ebeced')
+    node_small_bg_col = QColor('#cccdcf')
+    node_title_color = QColor('#1f1f1f')
+    port_pin_pen_color = QColor('#1f1f1f')
+
+    node_item_shadow_color = QColor('#cccccc')
+
+
+    def paint_NI_title_label(self, node, selected, hovering, painter, option, node_style, node_title, node_color,
+                             node_item_bounding_rect):
+
+        painter.setPen(QPen(self.node_title_color))
+
+        if node_style == 'normal':
+            painter.setFont(QFont('Segoe UI', 10))
+            align = Qt.AlignLeft | Qt.AlignVCenter
+        else:
+            painter.setFont(QFont('Segoe UI', 12))
+            align = Qt.AlignCenter
+
+        painter.drawText(node_item_bounding_rect, align, node_title)
+
+
+    def paint_PI_label(self, node, painter, option, type_, connected, label_str, node_color, bounding_rect):
+        pen = QPen(QColor('#000000'))
+        pen.setWidthF(1.2)
+        painter.setPen(pen)
+
+        self.paint_PI_label_default(painter, label_str, QColor(0, 0, 0), QFont("Segoe UI", 8), bounding_rect)
+
+
+    def paint_PI(self, node, painter, option, node_color, type_, connected, rect):
+
+        painter.setBrush(QColor('#000000'))
+        painter.setPen(Qt.NoPen)
+
+        if type_ == 'data':
+            painter.drawEllipse(rect.marginsRemoved(QMarginsF(3, 3, 3, 3)))
+        else:
+            draw_rect = rect.marginsRemoved(QMarginsF(3, 3, 3, 3))
+            path = QPainterPath(draw_rect.topLeft())
+            path.lineTo(QPointF(draw_rect.right(), 0))
+            path.lineTo(draw_rect.bottomLeft())
+            path.closeSubpath()
+
+            painter.drawPath(path)
+
+
+    def draw_NI_normal(self, node, selected: bool, hovered: bool,
+                       painter, c, w, h, bounding_rect: QRectF, title_rect):
+
+        pen = QPen(c)
+        col1 = self.node_normal_bg_col
+
+        if not selected:
+            pen.setWidthF(1)
+        else:
+            pen.setWidthF(2.5)
+            col1 = QColor(255, 255, 255)
+
+        col2 = col1.lighter()
+
+        header_height = self.get_header_rect(w, h, title_rect).height()
+        header_fraction = header_height / bounding_rect.height()
+
+        gradient = QLinearGradient(bounding_rect.topLeft(), bounding_rect.bottomLeft())
+        gradient.setColorAt(0, col1)
+        gradient.setColorAt(header_fraction, self.interpolate_color(col1, col2, 0.7))
+        gradient.setColorAt(1, col2)
+
+        painter.setBrush(QBrush(gradient))
+        painter.setPen(pen)
+        painter.drawRoundedRect(bounding_rect, 3, 3)
+
+
+    def draw_NI_small(self, node, selected: bool, hovered: bool,
+                      painter, c, w, h, bounding_rect, background_color=None):
+
+        painter.setBrush(QBrush(self.node_small_bg_col))
+        painter.setPen(Qt.NoPen)
+        painter.drawRoundedRect(bounding_rect, 4, 4)
