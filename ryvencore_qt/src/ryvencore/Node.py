@@ -13,10 +13,11 @@ from .tools import serialize, deserialize
 
 
 class Node(Base):
-    """Base class for all node blueprints. Such a blueprint is defined by its class, which is registered
-    in the session, and actual node objects are instances of it. The static properties are stored using
-    static attributes, which works really well in Python.
-    All the main API for programming nodes, i.e. creating subclasses of this class, is defined here."""
+    """
+    Base class for all node blueprints. Such a blueprint is made by subclassing this class and registering that subclass
+    in the session. Actual node objects are instances of it. The node's static properties are static attributes,
+    which works really well in Python.
+    """
 
     title = ''
     type_ = ''
