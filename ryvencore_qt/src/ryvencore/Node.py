@@ -49,8 +49,8 @@ class Node(Base):
 
         self.flow, self.session, self.init_data = params
         self.script = self.flow.script
-        self.inputs: [NodeInputBP] = []
-        self.outputs: [NodeOutputBP] = []
+        self.inputs: [NodeInput] = []
+        self.outputs: [NodeOutput] = []
         self.loggers = []
         # self.global_logger, self.errors_logger = self.script.logs_manager.default_loggers.values()
 
@@ -315,6 +315,9 @@ class Node(Base):
         else:
             self.inputs.append(inp)
 
+    def rename_input(self, index: int, label: str):
+        self.inputs[index].label_str = label
+
     def delete_input(self, index: int):
         """Disconnects and removes input"""
 
@@ -339,6 +342,9 @@ class Node(Base):
             self.outputs.insert(insert, out)
         else:
             self.outputs.append(out)
+
+    def rename_output(self, index: int, label: str):
+        self.outputs[index].label_str = label
 
     def delete_output(self, index: int):
         """Disconnects and removes output"""

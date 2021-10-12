@@ -93,6 +93,21 @@ class RandNode(rc.Node):
         self.set_output_val(0, val)
 
 
+class TestNode(rc.Node):
+    def __init__(self, params):
+        super().__init__(params)
+        self.label = 'asdf'
+        self.count = 1
+        self.create_output(self.label*self.count)
+
+    def place_event(self):
+        self.actions['rename output'] = {'method': self._rename_output}
+
+    def _rename_output(self):
+        self.count += 1
+        self.rename_output(0, self.label * self.count)
+
+
 if __name__ == "__main__":
 
     # creating the application and a window
@@ -102,7 +117,7 @@ if __name__ == "__main__":
     # creating the session, registering, creating script
     session = rc.Session()
     session.design.set_flow_theme(name='Fusion')
-    session.register_nodes([PrintNode, RandNode])
+    session.register_nodes([PrintNode, RandNode, TestNode])
     session.load(example_project)
     script = session.create_script('hello world', flow_view_size=[8000, 5000])
     # script = session.scripts[0]

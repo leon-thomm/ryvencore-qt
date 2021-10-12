@@ -138,6 +138,17 @@ class Node(RC_Node, QObject):
             self.input_added.emit(self.inputs[-1], None)
 
     # @override
+    def rename_input(self, index: int, label: str):
+        RC_Node.rename_input(self, index=index, label=label)
+        self.update_shape()
+
+    # @override
+    def delete_input(self, index):
+        inp = self.inputs[index]
+        RC_Node.delete_input(self, index=index)
+        self.input_removed.emit(inp)
+
+    # @override
     def create_output(self, label: str = '', type_: str = 'data', insert: int = None):
         RC_Node.create_output(self, label=label, type_=type_, insert=insert)
 
@@ -153,10 +164,9 @@ class Node(RC_Node, QObject):
             self.output_added.emit(self.outputs[-1], None)
 
     # @override
-    def delete_input(self, index):
-        inp = self.inputs[index]
-        RC_Node.delete_input(self, index=index)
-        self.input_removed.emit(inp)
+    def rename_output(self, index: int, label: str):
+        RC_Node.rename_output(self, index=index, label=label)
+        self.update_shape()
 
     # @override
     def delete_output(self, index):
@@ -193,8 +203,7 @@ class Node(RC_Node, QObject):
 
     """
     additional stuff for GUI access:
-    [everything below is pure ryvencore-qt API and, to ensure ryvencore compatibility, 
-    should not be used unchecked in nodes]
+    [everything below is pure ryvencore-qt API]
     """
 
 

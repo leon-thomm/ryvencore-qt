@@ -112,10 +112,12 @@ class NodeItemWidget(QGraphicsWidget):
 
         # if I don't manually remove the ports from the layouts,
         # they get deleted when setting the widget's layout to None below
-        for i in range(len(self.node.inputs)):
+        for i, inp in enumerate(self.node_item.inputs):
             self.inputs_layout.removeAt(0)
-        for i in range(len(self.node.outputs)):
+            # inp.rebuild_ui()
+        for i, out in enumerate(self.node_item.outputs):
             self.outputs_layout.removeAt(0)
+            # out.rebuild_ui()
 
         self.setLayout(None)
         self.resize(self.minimumSize())

@@ -30,6 +30,16 @@ class Flow(Base):
         #   additional data structures for executors
         self.node_successors = {}
 
+        #   ALPHA!
+        # custom event handling
+        self.event_receivers = {
+            'changed': [],
+            'connection added': [],
+            'connection removed': [],
+            'node added': [],
+            'node removed': [],
+        }
+
 
     def load(self, data):
         """Loading a flow from data"""
@@ -93,6 +103,8 @@ class Flow(Base):
         node.prepare_placement()
         self.flow_changed()
 
+        self.emit_event('node added', (node,))    # ALPHA
+
 
     def node_view_placed(self, node: Node):
         """Triggered after the node's GUI content has been fully initialized"""
@@ -107,6 +119,8 @@ class Flow(Base):
         self.nodes.remove(node)
         del self.node_successors[node]
         self.flow_changed()
+
+        self.emit_event('node removed', (node,))    # ALPHA
 
 
     def connect_nodes_from_data(self, nodes: [Node], data: list):
@@ -184,6 +198,8 @@ class Flow(Base):
         self.node_successors[c.out.node].append(c.inp.node)
         self.flow_changed()
 
+        self.emit_event('connection added', (c,))    # ALPHA
+
 
     def remove_connection(self, c: Connection):
         """Removes a connection object without deleting it"""
@@ -196,6 +212,8 @@ class Flow(Base):
 
         self.node_successors[c.out.node].remove(c.inp.node)
         self.flow_changed()
+
+        self.emit_event('connection removed', (c,))    # ALPHA
 
 
     def algorithm_mode(self) -> str:
@@ -223,6 +241,28 @@ class Flow(Base):
 
     def flow_changed(self):
         self.executor_data_opt.flow_changed = True
+
+        self.emit_event('changed')    # ALPHA
+
+
+    def on(self, event_type: str, func) -> bool:    # ALPHA
+        if event_type not in list(self.event_receivers.keys()):
+            return False
+        self.event_receivers[event_type].append(func)
+        return True
+
+    def off(self, event_type: str, func) -> bool:    # ALPHA
+        if event_type not in list(self.event_receivers.keys()):
+            return False
+        if func not in self.event_receivers[event_type]:
+            return False
+        self.event_receivers[event_type].remove(func)
+        return True
+
+    def emit_event(self, event_type: str, params: tuple = ()):    # ALPHA
+        # notice: don't rename this to `event` as it weirdly causes it to be called when emitting Qt events of the flow
+        for func in self.event_receivers[event_type]:
+            func(*params)
 
 
     def data(self) -> dict:
