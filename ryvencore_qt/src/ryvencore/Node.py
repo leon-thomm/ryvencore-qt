@@ -22,28 +22,35 @@ class Node(Base):
     title = ''
     type_ = ''
     # keywords = []  TODO: add this with intelligent search in NodeSelectionWidget
+    version: str = None  # None means `undefined` and should be avoided
+
     init_inputs: [NodeInputBP] = []
     init_outputs: [NodeOutputBP] = []
+
     identifier: str = None  # set by Session if None
-    identifier_comp: [str] = []  # identifier compatibility, useful when node class name changes
+    identifier_comp: [str] = []  # identifier (backwards) compatibility, useful when node class name changes
+    identifier_prefix: str = None  # becomes part of identifier if set, often useful
 
-    identifier_prefix: str = None  # becomes part of identifier if set
-
-    # INITIALIZATION ---------------------------------------------------------------------------------------------------
+    """
+    INITIALIZATION -----------------------------------------------------------------------------------------------------
+    """
 
     @classmethod
     def build_identifier(cls):
+        """
+        sets the identifier to class name if it's not set, and adds the identifier prefix
+        """
 
-        full_prefix = (cls.identifier_prefix + '.') if cls.identifier_prefix is not None else ''
+        prefix = ''
+        if cls.identifier_prefix is not None:
+            prefix = cls.identifier_prefix + '.'
 
         if cls.identifier is None:
             cls.identifier = cls.__name__
 
-        cls.identifier = full_prefix + cls.identifier
+        cls.identifier = prefix + cls.identifier
 
-        for ic in cls.identifier_comp:
-            cls.identifier_comp.remove(ic)
-            cls.identifier_comp.append(full_prefix + ic)
+        # notice that we do not touch the identifier compatibility fields
 
     def __init__(self, params):
         Base.__init__(self)
@@ -53,7 +60,6 @@ class Node(Base):
         self.inputs: [NodeInput] = []
         self.outputs: [NodeOutput] = []
         self.loggers = []
-        # self.global_logger, self.errors_logger = self.script.logs_manager.default_loggers.values()
 
         self.initialized = False
 
@@ -63,14 +69,14 @@ class Node(Base):
     def finish_initialization(self):
         """
         Loads all default properties from initial data if it was provided;
-        sets up inputs and outputs, enables the logs, loads custom (std) data
+        sets up inputs and outputs, enables the logs, loads additional_data
         and calls self._initialized()
         """
 
         if self.init_data:
             self.setup_ports(self.init_data['inputs'], self.init_data['outputs'])
 
-            self.load_custom_data(self.init_data)
+            self.load_additional_data(self.init_data['additional data'])
 
         else:
             self.setup_ports()
@@ -87,10 +93,13 @@ class Node(Base):
 
         if self.init_data:
             try:
-                if type(self.init_data['state data']) == dict:  # backwards compatibility
-                    self.set_state(self.init_data['state data'])
-                else:
-                    self.set_state(deserialize(self.init_data['state data']))
+
+                if 'version' in self.init_data:
+                    version = self.init_data['version']
+                else:  # backwards compatibility
+                    version = None
+
+                self.set_state(deserialize(self.init_data['state data']), version)
             except Exception as e:
                 InfoMsgs.write_err(
                     'Exception while setting data in', self.title, 'node:', e, ' (was this intended?)')
@@ -128,7 +137,7 @@ class Node(Base):
             for out in outputs_data:
                 self.create_output(out['label'], out['type'])
 
-    def prepare_placement(self):
+    def after_placement(self):
         """Called from Flow when the nodes gets added"""
 
         self.enable_loggers()
@@ -140,7 +149,9 @@ class Node(Base):
         self.remove_event()
         self.disable_loggers()
 
-    # ALGORITHM --------------------------------------------------------------------------------------------------------
+    """
+    ALGORITHM ----------------------------------------------------------------------------------------------------------
+    """
 
     # notice that all the below methods check whether the flow currently 'runs with an executor', which means
     # the flow is running in a special execution mode, in which case all the algorithm-related methods below are
@@ -191,11 +202,16 @@ class Node(Base):
         else:
             self.outputs[index].set_val(val)
 
-    # EVENTS -----------------------------------------------------------------------------------------------------------
+    """
+    EVENTS -------------------------------------------------------------------------------------------------------------
+    """
+
     # these methods get implemented by node implementations
 
     def update_event(self, inp=-1):
-        """Gets called when an input received a signal or some node requested data of an output in exec mode"""
+        """
+        Gets called when an input received a signal or some node requested data of an output in exec mode
+        """
 
         pass
 
@@ -204,17 +220,17 @@ class Node(Base):
         place_event() is called once the node object has been fully initialized and placed in the flow.
         When loading content, place_event() is executed *before* the connections are built,
         which is important for nodes that need to update once and, during this process, set output data values,
-        to prevent other (later connected) nodes from receiving updates because of that.
+        to prevent later connected (potentially sequential) nodes from receiving false updates because of that.
         Notice that this method gets executed *every time* the node is added to the flow, which can happen
-        multiple times, due to undo/redo operations for example.
-        Also note that GUI content is generally not accessible yet from here, for that use view_place_event().
+        multiple times for the same object, for example due to undo/redo operations.
+        Also note that GUI content is usually not accessible yet from here, for that use view_place_event().
         """
 
         pass
 
     def view_place_event(self):
         """
-        view_place_event() is called once all GUI for the node has been created by the frontend.
+        Called once all GUI for the node has been created by the frontend, if one exists.
         Any initial communication to widgets is supposed to happen here, and this method is not called
         when running without gui.
         """
@@ -222,24 +238,32 @@ class Node(Base):
         pass
 
     def remove_event(self):
-        """Called when the node is removed from the flow; useful for stopping threads and timers etc."""
+        """
+        Called when the node is removed from the flow; useful for stopping threads and timers etc.
+        """
 
         pass
 
     def _initialized(self):  # not used currently
-
-        """Called once all the node's components (including inputs, outputs) have been initialized"""
+        """
+        Called once all the node's components (including inputs, outputs) have been initialized
+        """
 
         pass
 
     def additional_data(self) -> dict:
-        """Convenience method for wrappers for saving some std data for all nodes in an editor.
-        get_state()/set_state() then stays clean for all specific node subclasses"""
+        """
+        Additional_data()/load_additional_data() is almost equivalent to get_state()/set_state(),
+        but it's often useful for frontends to have their own,
+        get_state()/set_state() then stays clean for all specific node subclasses
+        """
 
         return {}
 
-    def load_custom_data(self, data: dict):
-        """For loading the data returned by custom_data()"""
+    def load_additional_data(self, data: dict):
+        """
+        For loading the data returned by additional_data()
+        """
         pass
 
     def get_state(self) -> dict:
@@ -250,13 +274,15 @@ class Node(Base):
         """
         return {}
 
-    def set_state(self, data: dict):
+    def set_state(self, data: dict, version):
         """
         Used for reloading node-specific custom data which has been previously returned by get_state()
         """
         pass
 
-    # API --------------------------------------------------------------------------------------------------------------
+    """
+    API ----------------------------------------------------------------------------------------------------------------
+    """
 
     #   LOGGING
 
@@ -386,7 +412,9 @@ class Node(Base):
 
         self.get_vars_manager().unregister_receiver(self, name, method)
 
-    # -----------------------------------------------------------------------------------------------------------------
+    """
+    --------------------------------------------------------------------------------------------------------------------
+    """
 
     def is_active(self):
         for i in self.inputs:
@@ -408,11 +436,13 @@ class Node(Base):
 
         return {
             'identifier': self.identifier,
+            'version': self.version,
+
             'state data': serialize(self.get_state()),
+            'additional data': self.additional_data(),
+
             'inputs': [i.data() for i in self.inputs],
             'outputs': [o.data() for o in self.outputs],
-
-            **self.additional_data(),
 
             'GID': self.GLOBAL_ID,
         }

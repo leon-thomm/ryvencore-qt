@@ -100,7 +100,7 @@ class Flow(Base):
 
         self.nodes.append(node)
         self.node_successors[node] = []
-        node.prepare_placement()
+        node.after_placement()
         self.flow_changed()
 
         self.emit_event('node added', (node,))    # ALPHA
@@ -174,10 +174,6 @@ class Flow(Base):
                 # DISCONNECT
                 self.remove_connection(c)
                 return None
-
-        # if inp.type_ == 'data':
-        #     for c in inp.connections:
-        #         self.remove_connection(c)
 
         c = CLASSES['data conn']((out, inp, self)) if out.type_ == 'data' else \
             CLASSES['exec conn']((out, inp, self))
