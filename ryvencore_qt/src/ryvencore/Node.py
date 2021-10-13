@@ -21,7 +21,7 @@ class Node(Base):
 
     title = ''
     type_ = ''
-    # keywords = []  TODO: add this with intelligent search in NodeSelectionWidget
+    tags: [str] = []
     init_inputs: [NodeInputBP] = []
     init_outputs: [NodeOutputBP] = []
     identifier: str = None  # set by Session if None
