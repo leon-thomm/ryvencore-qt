@@ -8,8 +8,8 @@ from .NodeItemAction import NodeItemAction
 from .NodeItemAnimator import NodeItemAnimator
 from .NodeItemWidget import NodeItemWidget
 from .PortItem import InputPortItem, OutputPortItem
-from ...tools import serialize, deserialize
-from ...tools import MovementEnum
+from ...utils import serialize, deserialize
+from ...utils import MovementEnum
 
 
 class NodeItem(GUIBase, QGraphicsObject):  # QGraphicsItem, QObject):

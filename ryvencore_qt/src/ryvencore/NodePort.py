@@ -2,7 +2,7 @@ from .Base import Base
 
 from .RC import PortObjPos, FlowAlg
 from .dtypes import DType
-from .tools import serialize
+from .utils import serialize
 from .InfoMsgs import InfoMsgs
 
 

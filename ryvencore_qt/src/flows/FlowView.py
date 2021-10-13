@@ -5,8 +5,8 @@ from qtpy.QtGui import QPainter, QPen, QColor, QKeySequence, QTabletEvent, QImag
 from qtpy.QtWidgets import QGraphicsView, QGraphicsScene, QShortcut, QMenu, QGraphicsItem, QUndoStack
 
 from ..GUIBase import GUIBase
-from ..ryvencore.tools import node_from_identifier
-from ..tools import *
+from ..ryvencore.utils import node_from_identifier
+from ..utils import *
 from ..ryvencore.Flow import Flow
 from .FlowCommands import MoveComponents_Command, PlaceNode_Command, \
     PlaceDrawing_Command, RemoveComponents_Command, ConnectPorts_Command, Paste_Command, FlowUndoCommand

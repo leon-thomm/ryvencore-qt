@@ -182,7 +182,7 @@ class Node(RC_Node, QObject):
         }
 
     # @override
-    def load_custom_data(self, data: dict):
+    def load_additional_data(self, data: dict):
         self.actions = self.set_special_actions_data(data['special actions'])
         self.display_title = data['display title']
 

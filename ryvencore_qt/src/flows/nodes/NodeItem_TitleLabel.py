@@ -2,7 +2,7 @@ from qtpy.QtCore import QRectF, QPointF, QSizeF, Property
 from qtpy.QtGui import QFont, QFontMetricsF, QColor
 from qtpy.QtWidgets import QGraphicsWidget, QGraphicsLayoutItem, QGraphicsItem
 
-from ...tools import get_longest_line
+from ...utils import get_longest_line
 
 
 class TitleLabel(QGraphicsWidget):

@@ -5,8 +5,8 @@ from qtpy.QtGui import QPainter, QColor, QRadialGradient, QPainterPath, QPen
 from qtpy.QtWidgets import QGraphicsPathItem, QGraphicsItem, QStyleOptionGraphicsItem
 
 from ...GUIBase import GUIBase
-from ...tools import sqrt
-from ...tools import pythagoras
+from ...utils import sqrt
+from ...utils import pythagoras
 
 
 class ConnectionItem(GUIBase, QGraphicsPathItem):

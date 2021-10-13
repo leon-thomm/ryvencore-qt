@@ -4,7 +4,7 @@ from .FlowExecutor import DataFlowOptimized, FlowExecutor
 from .Node import Node
 from .NodePort import NodePort
 from .RC import FlowAlg, PortObjPos, CLASSES
-from .tools import node_from_identifier
+from .utils import node_from_identifier
 
 
 class Flow(Base):
@@ -89,8 +89,9 @@ class Flow(Base):
         """Creates, adds and returns a new node object"""
 
         node = node_class((self, self.session, data))
-        node.finish_initialization()
-        node.load_user_data()  # --> Node.set_state()
+        # node.finish_initialization()
+        # node.load_user_data()  # --> Node.set_state()
+        node.initialize()
         self.add_node(node)
         return node
 
@@ -100,7 +101,7 @@ class Flow(Base):
 
         self.nodes.append(node)
         self.node_successors[node] = []
-        node.prepare_placement()
+        node.after_placement()
         self.flow_changed()
 
         self.emit_event('node added', (node,))    # ALPHA
@@ -174,10 +175,6 @@ class Flow(Base):
                 # DISCONNECT
                 self.remove_connection(c)
                 return None
-
-        # if inp.type_ == 'data':
-        #     for c in inp.connections:
-        #         self.remove_connection(c)
 
         c = CLASSES['data conn']((out, inp, self)) if out.type_ == 'data' else \
             CLASSES['exec conn']((out, inp, self))

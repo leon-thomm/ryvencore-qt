@@ -5,4 +5,4 @@ from .logging import *
 from .Node import Node
 from .NodePortBP import NodeInputBP, NodeOutputBP
 from .Connection import DataConnection, ExecConnection
-from .tools import serialize, deserialize
+from .utils import serialize, deserialize

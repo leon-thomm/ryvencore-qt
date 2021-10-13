@@ -2,7 +2,7 @@ from qtpy.QtCore import Qt, QPointF, QPoint, QRectF, QMargins, QMarginsF
 from qtpy.QtGui import QColor, QPainter, QBrush, QRadialGradient, QLinearGradient, QPen, QPainterPath, QFont, QPolygon
 from qtpy.QtWidgets import QStyle, QStyleOption
 
-from ..tools import pythagoras
+from ..utils import pythagoras
 
 
 class FlowTheme:
