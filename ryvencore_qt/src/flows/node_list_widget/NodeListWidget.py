@@ -4,6 +4,8 @@ from qtpy.QtCore import Qt, Signal
 from .utils import search, sort_nodes, inc, dec
 from ..node_list_widget.NodeWidget import NodeWidget
 
+from statistics import median
+
 
 class NodeListWidget(QWidget):
     """notice, that 'nodes' refers to node CLASSES here"""
@@ -113,6 +115,9 @@ class NodeListWidget(QWidget):
 
 
     def update_view(self, search_text=''):
+        if len(self.nodes) == 0:
+            return
+
         search_text = search_text.lower()
 
         # remove all node widgets
@@ -127,15 +132,16 @@ class NodeListWidget(QWidget):
         # search
         sorted_distances = search(
             items={
-                n: n.title.lower()
+                n: [n.title.lower()] + n.tags
                 for n in self.nodes
             },
             text=search_text
         )
 
         # create node widgets
+        cutoff = median(sorted_distances.values())
         for n, dist in sorted_distances.items():
-            if search_text != '' and dist > 0.7:
+            if search_text != '' and dist > cutoff:
                 continue
 
             self.current_nodes.append(n)

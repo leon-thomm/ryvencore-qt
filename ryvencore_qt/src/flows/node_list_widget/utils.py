@@ -32,10 +32,15 @@ def sort_by_val(d: dict) -> dict:
 
 def search(items: dict, text: str) -> dict:
     """performs the search on `items` under search string `text`"""
+    dist = textdistance.sorensen_dice.distance
 
-    distances = {
-        item: textdistance.sorensen_dice.distance(text, name)
-        for item, name in items.items()
-    }
+    distances = {}
+
+    for item, tags in items.items():
+        min_dist = 1.0
+        for tag in tags:
+            min_dist = min(min_dist, dist(text, tag))
+
+        distances[item] = min_dist
 
     return sort_by_val(distances)
