@@ -21,9 +21,9 @@ class Node(Base):
 
     title = ''
     type_ = ''
-    # keywords = []  TODO: add this with intelligent search in NodeSelectionWidget
+    tags: [str] = []
     version: str = None  # None means `undefined` and should be avoided
-
+    
     init_inputs: [NodeInputBP] = []
     init_outputs: [NodeOutputBP] = []
 
