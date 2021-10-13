@@ -9,7 +9,7 @@ calling methods of objects from another thread as if they lived in the same thre
 
 from qtpy.QtCore import QObject, Signal
 
-from ryvencore_qt.src.tools import Container, wait_until
+from ryvencore_qt.src.utils import Container, wait_until
 
 
 class SessionThreadInterface_Backend(QObject):

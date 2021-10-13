@@ -4,7 +4,7 @@ from .FlowExecutor import DataFlowOptimized, FlowExecutor
 from .Node import Node
 from .NodePort import NodePort
 from .RC import FlowAlg, PortObjPos, CLASSES
-from .tools import node_from_identifier
+from .utils import node_from_identifier
 
 
 class Flow(Base):
@@ -89,8 +89,9 @@ class Flow(Base):
         """Creates, adds and returns a new node object"""
 
         node = node_class((self, self.session, data))
-        node.finish_initialization()
-        node.load_user_data()  # --> Node.set_state()
+        # node.finish_initialization()
+        # node.load_user_data()  # --> Node.set_state()
+        node.initialize()
         self.add_node(node)
         return node
 

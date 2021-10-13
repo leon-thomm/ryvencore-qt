@@ -9,7 +9,7 @@ from .NodePortBP import NodeInputBP, NodeOutputBP
 from .dtypes import DType
 from .InfoMsgs import InfoMsgs
 from .logging.Logger import Logger
-from .tools import serialize, deserialize
+from .utils import serialize, deserialize
 
 
 class Node(Base):
@@ -66,47 +66,46 @@ class Node(Base):
         self.block_init_updates = False
         self.block_updates = False
 
-    def finish_initialization(self):
+    def initialize(self):
         """
-        Loads all default properties from initial data if it was provided;
-        sets up inputs and outputs, enables the logs, loads additional_data
-        and calls self._initialized()
+        Loads all default properties from initial data if it was provided,
+        sets up inputs and outputs, enables the logs, and loads user_data (doesn't crash on exception here
+        as this is not uncommon when developing nodes).
         """
 
-        if self.init_data:
+        # enable logs
+        self.enable_loggers()
+
+        if self.init_data:  # load from data
+            # setup ports
             self.setup_ports(self.init_data['inputs'], self.init_data['outputs'])
 
+            # set state
             self.load_additional_data(self.init_data['additional data'])
-
-        else:
-            self.setup_ports()
-
-        self.enable_loggers()
-        self._initialized()
-        self.initialized = True
-
-        # self.update()
-
-    def load_user_data(self):
-        """Loads the component-specific data that was returned by get_state() previously; prints an exception
-        if it fails but doesn't crash because that usually happens when developing nodes"""
-
-        if self.init_data:
             try:
-
                 if 'version' in self.init_data:
                     version = self.init_data['version']
                 else:  # backwards compatibility
                     version = None
 
                 self.set_state(deserialize(self.init_data['state data']), version)
+
             except Exception as e:
                 InfoMsgs.write_err(
                     'Exception while setting data in', self.title, 'node:', e, ' (was this intended?)')
 
+        else:   # default setup
+
+            # setup ports
+            self.setup_ports()
+
+        self.initialized = True
+
     def setup_ports(self, inputs_data=None, outputs_data=None):
 
         if not inputs_data and not outputs_data:
+            # generate initial ports
+
             for i in range(len(self.init_inputs)):
                 inp = self.init_inputs[i]
 
@@ -120,7 +119,10 @@ class Node(Base):
                 out = self.init_outputs[o]
                 self.create_output(out.label, out.type_)
 
-        else:  # when loading saved nodes, the init_inputs and init_outputs are irrelevant
+        else:
+            # load from data
+            # initial ports specifications are irrelevant then
+
             for inp in inputs_data:
                 if 'dtype' in inp:
                     self.create_input_dt(dtype=DType.from_str(inp['dtype'])(
@@ -244,12 +246,12 @@ class Node(Base):
 
         pass
 
-    def _initialized(self):  # not used currently
-        """
-        Called once all the node's components (including inputs, outputs) have been initialized
-        """
-
-        pass
+    # def _initialized(self):  # not used currently
+    #     """
+    #     Called once all the node's components (including inputs, outputs) have been initialized
+    #     """
+    #
+    #     pass
 
     def additional_data(self) -> dict:
         """

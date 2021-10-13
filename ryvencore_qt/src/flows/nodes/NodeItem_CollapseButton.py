@@ -2,7 +2,7 @@ from qtpy.QtCore import QSize, QRectF, QPointF, QSizeF, Qt
 from qtpy.QtWidgets import QGraphicsWidget, QGraphicsLayoutItem
 
 from ...GlobalAttributes import Location
-from ...tools import change_svg_color
+from ...utils import change_svg_color
 
 
 class NodeItem_CollapseButton(QGraphicsWidget):
