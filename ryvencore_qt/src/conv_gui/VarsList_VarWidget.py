@@ -6,7 +6,7 @@ import json
 
 from ..GlobalAttributes import Location
 from .ListWidget_NameLineEdit import ListWidget_NameLineEdit
-from ..tools import shorten
+from ..utils import shorten
 from .EditVal_Dialog import EditVal_Dialog
 
 

@@ -4,7 +4,7 @@ import os
 from math import sqrt
 from waiting import wait
 
-from .ryvencore.tools import serialize, deserialize
+from .ryvencore.utils import serialize, deserialize
 from qtpy.QtCore import QPointF
 
 
