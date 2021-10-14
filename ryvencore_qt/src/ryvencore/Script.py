@@ -1,7 +1,5 @@
 from .Base import Base
 
-from .RC import CLASSES
-
 
 class Script(Base):
     """A Script consists of a Flow, the corresponding FlowView, a variables manager and a logger."""
@@ -30,13 +28,14 @@ class Script(Base):
             self.init_vars_manager_data = load_data['variables']
 
         # logging
-        self.logs_manager = CLASSES['logs manager'](self, self._create_default_logs)
+        self.logs_manager = self.session.CLASSES['logs manager'](self, self._create_default_logs)
 
         # vars manager
-        self.vars_manager = CLASSES['vars manager'](self, self.init_vars_manager_data)
+        self.vars_manager = self.session.CLASSES['vars manager'](self, self.init_vars_manager_data)
 
         # flow
-        self.flow = CLASSES['flow'](self.session, self)
+        self.flow = self.session.CLASSES['flow'](self.session, self)
+
 
     def load_flow(self):
         if self.init_flow_data:

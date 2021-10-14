@@ -13,7 +13,6 @@ def deserialize(data):
 
 
 def node_from_identifier(identifier: str, nodes: list):
-    node_class = None
 
     for nc in nodes:
         if nc.identifier == identifier:
@@ -23,7 +22,9 @@ def node_from_identifier(identifier: str, nodes: list):
             if identifier in nc.identifier_comp:
                 return nc
         else:
-            raise Exception(f'could not find node class with identifier {n_c["identifier"]}. '
-                            f'if you changed your node\'s class name, make sure to add the old '
-                            f'identifier to the identifier_comp list attribute to provide '
-                            f'backwards compatibility.')
+            raise Exception(
+                f'could not find node class with identifier \'{identifier}\'. '
+                f'if you changed your node\'s class name, make sure to add the old '
+                f'identifier to the identifier_comp list attribute to provide '
+                f'backwards compatibility.'
+            )

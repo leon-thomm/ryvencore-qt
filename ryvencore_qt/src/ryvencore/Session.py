@@ -2,71 +2,71 @@ from .Base import Base
 
 
 from .Script import Script
-from .MacroScript import MacroScript
 from .InfoMsgs import InfoMsgs
-from .RC import CLASSES
 from .Node import Node
 
 
 class Session(Base):
-    """The Session is the top level interface to an editor, it represents a project and manages all project-wide
-    components, i.e. Scripts, MacroScripts and Node blueprints."""
+    """
+    The Session is the top level interface to an editor, it represents a project and manages all project-wide
+    components.
+    """
 
     def __init__(
             self,
             gui: bool = False,
+            custom_classes: dict = None,
     ):
         Base.__init__(self)
 
-        # register classes
-        self.register_default_classes()
+        if custom_classes is None:
+            custom_classes = {}
 
-        # initialize node classes for MacroScripts with correct Node base
-        MacroScript.build_node_classes()
+        # registry for custom class implementations
+        self.CLASSES = custom_classes
+        self.register_default_classes()
 
         # ATTRIBUTES
         self.scripts: [Script] = []
-        self.macro_scripts: [MacroScript] = []
         self.nodes = []  # list of node CLASSES
-        self.invisible_nodes = [MacroScript.MacroInputNode, MacroScript.MacroOutputNode]  # might change that system in the future
+        self.invisible_nodes = []
         self.gui: bool = gui
 
 
     def register_default_classes(self):
         """
         Registers the default ryvencore-internal implementations of all exposed classes that COULD have been
-        extended by the frontend, in which case it won't set the class.
-        So, if the frontend extended a class like Node, it will have set CLASSES['node base'] to its own subclass,
-        so we leave it as it is then. It is assumed that the frontend's extensions work properly and don't modify
-        the functionality to the backend.
+        extended externally, in which case it won't set the class.
+        So, if the a class like Node was extended externally, CLASSES['node base'] will be set to this custom Node
+        class, so we leave it as it is then.
         """
 
-        if not CLASSES['node base']:
-            CLASSES['node base'] = Node
+        if 'node base' not in self.CLASSES:
+            self.CLASSES['node base'] = Node
 
-        if not CLASSES['data conn']:
+        if 'data conn' not in self.CLASSES:
             from .Connection import DataConnection
-            CLASSES['data conn'] = DataConnection
+            self.CLASSES['data conn'] = DataConnection
 
-        if not CLASSES['exec conn']:
+        if 'exec conn' not in self.CLASSES:
             from .Connection import ExecConnection
-            CLASSES['exec conn'] = ExecConnection
+            self.CLASSES['exec conn'] = ExecConnection
 
-        if not CLASSES['logs manager']:
-            from .logging.LogsManager import LogsManager
-            CLASSES['logs manager'] = LogsManager
+        if 'logs manager' not in self.CLASSES:
+            from .logging import LogsManager
+            self.CLASSES['logs manager'] = LogsManager
 
-        if not CLASSES['logger']:
-            from .logging.Logger import Logger
-            CLASSES['logger'] = Logger
+        if 'logger' not in self.CLASSES:
+            from .logging import Logger
+            self.CLASSES['logger'] = Logger
 
-        if not CLASSES['vars manager']:
-            from .script_variables.VarsManager import VarsManager
-            CLASSES['vars manager'] = VarsManager
+        if 'vars manager' not in self.CLASSES:
+            from .script_variables import VarsManager
+            self.CLASSES['vars manager'] = VarsManager
 
-        if not CLASSES['flow']:
+        if 'flow' not in self.CLASSES:
             from .Flow import Flow
-            CLASSES['flow'] = Flow
+            self.CLASSES['flow'] = Flow
 
 
     def register_nodes(self, node_classes: list):
@@ -119,32 +119,6 @@ class Session(Base):
         return script
 
 
-    def create_macro(self, title: str = None, create_default_logs=True,
-                     data: dict = None) -> MacroScript:
-
-        """
-        Creates and returns a new macro script.
-        If data is provided the title parameter will be ignored and the script will not be initialized,
-        which you need to do manually after you made sure that the data doesnt contain other macro nodes
-        that have not been loaded yet.
-        """
-
-        macro_script = MacroScript(
-            session=self, title=title, create_default_logs=create_default_logs,
-            load_data=data
-        )
-
-        self.scripts.append(macro_script)
-        self.macro_scripts.append(macro_script)
-
-        # if data is provided, the script's flow contains content that might include
-        # macro nodes that are not loaded yet, so initialization is triggered manually from outside then
-        if not data:
-            macro_script.load_flow()
-
-        return macro_script
-
-
     def rename_script(self, script: Script, title: str) -> bool:
         """Renames an existing script"""
 
@@ -160,7 +134,7 @@ class Session(Base):
 
         if len(title) == 0:
             return False
-        for s in self.scripts:  # all_scripts():
+        for s in self.scripts:
             if s.title == title:
                 return False
 
@@ -168,42 +142,28 @@ class Session(Base):
 
 
     def delete_script(self, script: Script):
-        """Deletes an existing script. If the script is a macro script, the macro node is unregistered."""
+        """Removes an existing script."""
 
-        if isinstance(script, MacroScript):
-            self.unregister_node(script.macro_node_class)
-            self.macro_scripts.remove(script)
-            self.scripts.remove(script)
-        else:
-            self.scripts.remove(script)
+        self.scripts.remove(script)
 
 
     def info_messenger(self):
         """Returns a reference to InfoMsgs to print info data"""
+
         return InfoMsgs
 
 
     def load(self, project: dict) -> [Script]:
         """Loads a project and raises an exception if required nodes are missing"""
 
-        if 'scripts' not in project and 'macro scripts' not in project:
+        if 'scripts' not in project:
             raise Exception('not a valid project dict')
-
-        new_macro_scripts = []
-        if 'macro scripts' in project:
-            for msc in project['macro scripts']:
-                new_macro_scripts.append(self.create_macro(data=msc))
-
-            # now all macro nodes have been registered, so we can initialize the scripts
-
-            for ms in new_macro_scripts:
-                ms.load_flow()
 
         new_scripts = []
         for sc in project['scripts']:
             new_scripts.append(self.create_script(data=sc))
 
-        return new_scripts + new_macro_scripts
+        return new_scripts
 
     def serialize(self):
         """Returns the project as JSON compatible dict to be saved and loaded again using load()"""
@@ -213,10 +173,7 @@ class Session(Base):
 
     def data(self) -> dict:
         return {
-            'macro scripts': [
-                m_s.data() for m_s in self.macro_scripts
-            ],
             'scripts': [
-                s.data() for s in set(self.scripts) - set(self.macro_scripts)
+                s.data() for s in self.scripts
             ],
         }

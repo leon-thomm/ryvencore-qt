@@ -6,7 +6,7 @@ import json
 
 from ..GlobalAttributes import Location
 from .ListWidget_NameLineEdit import ListWidget_NameLineEdit
-from ..ryvencore.MacroScript import MacroScript
+# from ..ryvencore.MacroScript import MacroScript
 
 
 class ScriptsList_ScriptWidget(QWidget):
@@ -29,10 +29,14 @@ class ScriptsList_ScriptWidget(QWidget):
         main_layout.setContentsMargins(0, 0, 0, 0)
 
         # create icon via label
-        if isinstance(script, MacroScript):
-            script_icon = QIcon(Location.PACKAGE_PATH+'/resources/pics/macro_script_picture.png')
-        else:
-            script_icon = QIcon(Location.PACKAGE_PATH+'/resources/pics/script_picture.png')
+
+        # if isinstance(script, MacroScript):
+        #     script_icon = QIcon(Location.PACKAGE_PATH+'/resources/pics/macro_script_picture.png')
+        # else:
+        #     script_icon = QIcon(Location.PACKAGE_PATH+'/resources/pics/script_picture.png')
+
+        script_icon = QIcon(Location.PACKAGE_PATH + '/resources/pics/script_picture.png')
+
         icon_label = QLabel()
         icon_label.setFixedSize(20, 20)
         icon_label.setStyleSheet('border:none;')

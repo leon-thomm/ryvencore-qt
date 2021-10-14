@@ -5,6 +5,18 @@ from .WidgetBaseClasses import IWB
 
 
 class DType_IW_Base(IWB):
+
+    def __init__(self, params):
+        super().__init__(params)
+
+        self.dtype = self.input.dtype
+        self.block = False
+
+    def change_val(self, val):
+        if not self.block:
+            self.dtype.val = val
+            self.update_node_input(val)
+
     def __str__(self):
         return self.__class__.__name__
 
@@ -17,26 +29,28 @@ class Data_IW(DType_IW_Base, QLineEdit):  # virtual
         DType_IW_Base.__init__(self, params)
         QLineEdit.__init__(self)
 
-        dtype = self.input.dtype
-        self.last_val = None
+        # dtype = self.input.dtype
+        # self.last_val = None
 
         self.setFont(QFont('source code pro', 10))
-        self.val_update_event(dtype.default)
-        if dtype.size == 's':
+        self.val_update_event(self.dtype.val)
+        if self.dtype.size == 's':
             self.base_width = 30
-        elif dtype.size == 'm':
+        elif self.dtype.size == 'm':
             self.base_width = 70
-        elif dtype.size == 'l':
+        elif self.dtype.size == 'l':
             self.base_width = 150
         self.max_width = self.base_width * 3
         self.setFixedWidth(self.base_width)
         self.fm = QFontMetrics(self.font())
 
-        self.setToolTip(dtype.doc)
+        self.setToolTip(self.dtype.doc)
         self.textChanged.connect(self.text_changed)
         self.editingFinished.connect(self.editing_finished)
 
     def text_changed(self, new_text):
+        """manages resizing of widget to content"""
+
         text_width = self.fm.width(new_text)
         new_width = text_width+15  # add some buffer
         if new_width < self.max_width:
@@ -46,10 +60,10 @@ class Data_IW(DType_IW_Base, QLineEdit):  # virtual
         self.node.update_shape()
 
     def editing_finished(self):
-        v = self.get_val()
-        if v != self.last_val:
-            self.update_node_input(v)
-            self.last_val = v
+        """updates the input"""
+        # if v != self.last_val:
+        # self.last_val = v
+        self.change_val(self.get_val())
 
     def get_val(self):
         try:
@@ -58,17 +72,23 @@ class Data_IW(DType_IW_Base, QLineEdit):  # virtual
             return self.text()
 
     def val_update_event(self, val):
+        """triggered when input is connected and received new data;
+        displays the data in the widget (without updating)"""
+
+        self.block = True
         try:
             self.setText(str(val))
         except Exception as e:
             pass
+        finally:
+            self.block = False
 
     def get_state(self) -> dict:
         return {'text': self.text()}
 
     def set_state(self, data: dict):
-        self.setText(data['text'])
-        # self.update_node_input(self.get_val())
+        # just show value, DO NOT UPDATE
+        self.val_update_event(data['text'])
 
 
 # custom sized classes for qss access:
@@ -96,28 +116,30 @@ class String_IW(DType_IW_Base, QLineEdit):  # virtual
         DType_IW_Base.__init__(self, params)
         QLineEdit.__init__(self)
 
-        dtype = self.input.dtype
-        self.last_val = None
+        # dtype = self.input.dtype
+        # self.last_val = None
 
         self.setFont(QFont('source code pro', 10))
-        self.setText(dtype.default)
+        self.setText(self.dtype.val)
         self.setFixedWidth(self.width)
-        self.setToolTip(dtype.doc)
+        self.setToolTip(self.dtype.doc)
 
-        self.block = False  # ignore updates from val_update_event
         self.editingFinished.connect(self.editing_finished)
 
     def editing_finished(self):
-        if not self.block:
-            v = self.get_val()
-            if v != self.last_val:
-                self.update_node_input(v)
-                self.last_val = v
+        """updates the input"""
+        self.change_val(self.get_val())
+        # v = self.get_val()
+        # if v != self.last_val:
+        #     self.update_node_input(v)
+        #     self.last_val = v
 
     def get_val(self):
         return self.text()
 
     def val_update_event(self, val):
+        """triggered when input is connected and received new data;
+        displays the data in the widget (without updating)"""
         self.block = True
         self.setText(str(val))
         self.block = False
@@ -126,8 +148,8 @@ class String_IW(DType_IW_Base, QLineEdit):  # virtual
         return {'text': self.text()}
 
     def set_state(self, data: dict):
-        self.setText(data['text'])
-        # self.editing_finished()
+        # just show value, DO NOT UPDATE
+        self.val_update_event(data['text'])
 
 
 # custom sized classes for qss access:
@@ -152,24 +174,22 @@ class Integer_IW(DType_IW_Base, QSpinBox):
         DType_IW_Base.__init__(self, params)
         QSpinBox.__init__(self)
 
-        dtype = self.input.dtype
+        if self.dtype.bounds:
+            self.setRange(self.dtype.bounds[0], self.dtype.bounds[1])
+        self.setValue(self.dtype.val)
+        self.setToolTip(self.dtype.doc)
 
-        if dtype.bounds:
-            self.setRange(dtype.bounds[0], dtype.bounds[1])
-        self.setValue(dtype.default)
-        self.setToolTip(dtype.doc)
+        self.valueChanged.connect(self.widget_val_changed)
 
-        self.block = False  # ignore updates from val_update_event
-        self.valueChanged.connect(self.val_changed)
-
-    def val_changed(self, val):
-        if not self.block:
-            self.update_node_input(val)
+    def widget_val_changed(self, val):
+        self.change_val(val)
 
     def get_val(self):
         return self.value()
 
     def val_update_event(self, val):
+        """triggered when input is connected and received new data;
+        displays the data in the widget (without updating)"""
         self.block = True
         try:
             self.setValue(val)
@@ -182,7 +202,8 @@ class Integer_IW(DType_IW_Base, QSpinBox):
         return {'val': self.value()}
 
     def set_state(self, data: dict):
-        self.setValue(data['val'])
+        # just show value, DO NOT UPDATE
+        self.val_update_event(data['val'])
 
 
 class Float_IW(DType_IW_Base, QLineEdit):
@@ -190,25 +211,23 @@ class Float_IW(DType_IW_Base, QLineEdit):
         DType_IW_Base.__init__(self, params)
         QLineEdit.__init__(self)
 
-        dtype = self.input.dtype
-
         self.setFont(QFont('source code pro', 10))
         fm = QFontMetrics(self.font())
-        self.setMaximumWidth(fm.width(' ')*dtype.decimals+1)
-        self.setText(str(dtype.default))
-        self.setToolTip(dtype.doc)
+        self.setMaximumWidth(fm.width(' ')*self.dtype.decimals+1)
+        self.setText(str(self.dtype.val))
+        self.setToolTip(self.dtype.doc)
 
-        self.block = False  # ignore updates from val_update_event
-        self.textChanged.connect(self.text_changed)
+        self.textChanged.connect(self.widget_text_changed)
 
-    def text_changed(self):
-        if not self.block:
-            self.update_node_input(self.get_val())
+    def widget_text_changed(self):
+        self.change_val(self.get_val())
 
     def get_val(self):
         return float(self.text())
 
     def val_update_event(self, val):
+        """triggered when input is connected and received new data;
+        displays the data in the widget (without updating)"""
         self.block = True
         try:
             self.setText(str(val))
@@ -221,8 +240,8 @@ class Float_IW(DType_IW_Base, QLineEdit):
         return {'text': self.text()}
 
     def set_state(self, data: dict):
-        self.setText(data['text'])
-        # self.update_node_input(self.get_val())
+        # just show value, DO NOT UPDATE
+        self.val_update_event(data['text'])
 
 
 class Boolean_IW(DType_IW_Base, QCheckBox):
@@ -230,23 +249,21 @@ class Boolean_IW(DType_IW_Base, QCheckBox):
         DType_IW_Base.__init__(self, params)
         QCheckBox.__init__(self)
 
-        dtype = self.input.dtype
+        self.setChecked(self.dtype.val)
 
-        self.setChecked(dtype.default)
+        self.setToolTip(self.dtype.doc)
 
-        self.setToolTip(dtype.doc)
-
-        self.block = False  # ignore updates from val_update_event
         self.stateChanged.connect(self.state_changed)
 
     def state_changed(self, state):
-        if not self.block:
-            self.update_node_input(self.get_val())
+        self.change_val(self.get_val())
 
     def get_val(self):
         return self.isChecked()
 
     def val_update_event(self, val):
+        """triggered when input is connected and received new data;
+        displays the data in the widget (without updating)"""
         self.block = True
         try:
             self.setChecked(bool(val))
@@ -259,7 +276,8 @@ class Boolean_IW(DType_IW_Base, QCheckBox):
         return {'checked': self.isChecked()}
 
     def set_state(self, data: dict):
-        self.setChecked(data['checked'])
+        # just show value, DO NOT UPDATE
+        self.val_update_event(data['checked'])
 
 
 class Choice_IW(DType_IW_Base, QComboBox):
@@ -267,23 +285,21 @@ class Choice_IW(DType_IW_Base, QComboBox):
         DType_IW_Base.__init__(self, params)
         QComboBox.__init__(self)
 
-        dtype = self.input.dtype
+        self.addItems(self.dtype.items)
+        self.setCurrentText(self.dtype.val)
+        self.setToolTip(self.dtype.doc)
 
-        self.addItems(dtype.items)
-        self.setCurrentText(dtype.default)
-        self.setToolTip(dtype.doc)
+        self.currentTextChanged.connect(self.widget_text_changed)
 
-        self.block = False  # ignore updates from val_update_event
-        self.currentTextChanged.connect(self.text_changed)
-
-    def text_changed(self):
-        if not self.block:
-            self.update_node_input(self.get_val())
+    def widget_text_changed(self):
+        self.change_val(self.get_val())
 
     def get_val(self):
         return self.currentText()
 
     def val_update_event(self, val):
+        """triggered when input is connected and received new data;
+        displays the data in the widget (without updating)"""
         self.block = True
         try:
             self.setCurrentText(val)
@@ -299,6 +315,9 @@ class Choice_IW(DType_IW_Base, QComboBox):
         }
 
     def set_state(self, data: dict):
+        # just show value, DO NOT UPDATE
+        self.block = True
         self.clear()
         self.addItems(data['items'])
         self.setCurrentText(data['active'])
+        self.block = False

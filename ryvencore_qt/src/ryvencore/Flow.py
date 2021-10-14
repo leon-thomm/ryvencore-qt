@@ -3,7 +3,7 @@ from .Connection import Connection
 from .FlowExecutor import DataFlowOptimized, FlowExecutor
 from .Node import Node
 from .NodePort import NodePort
-from .RC import FlowAlg, PortObjPos, CLASSES
+from .RC import FlowAlg, PortObjPos
 from .utils import node_from_identifier
 
 
@@ -176,8 +176,8 @@ class Flow(Base):
                 self.remove_connection(c)
                 return None
 
-        c = CLASSES['data conn']((out, inp, self)) if out.type_ == 'data' else \
-            CLASSES['exec conn']((out, inp, self))
+        c = self.session.CLASSES['data conn']((out, inp, self)) if out.type_ == 'data' else \
+            self.session.CLASSES['exec conn']((out, inp, self))
         self.add_connection(c)
 
         return c

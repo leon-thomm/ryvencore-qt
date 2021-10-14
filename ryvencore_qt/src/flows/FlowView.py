@@ -21,7 +21,7 @@ from ..ryvencore.Connection import Connection, DataConnection
 from .connections.ConnectionItem import default_cubic_connection_path, ConnectionItem
 from .drawings.DrawingObject import DrawingObject
 from ..ryvencore.InfoMsgs import InfoMsgs
-from ..ryvencore.RC import PortObjPos, CLASSES
+from ..ryvencore.RC import PortObjPos
 
 
 class FlowView(GUIBase, QGraphicsView):
@@ -58,6 +58,7 @@ class FlowView(GUIBase, QGraphicsView):
 
         # GENERAL ATTRIBUTES
         self.session = session
+        self.CLASSES = self.session.CLASSES
         self.script = script
         self.flow: Flow = flow
         self.node_items: dict = {}  # {Node: NodeItem}
@@ -917,9 +918,9 @@ class FlowView(GUIBase, QGraphicsView):
 
         else:
             if isinstance(c, DataConnection):
-                item = CLASSES['data conn item'](c, self.session.design)
+                item = self.CLASSES['data conn item'](c, self.session.design)
             else:
-                item = CLASSES['exec conn item'](c, self.session.design)
+                item = self.CLASSES['exec conn item'](c, self.session.design)
 
         self._add_connection_item(item)
 

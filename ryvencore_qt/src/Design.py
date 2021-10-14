@@ -3,7 +3,7 @@ import json
 from qtpy.QtCore import QObject, Signal
 from qtpy.QtGui import QFontDatabase
 
-from ryvencore_qt.src.flows.FlowTheme import FlowTheme_Toy, FlowTheme_DarkTron, FlowTheme_Ghost, FlowTheme_Blender, \
+from .flows.FlowTheme import FlowTheme_Toy, FlowTheme_DarkTron, FlowTheme_Ghost, FlowTheme_Blender, \
     FlowTheme_Simple, FlowTheme_Ueli, FlowTheme_PureDark, FlowTheme, FlowTheme_PureLight, \
     FlowTheme_Colorful, FlowTheme_ColorfulLight, FlowTheme_Industrial, FlowTheme_Fusion
 from .GlobalAttributes import Location

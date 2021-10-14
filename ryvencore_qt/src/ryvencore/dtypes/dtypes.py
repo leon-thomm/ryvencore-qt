@@ -9,14 +9,16 @@ This list may grow significantly over time.
 
 class DType:
     def __init__(self, default, bounds: tuple = None, doc: str = "", _load_state=None):
+
+        self.default = default
+        self.val = self.default
+        self.doc = doc
+        self.bounds = bounds
+
         if _load_state:
             self.set_state(_load_state)
-        else:
-            self.default = default
-            self.doc = doc
-            self.bounds = bounds
 
-        self._data = ['default', 'doc', 'bounds']
+        self._data = ['default', 'val', 'doc', 'bounds']
 
     def __str__(self):
         return 'DType.'+self.__class__.__name__

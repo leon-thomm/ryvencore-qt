@@ -8,7 +8,7 @@ from .NodePort import NodeInput, NodeOutput
 from .NodePortBP import NodeInputBP, NodeOutputBP
 from .dtypes import DType
 from .InfoMsgs import InfoMsgs
-from .logging.Logger import Logger
+from .logging import Logger
 from .utils import serialize, deserialize
 
 
@@ -23,6 +23,7 @@ class Node(Base):
     type_ = ''
     tags: [str] = []
     version: str = None  # None means `undefined` and should be avoided
+    visible: bool = True  # useful field for frontends to indicate invisible nodes which cannot be manually placed
     
     init_inputs: [NodeInputBP] = []
     init_outputs: [NodeOutputBP] = []
@@ -245,13 +246,6 @@ class Node(Base):
         """
 
         pass
-
-    # def _initialized(self):  # not used currently
-    #     """
-    #     Called once all the node's components (including inputs, outputs) have been initialized
-    #     """
-    #
-    #     pass
 
     def additional_data(self) -> dict:
         """

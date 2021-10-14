@@ -40,15 +40,3 @@ class PortObjPos(IntEnum):
 
     INPUT = 1
     OUTPUT = 2
-
-
-# registry for customizable classes
-CLASSES = {
-    'node base':    None,
-    'data conn':    None,
-    'exec conn':    None,
-    'logs manager': None,
-    'logger':       None,
-    'vars manager': None,
-    'flow':         None,
-}

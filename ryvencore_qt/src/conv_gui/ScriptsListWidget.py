@@ -54,9 +54,9 @@ class ScriptsListWidget(QWidget):
 
         buttons_layout = QHBoxLayout()
 
-        self.create_macro_button = QPushButton('macro')
-        self.create_macro_button.clicked.connect(self.on_create_macro_clicked)
-        buttons_layout.addWidget(self.create_macro_button)
+        # self.create_macro_button = QPushButton('macro')
+        # self.create_macro_button.clicked.connect(self.on_create_macro_clicked)
+        # buttons_layout.addWidget(self.create_macro_button)
 
         self.create_script_button = QPushButton('script')
         self.create_script_button.clicked.connect(self.on_create_script_clicked)
@@ -97,17 +97,17 @@ class ScriptsListWidget(QWidget):
     def new_script_LE_return_pressed(self):
         self.create_script()  # create normal scripts by default
 
-    def on_create_macro_clicked(self):
-        self.create_macro_script()
+    # def on_create_macro_clicked(self):
+    #     self.create_macro_script()
 
     def on_create_script_clicked(self):
         self.create_script()
 
-    def create_macro_script(self):
-        title = self.new_script_title_lineedit.text()
-
-        if self.session.script_title_valid(title):
-            self.session.create_macro(title=title)
+    # def create_macro_script(self):
+    #     title = self.new_script_title_lineedit.text()
+    #
+    #     if self.session.script_title_valid(title):
+    #         self.session.create_macro(title=title)
 
     def create_script(self):
         title = self.new_script_title_lineedit.text()

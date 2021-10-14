@@ -5,13 +5,11 @@ from ..GUIBase import GUIBase
 from ..SessionThreadInterface import SessionThreadInterface_Backend
 from ..ryvencore import Session as RC_Session, Script
 from ..ryvencore.Base import Base
-from ..ryvencore.MacroScript import MacroScript
-from ..ryvencore.RC import CLASSES
 
 from ..Design import Design
-from ryvencore_qt.src.flows.connections.ConnectionItem import DataConnectionItem, ExecConnectionItem
+from ..flows.connections.ConnectionItem import DataConnectionItem, ExecConnectionItem
 from .Node import Node
-from ryvencore_qt.src.flows.FlowView import FlowView
+from ..flows.FlowView import FlowView
 from .WRAPPERS import VarsManager, LogsManager, DataConnection, Flow, Logger
 
 
@@ -24,49 +22,46 @@ class Session(RC_Session, QObject):
 
     def __init__(
             self,
-            threaded: bool = False,
+            # threaded: bool = False,
             gui_parent: QWidget = None,
-            flow_theme_name=None,
-            performance_mode=None,
-            data_conn_class=None,
-            data_conn_item_class=None,
-            exec_conn_class=None,
-            exec_conn_item_class=None,
-            node_class=None,
+            custom_classes: dict = None,
     ):
         QObject.__init__(self)
 
-        # REGISTER CLASSES
-        # custom wrappers
-        CLASSES['node base'] = Node if not node_class else node_class
-        CLASSES['data conn'] = DataConnection if not data_conn_class else data_conn_class
-        CLASSES['logs manager'] = LogsManager
-        CLASSES['logger'] = Logger
-        CLASSES['vars manager'] = VarsManager
-        CLASSES['flow'] = Flow
-        if exec_conn_class:
-            CLASSES['exec conn'] = exec_conn_class
-        # and some additional classes
-        CLASSES['data conn item'] = DataConnectionItem if not data_conn_item_class else data_conn_item_class
-        CLASSES['exec conn item'] = ExecConnectionItem if not exec_conn_item_class else exec_conn_item_class
+        # register custom wrappers
+        if custom_classes is None:
+            custom_classes = {}
+        if 'node base' not in custom_classes:
+            custom_classes['node base'] = Node
+        if 'data conn' not in custom_classes:
+            custom_classes['data conn'] = DataConnection
+        if 'logs manager' not in custom_classes:
+            custom_classes['logs manager'] = LogsManager
+        if 'logger' not in custom_classes:
+            custom_classes['logger'] = Logger
+        if 'vars manager' not in custom_classes:
+            custom_classes['vars manager'] = VarsManager
+        if 'flow' not in custom_classes:
+            custom_classes['flow'] = Flow
+        if 'data conn item' not in custom_classes:
+            custom_classes['data conn item'] = DataConnectionItem
+        if 'exec conn item' not in custom_classes:
+            custom_classes['exec conn item'] = ExecConnectionItem
 
-        RC_Session.__init__(self, gui=True)
+        RC_Session.__init__(self, gui=True, custom_classes=custom_classes)
 
         # flow views
         self.flow_views = {}  # {Script : FlowView}
 
-        # nodes
-        Node.complete_default_node_classes()
-
         # threading
-        self.threaded = threaded
+        # self.threaded = threaded
         self.gui_parent = gui_parent
 
         self.threading_bridge__backend = SessionThreadInterface_Backend()
         self.threading_bridge__frontend = self.threading_bridge__backend.frontend
-        self.threading_bridge__frontend.moveToThread(gui_parent.thread() if threaded else self.thread())
+        # self.threading_bridge__frontend.moveToThread(gui_parent.thread() if threaded else self.thread())
 
-        # SET COMPLETE_DATA FUNCTION (needs threading_bridge)
+        # set complete_data function (needs threading_bridge)
         Base.complete_data_function = GUIBase.get_complete_data_function(self)
 
         # design
@@ -74,21 +69,7 @@ class Session(RC_Session, QObject):
         app.setAttribute(Qt.AA_UseHighDpiPixmaps)
         Design.register_fonts()
         self.design = Design()
-        if flow_theme_name:
-            self.design.set_flow_theme(name=flow_theme_name)
-        if performance_mode:
-            self.design.set_performance_mode(performance_mode)
 
-
-    def create_macro(self, title: str = None, create_default_logs=True,
-                     data: dict = None,
-                     flow_view_size: list = None) -> MacroScript:
-
-        script = RC_Session.create_macro(self, title=title, create_default_logs=create_default_logs, data=data)
-        self.new_script_created.emit(script)
-        self._build_flow_view(script, flow_view_size)
-
-        return script
 
     def create_script(self, title: str = None, create_default_logs=True,
                       data: dict = None,
@@ -104,6 +85,7 @@ class Session(RC_Session, QObject):
 
         return script
 
+
     def rename_script(self, script: Script, title: str) -> bool:
         """Renames an existing script; emits script_renamed"""
 
@@ -113,6 +95,7 @@ class Session(RC_Session, QObject):
             self.script_renamed.emit(script)
 
         return success
+
 
     def delete_script(self, script: Script):
         """Deletes an existing script; emits script_deleted"""

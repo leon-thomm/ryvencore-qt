@@ -36,12 +36,6 @@ class Node(RC_Node, QObject):
 
         self.item = None  # set by the flow view
 
-    @staticmethod
-    def complete_default_node_classes():
-        func_node_icon = Location.PACKAGE_PATH + '/resources/pics/macro_node_icon.png'
-        from ..ryvencore.MacroScript import MacroScript
-        MacroScript.MacroNode.icon = func_node_icon
-
     """actions"""
 
     def init_default_actions(self) -> dict:

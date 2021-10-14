@@ -1,5 +1,4 @@
 from ..Base import Base
-from ..RC import CLASSES
 from .Logger import Logger
 
 
@@ -10,6 +9,7 @@ class LogsManager(Base):
         Base.__init__(self)
 
         self.script = script
+        self.session = self.script.session
         self.loggers: [Logger] = []
         self.default_loggers = {
             'global': None,
@@ -24,6 +24,6 @@ class LogsManager(Base):
             self.default_loggers[name] = self.new_logger(title=name.title())
 
     def new_logger(self, title: str) -> Logger:
-        logger = CLASSES['logger'](name=title)
+        logger = self.session.CLASSES['logger'](name=title)
         self.loggers.append(logger)
         return logger
