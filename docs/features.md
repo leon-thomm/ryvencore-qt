@@ -30,9 +30,13 @@ For exec connections, by calling `Node.exec_output(index)`, the same effects tak
 
 The fundamental difference is that in contrast to *data* mode, data is not forward propagated on change, but requested backwards, meaning a combinational node passively generating some data (like an addition on two values at inputs) not updated when input data changes, but when the output is requested in another connected node via `Node.input(index)`. See the Ryven documentation for an example.
 
+### advanced flow executors
+
+There are some flow executors in the making which make some assumptions about the type of graph (i.e. acyclic), based on that perform some additional graph analysis, to then provide asymptotically more efficient flow execution. Notice that those executors will likely receive changes in the future.
+
 ***
 
-The mode of a flow (*data* or *exec*) can be set at any time using `Flow.set_algorithm_mode`, default is *data*.
+The mode of a flow can be set at any time using `Flow.set_algorithm_mode`, default is `'data'`.
 
 In both cases the `inp` parameter in `Node.update_event` represents the input index that received data or a signal respectively.
 
@@ -90,6 +94,34 @@ You can add custom Qt widgets to your nodes. For instructions on how to register
 
 To save a project use `Session.serialize()`. To load a saved project use `Session.load()`. Before loading a project, you need to register all required nodes in the session.
 
+**load & save in nodes**
+
+ryvencore provides a dedicated system for loading and saving states of nodes, which is quite important. As nodes are allowed to store anything internally, if your node has states or some internal data that needs to be restored on load (or paste) you need to define their encoding to make them serializable, i.e. in your `MyNode.get_state() -> dict` method you return a `pickle` serializable dictionary containing all your node's (plain or abstracted) state defining data. In `MyNode.set_state(self, data, version)` you then do the exact opposite. All features provided by ryvencore are stored and saved automatically. The following is important when building complex stateful nodes:
+
+Data input values are saved and restored if and only if the input wasn't connected (and therefore can be seen as the source of some data).
+
+It is important to note that nodes which change their state when they receive new inputs are not quite as simple as they might seem, as you need to consider the process of rebuilding a flow that your node is part of. The flow building process works roughly like this:
+
+```python
+for all saved nodes:
+    instanciate node object
+    initialize node (building ports, set_data())
+    trigger place_event()
+    if frontend exists:
+        build frontend
+        trigger view_place_event()
+
+for all saved connections:
+    instanciate connection object
+    connect according ports
+```
+
+a few important points:
+
+- Your node is instantiated (`__init__()`) and initialized (`set_state()`) *before* any incident connections are built. Therefore, you are free to set your output values, you will not harm any potentially later connected stateful nodes, but input values of originally *connected* inputs will not be available yet.
+- When connections are built, the node receives update events when inputs are connected, which also happens during this build process, if the node had connected inputs in the original graph. In case of stateful nodes, you might want to prevent this by setting `self.block_init_updates = True` in the constructor of your node.
+- It often makes sense to complete the custom initialization of your node in the `place_event()`.
+
 ## Script Variables
 
 Script variables are a nice way to improve the interface to your data. There is a really simple but extremely powerful *registration system* that you can use to register methods as *receivers* on a variable name with a method that gets called every time a script var's value with that name changed. The registration process is part of the API of the `Node` class, so you can easily create highly dynamic nodes.
@@ -127,7 +159,7 @@ There is a list of available flow themes (which will hopefully grow). You can ch
 - `Blender`
 - `Simple`
 - `Toy`
--`Tron`
+- `Tron`
 
 To make sure you can create a look that fits in nicely wherever you might integrate your editor, you can customize the colors for all the above themes using a config json file and passing it to the design using `Session.design.load_from_config(filepath)`. The json file should look like this, for any value you can either write `"default"` or specify a specific setting according to the instructions in the info box.
 

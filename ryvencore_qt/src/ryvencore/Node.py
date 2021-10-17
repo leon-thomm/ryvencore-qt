@@ -82,7 +82,12 @@ class Node(Base):
             self.setup_ports(self.init_data['inputs'], self.init_data['outputs'])
 
             # set state
-            self.load_additional_data(self.init_data['additional data'])
+            if 'additional data' in self.init_data:
+                add_data = self.init_data['additional data']
+            else:   # backwards compatibility
+                add_data = self.init_data
+            self.load_additional_data(add_data)
+
             try:
                 if 'version' in self.init_data:
                     version = self.init_data['version']
