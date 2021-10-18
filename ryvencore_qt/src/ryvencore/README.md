@@ -1,6 +1,6 @@
 # `ryvencore` resources - overview
 
-## files
+## modules
 
 **general**
 
