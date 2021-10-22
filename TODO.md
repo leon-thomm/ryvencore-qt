@@ -8,6 +8,10 @@
 - [x] check `Script.py`
 - [x] check for remaining 'macro' occurrences
 
+# cleanups
+
+- [ ] packages in `setup.py`
+
 # release notes
 
 - change all `set_state(self, data)` to `set_state(self, data, version)`

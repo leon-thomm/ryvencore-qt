@@ -1,11 +1,13 @@
 
 <p align="center">
-  <img src="./ryvencore_qt/resources/pics/logo.png" alt="drawing" width="500"/>
+  <img src="./ryvencore_qt/resources/pics/logo.png" alt="drawing" width="50%"/>
 </p>
 
-`rvencore-qt` is a library for building flow-based visual scripting editors for Python with Qt. It comes from the [Ryven](https://github.com/leon-thomm/Ryven) project and will be the foundation for future Ryven versions, amongst other specialized editors. With ryvencore-qt you can create Ryven-like editors to optimize for a specific domain. Technically, `ryvencore-qt` provides a Qt-based frontend for what is now referred to as `ryvencore`. However, `ryvencore` itself is currently still included in this repository until the API is solid enough to give it its own public repo. `ryvencore` might be the base for implementing other frontends in the future.
+`rvencore-qt` is a library for building visual node editors for Python with Qt. It comes from the [Ryven](https://github.com/leon-thomm/Ryven) project and will be the foundation for future Ryven versions, amongst other specialized editors. With ryvencore-qt you can create Ryven-like editors to optimize for a specific domain. Technically, `ryvencore-qt` provides a Qt-based frontend for what is now referred to as `ryvencore`. However, `ryvencore` itself is currently still included in this repository. `ryvencore` implements all the abstract functionality and can be used to easily deploy flows you made in an editor directly on the backend.
 
-### Installation
+### Info
+
+**Installation**
 
 ```
 pip install ryvencore-qt
@@ -18,172 +20,92 @@ cd ryvencore-qt
 python setup.py install
 ```
 
-### Dependencies
+**Dependencies**
 
-`ryvencore-qt` currently uses [QtPy](https://github.com/spyder-ide/qtpy), which is a wrapper for Qt enabling you to choose between different bindings. *(However, due to some really bad inheritance restrictions in PyQt5, you cannot run  `ryvencore-qt` with PyQt5. I plan to use QtPy to enable seamless switching between PySide2 and PySide6.)*
+`ryvencore-qt` runs on PySide2 (bindings for Qt) using [QtPy](https://github.com/spyder-ide/qtpy) as a wrapper to eventually enable seamless switching between PySide2 and PySide6. Notice that `ryvencore-qt` does not work with PyQt, due to crucial inheritance restrictions in PyQt.
 
-Saved flows can be deployed directly on the backend (`ryvencore`) which does not have a single dependency so far!
+Saved projects can be deployed directly on the backend (`ryvencore`) which does not have a single dependency so far.
 
-### Features
+# quick start
 
-#### load & save  
-All serialization and loading of projects. Data is stored using `json`, and for some parts `pickle`.
+The below code demonstrates how to set up an editor with custom defined nodes. You can also find the code in the *examples* folder.
 
-```python
-project: dict = my_session.data()
-with open(filepath, 'w') as f:
-    f.write(json.dumps(project))
-```
-
-#### simple nodes system  
-All information of a node is part of its class. A minimal node definition can be as simple as this
-
-```python
-import ryvencore_qt as rc
-
-class PrintNode(rc.Node):
-    """Prints your data."""
-
-    title = 'Print'
-    init_inputs = [
-        rc.NodeInputBP()
-    ]
-    color = '#A9D5EF'
-
-    def update_event(self, inp=-1):
-        print(self.input(0))
-```
-see also example below.
-
-#### dynamic nodes registration mechanism  
-You can register and unregister nodes at any time. Registered nodes can be placed in a flow.
-```python
-my_session.register_nodes( [ <your_nodes> ] )
-```
-
-<!--
-#### macros / subgraphs  
-You can define *macros* which have their own flow plus input and output node, which get registered as nodes themselves, just like this
-
-![](./docs/img/macro.png)
-Macros are like normal scripts plus input and output node
-![](./docs/img/macro2.png)
--->
-
-#### right click operations system for nodes  
-which can be edited through the API at any time
-```python
-self.actions[f'remove input {i}'] = {
-    'method': self.rem_input,
-    'data': i,
-}
-
-# with some method...
-def rem_input(self, index):
-    self.delete_input(index)
-    del self.actions[f'remove input {len(self.inputs)}']
-```
-
-#### Qt widgets  
-You can add custom QWidgets for your nodes.
-
-```python
-class MyNode(rc.Node):
-    main_widget_class = MyNodeMainWidget
-    main_widget_pos = 'below ports'  # alternatively 'between ports'
-    # ...
-```
-
-#### many different modifiable themes  
-See [Features](https://leon-thomm.github.io/ryvencore-qt/features/).
-
-#### exec flow support  
-While data flows should be the most common use case, exec flows (like [UnrealEngine BluePrints](https://docs.unrealengine.com/4.26/en-US/ProgrammingAndScripting/Blueprints/)) are also supported.
-
-#### stylus support for adding handwritten notes  
-![](./docs/img/stylus_light.png)
-
-#### rendering flow images  
-
-#### logging support  
-```python
-import logging
-
-class MyNode(rc.Node):
-    def __init__(self, params):
-        super().__init__(params)
-
-        self.my_logger = self.new_logger(title='nice log')
-    
-    def update_event(self, inp=-1):
-        self.my_logger.log(logging.INFO, 'updated!')
-```
-
-#### variables system  
-with an update mechanism to build nodes that automatically adapt to change of variables
-
-```python
-import logging
-class MyNode(rc.Node):
-    # ...
-    def __init__(self, params):
-        super().__init__(params)
-        self.my_logger = self.new_log(title='nice log')
-        # assuming a 'messages' var had been created in the flow's script
-        self.register_var_receiver(name='messages', method=self.new_msg)
-    
-    def new_msg(self, msgs: list):
-        self.my_logger.log(logging.INFO, f'received msg: {msgs[-1]}')
-```
-
-<!--
-#### threading compatibility  
-All communication between frontend (`ryvencore-qt`) and backend (`ryvencore`) is based on Qt signals. Therefore, there exists rudimentary threading compatibility, i.e. you can keep your session object in a separate thread to improve concurrency and prevent the backend from being slown down signicantly by the frontend, and all changes you perform directly on the backend are automatically noticed by the frontend. While this is currently extremely experimental and far from production ready, it opens the door to the world of realtime data processing and first successful tests have been made.
--->
-
-### Usage
-
+`main.py`
 ``` python
+# Qt
 import sys
 import os
-from random import random
-
-os.environ['QT_API'] = 'pyside2'  # tells qtpy to use PySide2
-import ryvencore_qt as rc
+os.environ['QT_API'] = 'pyside2'  # tells QtPy to use PySide2
 from qtpy.QtWidgets import QMainWindow, QApplication
 
+# ryvencore-qt
+import ryvencore_qt as rc
+from nodes import export_nodes
+
+
+if __name__ == "__main__":
+
+    # first, we create the Qt application and a window
+    app = QApplication()
+    mw = QMainWindow()
+
+    # now we initialize a new ryvencore-qt session
+    session = rc.Session()
+    session.design.set_flow_theme(name='pure light')  # setting the design theme
+
+    # and register our nodes and create a script
+    session.register_nodes(export_nodes)
+
+    # to get a flow where we can place nodes, we need to crate a new script
+    script = session.create_script('hello world', flow_view_size=[800, 500])
+
+    # getting the flow widget of the newly created script
+    flow_view = session.flow_views[script]
+    mw.setCentralWidget(flow_view)  # and show it in the main window
+
+    # finally, show the window and run the application
+    mw.show()
+    sys.exit(app.exec_())
+```
+
+`nodes.py`
+```python
+import ryvencore_qt as rc
+from random import random
+
+
+# let's define some nodes
+# to easily see something in action, we create one node generating random numbers, and one that prints them
 
 class PrintNode(rc.Node):
     """Prints your data"""
 
-    # all basic properties
     title = 'Print'
     init_inputs = [
-        rc.NodeInputBP()
+        rc.NodeInputBP(),
     ]
     init_outputs = []
     color = '#A9D5EF'
-
-    # see API doc for a full list of properties
 
     # we could also skip the constructor here
     def __init__(self, params):
         super().__init__(params)
 
     def update_event(self, inp=-1):
-        data = self.input(0)  # get data from the first input
-        print(data)
+        print(
+            self.input(0)  # get data from the first input
+        )
 
 
 class RandNode(rc.Node):
-    """Generates random float"""
+    """Generates scaled random float values"""
 
     title = 'Rand'
     init_inputs = [
-        rc.NodeInputBP(dtype=rc.dtypes.Data(default=1))
+        rc.NodeInputBP(dtype=rc.dtypes.Data(default=1)),
     ]
     init_outputs = [
-        rc.NodeOutputBP()
+        rc.NodeOutputBP(),
     ]
     color = '#fcba03'
 
@@ -195,43 +117,34 @@ class RandNode(rc.Node):
         self.set_output_val(0, val)
 
 
-if __name__ == "__main__":
-
-    # creating the application and a window
-    app = QApplication()
-    mw = QMainWindow()
-
-    # creating the session, registering, creating script
-    session = rc.Session()
-    session.design.set_flow_theme(name='pure light')
-    session.register_nodes([PrintNode, RandNode])
-    script = session.create_script('hello world', flow_view_size=[800, 500])
-
-    mw.setCentralWidget(session.flow_views[script])
-
-    mw.show()
-    sys.exit(app.exec_())
+export_nodes = [
+    PrintNode,
+    RandNode,
+]
 ```
 
-For a detailed overview visit the [docs page](https://leon-thomm.github.io/ryvencore-qt/). For a precise definition of the flows and features, see [Features](https://leon-thomm.github.io/ryvencore-qt/features/).
+For a more detailed overview, including a precise definition of flows, see [Features Page](https://leon-thomm.github.io/ryvencore-qt/features/) and .
 
-Cheers!
+***
 
 <!--
-
-### Future Development
-
-#### Qt Dependency
-
-I am currently investigating on options for a more scalable replacement for the Qt signals which ryvencore's components use for communication in gui mode. Following suggestions of others, I'm especially looking at brokerless message queues like ZeroMQ, NNG right now. This might ultimately enable scaling ryvencore into the web with a JS based frontend in the browser. That's clearly far far future, but very exciting and a point where contributions by users with more experience with this would be very welcome.
-
-### Contributing
-
-Due to my study, I myself will not be able to work on this a lot during the next months. I did my best to provide an internal structure that is a good foundation for further development. For discussing general ideas and suggestions, notice the *Discussions* section. I'd be very happy to see people contribute.
-
+#### threading compatibility  
+All communication between frontend (`ryvencore-qt`) and backend (`ryvencore`) is based on Qt signals. Therefore, there exists rudimentary threading compatibility, i.e. you can keep your session object in a separate thread to improve concurrency and prevent the backend from being slown down signicantly by the frontend, and all changes you perform directly on the backend are automatically noticed by the frontend. While this is currently extremely experimental and far from production ready, it opens the door to the world of realtime data processing and first successful tests have been made.
 -->
 
-### Development
+
+### Contributions and Development
+
+This project will eventually need a community in order to survive. Particularly effective ways to contribute outside of direct development of the software are creating
+
+- tutorials
+- nodes
+- small editors
+- documentation
+- tests
+- etc
+
+If you have any questions, suggestions, or want to show something you've built with this project notice the *discussions* area which is the perfect place for that.
 
 To give a quick overview over the most important class relations, see the below class diagram. The DrawIO diagram file is in the repository.
 

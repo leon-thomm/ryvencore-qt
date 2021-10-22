@@ -1,4 +1,4 @@
-# `ryvencore` resources - overview
+# `ryvencore` - overview
 
 ## modules
 

@@ -121,6 +121,8 @@ if __name__ == "__main__":
     session.load(example_project)
     script = session.create_script('hello world', flow_view_size=[8000, 5000])
     # script = session.scripts[0]
+    # session.flow_views[script]._stylus_modes_widget.hide()
+    session.flow_views[script]._stylus_modes_proxy.hide()
 
     mw.setCentralWidget(session.flow_views[script])
 
