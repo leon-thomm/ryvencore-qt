@@ -4,7 +4,7 @@
 
 <h1 align="center"> Welcome to the ryvencore-qt documentation </h1>
 
-> [!WARNING]
+> [!NOTE]
 > All this is in the making and some information and examples might not be 100% up to date. This documentation is generated using [Docsify](https://github.com/docsifyjs/docsify/), so feel free to fork the project and improve it by simply editing the markdown.
 
 ## Project Idea
@@ -13,12 +13,11 @@ The true power of flow-based visual scripting lies in optimization towards speci
 
 ### Future
 
-Technically, `ryvencore-qt` is a Qt frontend for `ryvencore`, the backend, which might get its own repository once the API is solid enough and other frontends can be developed. Attempts to bring parts of this to the web by creating a `ryvencore-qt` equivalent for the browser are being discussed. If you want to contribute to that, please hit me up.
+While `ryvencore-qt` is just a Qt frontend for `ryvencore`, other frontends might be also developed. Attempts to bring parts of this to the web by creating a `ryvencore-qt` equivalent for the browser are being discussed. If you want to help out, please hit me up!
 
-> [!WARNING]
-> `ryvencore-qt` is not a professional piece of software and sometimes there are major changes. It is in very early stage, and be aware that future versions might not be fully backwards compatible. If you have suggestions for improvement of the software, feel free to open discussions.
+Notice that `ryvencore-qt` is not a professional piece of software and sometimes there are major changes. Compared to commercial products or software with an extensive community, it is in an early stage.
 
-Besides essential GUI classes, `ryvencore-qt` also provides a few convenience GUI classes which only use `ryvencore`'s public API, making it a little easier to get started.
+Next to essential GUI classes, `ryvencore-qt` also provides a few convenience GUI classes which only use `ryvencore`'s public API, making it a little easier to get started.
 
 There is a precise definition of the fundamental characteristics of the flows in the [Features](features.md) section.
 

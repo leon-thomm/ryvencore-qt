@@ -32,11 +32,11 @@ The fundamental difference is that in contrast to *data* mode, data is not forwa
 
 ### advanced flow executors
 
-There are some flow executors in the making which make some assumptions about the type of graph (i.e. acyclic), based on that perform some additional graph analysis, to then provide asymptotically more efficient flow execution. Notice that those executors will likely receive changes in the future.
+There are some (very experimental) flow executors in the making which make some assumptions about the type of graph (i.e. acyclic), based on that perform some additional graph analysis, to then provide asymptotically more efficient flow execution. Notice that those executors will likely receive major changes in the future.
 
 ***
 
-The mode of a flow can be set at any time using `Flow.set_algorithm_mode`, default is `'data'`.
+The mode of a flow can be set at any time via `Flow.set_algorithm_mode`, default is `'data'`.
 
 In both cases the `inp` parameter in `Node.update_event` represents the input index that received data or a signal respectively.
 
@@ -48,9 +48,9 @@ Nodes are subclasses of the `Node` class. Single node instances are instances of
 One very important feature is the possibility of defining custom GUI components, i.e. widgets, for your nodes. A node can have a `main_widget` and input widgets, whose classes are stored in the `input_widget_classes` attribute.
 -->
 
-### Special Actions
+### Node Actions
 
-Special actions are a very simple way to define right click operations for your nodes. The non-static `Node.special_actions` attribute is a dictionary which you can edit like this
+Node actions are a very simple way to define an interface of possible (in most cases state changing) operations for your node. `ryvencore-qt` generates right-click menus for them. The non-static `Node.actions` attribute is a dictionary which you can edit like this
 
 ```python
 # creating a new entry
@@ -81,10 +81,10 @@ def add_some_input_at(self, index):
     self.create_input(label='inserted input', type_='data')
 ```
 
-Special actions are saved and reloaded automatically.
+Node actions are saved and reloaded automatically.
 
 > [!WARNING]
-> Only refer to your according node's methods in the `method` field, not some other objects'. When saving, the referred method's name is stored and the method field in the `special_actions` entry is recreated on load via `getattr(node, method_name)`.
+> Only refer to your according node's methods in the `method` field, not some other objects'. When saving, the referred method's name is stored and the method field in the `actions` entry is recreated on load via `getattr(node, method_name)`.
 
 ### Custom GUI
 
@@ -96,9 +96,9 @@ To save a project use `Session.serialize()`. To load a saved project use `Sessio
 
 **load & save in nodes**
 
-ryvencore provides a dedicated system for loading and saving states of nodes, which is quite important. As nodes are allowed to store anything internally, if your node has states or some internal data that needs to be restored on load (or paste) you need to define their encoding to make them serializable, i.e. in your `MyNode.get_state() -> dict` method you return a `pickle` serializable dictionary containing all your node's (plain or abstracted) state defining data. In `MyNode.set_state(self, data, version)` you then do the exact opposite. All features provided by ryvencore are stored and saved automatically. The following is important when building complex stateful nodes:
+`ryvencore` provides a dedicated system for loading and saving states of nodes, which is quite important. As nodes are allowed to store anything internally, if your node has states, or some internal data that needs to be restored on load (or paste) you need to define their encoding to make them serializable, i.e. in your `MyNode.get_state() -> dict` method you return a `pickle` serializable dictionary containing all your node's (plain or abstracted) state defining data. In `MyNode.set_state(self, data, version)` you then do the exact opposite. All features provided by ryvencore are stored and saved automatically. The following is important when building complex stateful nodes:
 
-Data input values are saved and restored if and only if the input wasn't connected (and therefore can be seen as the source of some data).
+Data input values are saved and restored if and only if the input wasn't connected (and therefore can be seen as the source of some data). Also, once your nodes get a little more complex, you'll want to make use of the `version` parameter in `set_state()` which corresponds to the `version` of the node when the loaded data was saved (this way you can provide backward compatibility to older versions of your node).
 
 It is important to note that nodes which change their state when they receive new inputs are not quite as simple as they might seem, as you need to consider the process of rebuilding a flow that your node is part of. The flow building process works roughly like this:
 
@@ -155,6 +155,7 @@ There is a list of available flow themes (which will hopefully grow). You can ch
 - `pure light`
 - `colorful dark`
 - `colorful light`
+- `Fusion`
 - `Ueli`
 - `Blender`
 - `Simple`
@@ -288,35 +289,26 @@ The styling of widgets is pretty much in your hands.
 <!-- You can also store a stylesheet via `Session.design.set_stylesheet()` which is then accessible in custom node widget classes via `self.session.design.global_stylesheet`.  -->
 When making a larger editor, you can style the builtin widgets (like the builtin input widgets for nodes) by referencing their class names in your qss.
 
-## Class Customizations
-
-There is currently a (*very* alpha) option to provide your own reimplementations for internally defined classes to add functionality to your editor.
-
-> [!WARNING]
-> This system is most likely going to change a few times. Also be aware that future changes on those internal parts will most likely frequently break your code. The goal is to get an internal system running solid enough to not receive frequent changes anymore.
-
-There are no detailed instructions on that in the docs yet, but you can take a look at the implementations, and then pass your reimplementations of the classes you want to enhance to the `CLASSES` dict, **before** initializing a `Session`.
-
-<!-- ## Customizing Connections
-
-You can provide your own reimplementations of the connection classes, since this is an excellent point to add domain-specific additional functionality to your editor (like 'edge weights' for example).  -->
-
 ## Flow View Features
 
 The `FlowView` class, which is a subclass of `QGraphicsView`, supports some special features such as
 
 - stylus support for adding simple handwritten notes
-- rendered images of the flow including high res for presentations
+- rendered images of the flow including high-res for presentations
 
+[comment]: <> (
 ## Threading
-
-The internal communication between backend (`ryvencore`) and frontend (`ryvencore-qt`) is done in a somewhat thread-safe way. This means, you can initialize the `Session` object in a separate thread, and provide a GUI parent for the `FlowView` which will then be initialized in this GUI component's thread. Of course, Python is very limited for threading due to the GIL. However, threading your components still improves concurrency, i.e. your session is not significantly slown down by the frontend. Further parallelization of the tasks that your individual nodes perform is up to you.
+The internal communication between backend &#40;`ryvencore`&#41; and frontend &#40;`ryvencore-qt`&#41; is done in a somewhat thread-safe way. This means, you can initialize the `Session` object in a separate thread, and provide a GUI parent for the `FlowView` which will then be initialized in this GUI component's thread. Of course, Python is very limited for threading due to the GIL. However, threading your components still improves concurrency, i.e. your session is not significantly slown down by the frontend. Further parallelization of the tasks that your individual nodes perform is up to you. Threading generally adds a lot of design work and danger of hard to resolve bugs. If there will be a web frontend in the future, it will probably make more sense to use that for anything that's supposed to run concurrently, due to its asynchronous nature.
+)
 
 ## GUI-less Deployment
 
 You can deploy saved projects (`Session.serialize()`) directly on `ryvencore` without any frontend dependencies. You have full access to the whole `ryvencore` API, so you can even perform all modifications with the expected results. GUI-less deployment is like code generation but better, since you still have API access and `ryvencore` is lightweight.
 
 ```python
+import json
+import ryvencore_qt.ryvencore as rc
+
 if __name__ == '__main__':
 
     with open('path/to/your/project_file', 'r') as f:
@@ -325,7 +317,7 @@ if __name__ == '__main__':
     project_dict = json.loads(project_str)
 
     # creating session and loading the contents
-    session = Session(no_gui=True)
+    session = rc.Session(gui=False)
     session.register_nodes([ <your_used_nodes_here> ])
     scripts = session.load(project_dict)
 
@@ -335,17 +327,16 @@ if __name__ == '__main__':
 
     node1, node2, node3 = flow.nodes
     node1.update()
+    ...
 ```
 
-Which of the API calls you use in `ryvencore-qt` don't come from `ryvencore` is indicated in the API reference (basically everything frontend/widgets-related). Of course, your nodes are not allowed to access `ryvencore-qt` API, as this API does not exist when running it on the backend, since there is no frontend then. To make your nodes compatible with this, you can check the boolean `Session.gui` attribute to determine whether the session is aware of a frontend or not.
+Which of the API calls you use in `ryvencore-qt` don't come from `ryvencore` is indicated in the API ref (basically everything frontend/widgets-related). Of course, your nodes are not allowed to access `ryvencore-qt` API, as this API does not exist when running it on the backend, since there is no frontend then. To make your nodes compatible with this, you can check the boolean `Session.gui` attribute to determine whether the session is aware of a frontend or not.
 
 ``` python
 def update_event(self, inp=-1):
-
-    # doing some work
-    
+    # ...
     if self.session.gui:
         self.main_widget().update()
+    # ...
     
-    # some more work
 ```

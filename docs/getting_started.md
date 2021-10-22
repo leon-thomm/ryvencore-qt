@@ -14,8 +14,6 @@ cd ryvencore-qt
 python setup.py install
 ```
 
-Python 3.8+ recommended
-
 ## First Editor
 
 > [!NOTE]

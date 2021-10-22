@@ -1,8 +1,8 @@
 # API Reference
 
-This API reference provides descriptions of the API methods of `ryvencore` **and** `ryvencore-qt` (which just adds a few GUI related methods and Qt signals to the `ryvencore` API). When programming nodes, the only thing to keep in mind is to use `ryvencore-qt` API strictly only in places where existance of a frontend is guaranteed (you can usually use the `self.session.gui: boolean` in the `Node` class). Assume all methods are `ryvencore` API, `ryvencore-qt` methods or sections are marked with *`RC-QT`*.
+This page provides descriptions of the API methods of `ryvencore` **and** `ryvencore-qt` (which just adds a few GUI related methods and Qt signals to the `ryvencore` API). If you plan to deploy your nodes without frontend, then keep in mind to use `ryvencore-qt` API strictly only in places where existence of a frontend is guaranteed (you can usually use the `self.session.gui: boolean` in the `Node` class). Assume all methods are `ryvencore` API, `ryvencore-qt` methods or sections are marked with *`RC-QT`*.
 
-Also please use argument names (like `session.create_script(title='something')`) as some parameter orderings will change.
+Also, please use argument names (like `session.create_script(title='something')`) as some parameter orderings will change.
 
 ## [class] `Session`
 
@@ -30,19 +30,14 @@ The following signals are useful if you use custom widgets for listing the scrip
 
 ### Methods
 
-`Session(threaded: bool = False, gui_parent: QWidget = None, flow_theme_name=None, performance_mode=None, node_class=None)` *[`RC-QT`]*
+`Session(gui_parent: QWidget = None, custom_classes: dict = None)`
 
 *don't use other arguments*
 
 | Parameter                         | Description                               |
 | --------------------------------- | ----------------------------------------- |
-| `threaded`                        | True for threaded applications. |
 | `gui_parent`                      | The parent (i.e. MainWindow) for the GUI, only important for threaded applications. |
-| `flow_theme_name`                 | The name of the flow theme used. |
-| `performance_mode`                | `'pretty'` or `'fast'` |
-| `node_class`                      | A custom `Node` base for all nodes, including internally defined ones such as the macro nodes. |
-
-The `ryvencore` session just takes one `gui: bool` argument.
+| `custom_classes`                  | You can provide custom implementations of classes. |
 
 `register_node(node)`
 
@@ -68,10 +63,6 @@ Un-register a node which will then be removed from the internal list. Existing i
 | `create_default_logs`             | Whether the script's default logs (*Global* and *Errors*) should get created. You can also do them later via `Script.logs_manager.create_default_logs()`. |
 
 Creates and returns a script which triggers the `Session.new_script_created()` signal. By the time the script is returned, all abstract as well as the GUI components have been created.
-
-`create_macro(title: str, create_default_logs=True, flow_view_size: list = None) -> MacroScript`
-
-See `Session.create_script()` above.
 
 `rename_script(script: Script, title: str) -> bool`
 
@@ -159,7 +150,7 @@ Manages all the logs of a script.
 Creates the default script's logs *Global* and *Errors*. This is done automatically if you didn't disable default logs when creating the the script.
 
 > [!NOTE]
-> I might remove default logs from `ryvencore` soon since their specifications depend on the use case and they can be added manually with exact same behavior.
+> I might remove default logs from `ryvencore` soon since their specifications depend on the use case and they can easily be added manually with exact same behavior.
 
 `new_logger(title: str) -> Logger`
 
@@ -353,6 +344,8 @@ Use the following static attributes to define the basic properties of your node.
 | Name                              | Description                               |
 | --------------------------------- | ----------------------------------------- |
 | `title: str`                      | The node's initial title. It doesn't have to be unique.    |
+| `tags: list`                      | A list of string tags to support search.    |
+| `version: str`                    | The version tag of your node. Using this can save you a lot of trouble.    |
 | `init_inputs: [NodeInputBP]`      | Initial inputs.    |
 | `init_outputs: [NodeOutputBP]`    | Initial outputs.    |
 | `identifier: str`                 | A unique identifier string. If nothing is provided, the node's class name will be used. |
@@ -397,16 +390,17 @@ Called once the whole GUI of the node (including custom widgets) has initialized
 
 In case your node implements sequential behavior, provide all state defining data here in a dictionary. The dict will be serialized using `pickle` and `base64` encoding when copying/cutting nodes or when saving the project. Do the reverse in `set_state(data)`, see below.
 
-*[override]* `set_state(data: dict)`
+*[override]* `set_state(data: dict, version)`
 
 | Parameter             | Description                               |
 | --------------------- | ----------------------------------------- |
 | `data`                | Holds the exact dictionary you returned in `get_state()`. |
+| `version`             | The `version` of you node when it created `data` in `get_state()`. |
 
 Reinitialize your node's state here.
 
 > [!NOTE]
-> All framework-internal objects, such as the `special_actions` dict, **as well as inputs and outputs** get saved and restored automatically exactly as they were when the node was serialized. If you added some inputs, for instance, don't add them again manually in `set_state()`, this happens automatically. Just update your own internal variables.
+> All framework-internal objects, such as the `actions` dict, **as well as inputs and outputs** get saved and restored automatically exactly as they were when the node was serialized. If you added some inputs, for instance, don't add them again manually in `set_state()`, this happens automatically. Just update your own internal variables.
 
 `update(inp=-1)`
 
