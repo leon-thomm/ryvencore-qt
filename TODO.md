@@ -10,7 +10,7 @@
 
 # cleanups
 
-- [ ] packages in `setup.py`
+- [x] packages in `setup.py`
 
 # release notes
 

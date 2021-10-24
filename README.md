@@ -1,6 +1,6 @@
 
 <p align="center">
-  <img src="./ryvencore_qt/resources/pics/logo.png" alt="drawing" width="50%"/>
+  <img src="./ryvencore_qt/resources/pics/logo.png" alt="drawing" width="70%"/>
 </p>
 
 `rvencore-qt` is a **Python library for building visual node editors**. It comes from the [Ryven](https://github.com/leon-thomm/Ryven) project and will be the foundation for future Ryven versions. Technically, `ryvencore-qt` provides a Qt-based frontend for what is now referred to as `ryvencore`. However, `ryvencore` itself is currently still included in this repository. `ryvencore` implements all the abstract functionality and can be used to easily deploy flows directly on the backend.
@@ -25,6 +25,10 @@ python setup.py install
 `ryvencore-qt` runs on PySide2 (bindings for Qt) using [QtPy](https://github.com/spyder-ide/qtpy) as a wrapper to eventually enable seamless switching between PySide2 and PySide6. Notice that `ryvencore-qt` does not work with PyQt, due to crucial inheritance restrictions in PyQt.
 
 Saved projects can be deployed directly on the backend (`ryvencore`) which does not have a single dependency so far.
+
+**Code**
+
+I tried structure all code nicely but it's not 100% PEP 8 conform, and it does not (yet) follow a particular standard for docstring formatting etc. The individual packages have their own READMEs giving a quick overview which should be quite helpful to gain understanding about the implementation.
 
 # quick start
 
