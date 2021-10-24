@@ -123,7 +123,7 @@ export_nodes = [
 ]
 ```
 
-For a more detailed overview, including a precise definition of flows, see [Features Page](https://leon-thomm.github.io/ryvencore-qt/features/) and .
+For a more detailed overview, including a precise definition of flows, see [Features Page](https://leon-thomm.github.io/ryvencore-qt/features/).
 
 ***
 
