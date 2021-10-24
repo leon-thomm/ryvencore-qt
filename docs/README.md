@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="img/logo.png" height="200"/>
+  <img src="img/logo.png" width="60%"/>
 </p>
 
 <h1 align="center"> Welcome to the ryvencore-qt documentation </h1>

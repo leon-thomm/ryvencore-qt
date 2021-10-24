@@ -3,9 +3,9 @@
   <img src="./ryvencore_qt/resources/pics/logo.png" alt="drawing" width="50%"/>
 </p>
 
-`rvencore-qt` is a library for building visual node editors for Python with Qt. It comes from the [Ryven](https://github.com/leon-thomm/Ryven) project and will be the foundation for future Ryven versions, amongst other specialized editors. With ryvencore-qt you can create Ryven-like editors to optimize for a specific domain. Technically, `ryvencore-qt` provides a Qt-based frontend for what is now referred to as `ryvencore`. However, `ryvencore` itself is currently still included in this repository. `ryvencore` implements all the abstract functionality and can be used to easily deploy flows you made in an editor directly on the backend.
+`rvencore-qt` is a **Python library for building visual node editors**. It comes from the [Ryven](https://github.com/leon-thomm/Ryven) project and will be the foundation for future Ryven versions. Technically, `ryvencore-qt` provides a Qt-based frontend for what is now referred to as `ryvencore`. However, `ryvencore` itself is currently still included in this repository. `ryvencore` implements all the abstract functionality and can be used to easily deploy flows directly on the backend.
 
-### Info
+# Details
 
 **Installation**
 
@@ -53,7 +53,7 @@ if __name__ == "__main__":
     session = rc.Session()
     session.design.set_flow_theme(name='pure light')  # setting the design theme
 
-    # and register our nodes and create a script
+    # and register our nodes
     session.register_nodes(export_nodes)
 
     # to get a flow where we can place nodes, we need to crate a new script
