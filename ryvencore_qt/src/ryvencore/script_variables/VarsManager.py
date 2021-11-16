@@ -1,4 +1,4 @@
-from ..Base import Base
+from ..Base import Base, Event
 from .Variable import Variable
 from ..InfoMsgs import InfoMsgs
 
@@ -6,6 +6,9 @@ from ..InfoMsgs import InfoMsgs
 class VarsManager(Base):
     """Manages script variables and triggers receivers when values of variables change"""
 
+    new_var_created = Event(Variable)
+    var_deleted = Event(Variable)
+    var_val_changed = Event(Variable, object)
 
     def __init__(self, script, load_data=None):
         Base.__init__(self)
@@ -40,6 +43,7 @@ class VarsManager(Base):
             v = Variable(name, val)
             self.variables.append(v)
             self.var_receivers[name] = {}
+            self.new_var_created.emit(v)
             return v
         else:
             return None
@@ -74,7 +78,9 @@ class VarsManager(Base):
         var = self.variables[var_index]
         var.val = val
 
-        # update all variable usages by calling all registered object's methods on updated variable with the new val
+        self.var_val_changed.emit(val)
+
+        # and update all variable usages by calling all registered object's methods on updated variable with the new val
         for receiver, methods in self.var_receivers[name].items():
             for m in methods:
                 m(name, val)
@@ -95,6 +101,7 @@ class VarsManager(Base):
         """Deletes a variable"""
 
         self.variables.remove(var)
+        self.var_deleted.emit(var)
 
 
     def register_receiver(self, receiver, var_name: str, method):

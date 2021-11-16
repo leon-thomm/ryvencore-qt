@@ -6,6 +6,22 @@ def complete_data(data: dict) -> dict:
     return data
 
 
+class Event:
+    def __init__(self, *args):
+        self.args = args
+        self._slots = []
+
+    def connect(self, callback):
+        self._slots.append(callback)
+
+    def disconnect(self, callback):
+        self._slots.remove(callback)
+
+    def emit(self, *args):
+        for cb in self._slots:
+            cb(args)
+
+
 class Base:
     """
     Base class for all abstract components. Provides functionality for ID counting.
@@ -35,12 +51,24 @@ class Base:
     # notice that the attribute is static, but a subclass changing it will not change it for Base
     # and hence not for other Base subclasses, only for itself
 
+    # events
+    events = {}
+    # format: {event_name : tuple_of_arguments}
+    # the arguments tuple only serves documentation purposes
+
     def __init__(self):
         self.GLOBAL_ID = self.global_id_ctr.count()
 
         # ignore custom ID if it has already been set
         if self.id_ctr is not None and not (hasattr(self, 'ID') and self.ID is not None):
             self.ID = self.id_ctr.count()
+
+        self._slots = {
+            ev: []
+            for ev in self.events
+        }
+
+    # CUSTOM DATA ------------------------------------
 
     # this can be set to another function by the frontend to implement adding frontend information to the data dict
     complete_data_function = lambda data: data
@@ -51,3 +79,17 @@ class Base:
 
     def complete_data(self, data: dict) -> data:
         return Base.complete_data_function(data)
+
+    # EVENTS ------------------------------------
+
+    def on(self, ev: Event, callback):
+        # self._slots[ev].append(callback)
+        ev.connect(callback)
+
+    def off(self, ev: Event, callback):
+        # self._slots[ev].remove(callback)
+        ev.disconnect(callback)
+
+    # def _emit(self, ev: str, *args, **kwargs):
+    #     for s in self._slots[ev]:
+    #         s(args, kwargs)

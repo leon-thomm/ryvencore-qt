@@ -15,10 +15,10 @@ from .WRAPPERS import VarsManager, LogsManager, DataConnection, Flow, Logger
 
 class Session(RC_Session, QObject):
 
-    new_script_created = Signal(object)
+    # new_script_created = Signal(object)
     flow_view_created = Signal(object, object)
-    script_renamed = Signal(object)
-    script_deleted = Signal(object)
+    # script_renamed = Signal(object)
+    # script_deleted = Signal(object)
 
     def __init__(
             self,

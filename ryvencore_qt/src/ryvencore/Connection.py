@@ -1,4 +1,4 @@
-from .Base import Base
+from .Base import Base, Event
 
 from .InfoMsgs import InfoMsgs
 
@@ -9,6 +9,8 @@ class Connection(Base):
     port to some connected input port.
     """
 
+    activated = Event()
+
     def __init__(self, params):
         Base.__init__(self)
 
@@ -16,7 +18,8 @@ class Connection(Base):
 
     def activate(self):
         """Causes forward propagation of information"""
-        pass
+
+        self.activated.emit()
 
 
 class ExecConnection(Connection):
@@ -24,6 +27,7 @@ class ExecConnection(Connection):
     def activate(self):
         """Causes an update in the input port"""
         InfoMsgs.write('exec connection activated')
+        super().activate()
 
         self.inp.update()
 
@@ -47,6 +51,7 @@ class DataConnection(Connection):
     def activate(self, data=None):
         """Passes data to the input port and causes update"""
         InfoMsgs.write('data connection activated')
+        super().activate()
 
         # store data
         self.data = data

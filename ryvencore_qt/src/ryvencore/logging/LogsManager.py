@@ -1,9 +1,11 @@
-from ..Base import Base
+from ..Base import Base, Event
 from .Logger import Logger
 
 
 class LogsManager(Base):
     """Manages all logs/loggers that belong to the script."""
+
+    new_logger_created = Event(Logger)
 
     def __init__(self, script, create_default_logs=True):
         Base.__init__(self)
@@ -26,4 +28,5 @@ class LogsManager(Base):
     def new_logger(self, title: str) -> Logger:
         logger = self.session.CLASSES['logger'](name=title)
         self.loggers.append(logger)
+        self.new_logger_created.emit(logger)
         return logger

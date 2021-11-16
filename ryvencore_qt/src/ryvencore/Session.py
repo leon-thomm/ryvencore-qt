@@ -1,4 +1,4 @@
-from .Base import Base
+from .Base import Base, Event
 
 
 from .Script import Script
@@ -11,6 +11,10 @@ class Session(Base):
     The Session is the top level interface to an editor, it represents a project and manages all project-wide
     components.
     """
+
+    new_script_created = Event(Script)
+    script_renamed = Event(Script)
+    script_deleted = Event(Script)
 
     def __init__(
             self,
@@ -117,17 +121,23 @@ class Session(Base):
         self.scripts.append(script)
         script.load_flow()
 
+        self.new_script_created.emit(script)
+
         return script
 
 
     def rename_script(self, script: Script, title: str) -> bool:
         """Renames an existing script"""
 
+        success = False
+
         if self.script_title_valid(title):
             script.title = title
-            return True
-        else:
-            return False
+            success = True
+
+        self.script_renamed.emit(script)
+
+        return success
 
 
     def script_title_valid(self, title: str) -> bool:
@@ -146,6 +156,8 @@ class Session(Base):
         """Removes an existing script."""
 
         self.scripts.remove(script)
+
+        self.script_deleted.emit(script)
 
 
     def info_messenger(self):
