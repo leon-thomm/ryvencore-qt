@@ -31,6 +31,7 @@ class Session(Base):
         self.nodes = []  # list of node CLASSES
         self.invisible_nodes = []
         self.gui: bool = gui
+        self.init_data = None
 
 
     def register_default_classes(self):
@@ -158,6 +159,8 @@ class Session(Base):
 
         if 'scripts' not in project:
             raise Exception('not a valid project dict')
+
+        self.init_data = project
 
         new_scripts = []
         for sc in project['scripts']:
