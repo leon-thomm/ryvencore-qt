@@ -19,16 +19,16 @@ class Session(Base):
     def __init__(
             self,
             gui: bool = False,
-            custom_classes: dict = None,
+            # custom_classes: dict = None,
     ):
         Base.__init__(self)
 
-        if custom_classes is None:
-            custom_classes = {}
-
-        # registry for custom class implementations
-        self.CLASSES = custom_classes
-        self.register_default_classes()
+        # if custom_classes is None:
+        #     custom_classes = {}
+        #
+        # # registry for custom class implementations
+        # self.CLASSES = custom_classes
+        # self.register_default_classes()
 
         # ATTRIBUTES
         self.scripts: [Script] = []
@@ -38,40 +38,40 @@ class Session(Base):
         self.init_data = None
 
 
-    def register_default_classes(self):
-        """
-        Registers the default ryvencore-internal implementations of all exposed classes that COULD have been
-        extended externally, in which case it won't set the class.
-        So, if the a class like Node was extended externally, CLASSES['node base'] will be set to this custom Node
-        class, so we leave it as it is then.
-        """
-
-        if 'node base' not in self.CLASSES:
-            self.CLASSES['node base'] = Node
-
-        if 'data conn' not in self.CLASSES:
-            from .Connection import DataConnection
-            self.CLASSES['data conn'] = DataConnection
-
-        if 'exec conn' not in self.CLASSES:
-            from .Connection import ExecConnection
-            self.CLASSES['exec conn'] = ExecConnection
-
-        if 'logs manager' not in self.CLASSES:
-            from .logging import LogsManager
-            self.CLASSES['logs manager'] = LogsManager
-
-        if 'logger' not in self.CLASSES:
-            from .logging import Logger
-            self.CLASSES['logger'] = Logger
-
-        if 'vars manager' not in self.CLASSES:
-            from .script_variables import VarsManager
-            self.CLASSES['vars manager'] = VarsManager
-
-        if 'flow' not in self.CLASSES:
-            from .Flow import Flow
-            self.CLASSES['flow'] = Flow
+    # def register_default_classes(self):
+    #     """
+    #     Registers the default ryvencore-internal implementations of all exposed classes that COULD have been
+    #     extended externally, in which case it won't set the class.
+    #     So, if the a class like Node was extended externally, CLASSES['node base'] will be set to this custom Node
+    #     class, so we leave it as it is then.
+    #     """
+    #
+    #     if 'node base' not in self.CLASSES:
+    #         self.CLASSES['node base'] = Node
+    #
+    #     if 'data conn' not in self.CLASSES:
+    #         from .Connection import DataConnection
+    #         self.CLASSES['data conn'] = DataConnection
+    #
+    #     if 'exec conn' not in self.CLASSES:
+    #         from .Connection import ExecConnection
+    #         self.CLASSES['exec conn'] = ExecConnection
+    #
+    #     if 'logs manager' not in self.CLASSES:
+    #         from .logging import LogsManager
+    #         self.CLASSES['logs manager'] = LogsManager
+    #
+    #     if 'logger' not in self.CLASSES:
+    #         from .logging import Logger
+    #         self.CLASSES['logger'] = Logger
+    #
+    #     if 'vars manager' not in self.CLASSES:
+    #         from .script_variables import VarsManager
+    #         self.CLASSES['vars manager'] = VarsManager
+    #
+    #     if 'flow' not in self.CLASSES:
+    #         from .Flow import Flow
+    #         self.CLASSES['flow'] = Flow
 
 
     def register_nodes(self, node_classes: list):

@@ -14,9 +14,9 @@
 
 # compilable core
 
-- [ ] implement signaling system with minimal interface in `ryvencore`
-- [ ] implement translation system in `ryvencore-qt` to convert those into qt signals
-- [ ] subclass `ryvencore.Session` in `ryvencore-qt` and expose in `ryvencore_qt.__init__`
+- [x] implement signaling system with minimal interface in `ryvencore`
+- [ ] ~~implement translation system in `ryvencore-qt` to convert those into qt signals~~
+- [X] subclass `ryvencore.Session` in `ryvencore-qt` and expose in `ryvencore_qt.__init__`
 - [ ] subclass `ryvencore.Node` in `ryvencore-qt` and expose in `ryvencore_qt.__init__`
 - [ ] remove all `Session.CLASSES` dependencies in the core (maybe just keep it in the rcqt Session?)
 
