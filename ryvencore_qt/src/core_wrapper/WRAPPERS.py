@@ -5,14 +5,14 @@ Same goes for Node and Session which are not part of this file.
 
 from qtpy.QtCore import QObject, Signal
 
-from ..ryvencore.logging import LogsManager as RC_LogsManager, Logger as RC_Logger
+from ryvencore.logging import LogsManager as RC_LogsManager, Logger as RC_Logger
 
-from ..ryvencore.Flow import Flow as RC_Flow
-from ..ryvencore.Node import Node
-from ..ryvencore.NodePort import NodePort
-from ..ryvencore.Connection import Connection, DataConnection as RC_DataConnection
+from ryvencore.Flow import Flow as RC_Flow
+from ryvencore.Node import Node
+from ryvencore.NodePort import NodePort
+from ryvencore.Connection import Connection, DataConnection as RC_DataConnection
 
-from ..ryvencore.script_variables import Variable, VarsManager as RC_VarsManager
+from ryvencore.script_variables import Variable, VarsManager as RC_VarsManager
 
 
 # class LogsManager(RC_LogsManager, QObject):

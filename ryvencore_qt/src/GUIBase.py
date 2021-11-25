@@ -1,4 +1,4 @@
-from .ryvencore.Base import Base
+from ryvencore.Base import Base
 
 
 class GUIBase:

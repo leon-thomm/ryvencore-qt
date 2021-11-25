@@ -1,7 +1,7 @@
 # unwrapped backend classes
-from ..ryvencore import InfoMsgs, NodeInputBP, NodeOutputBP, ExecConnection, dtypes, \
+from ryvencore import InfoMsgs, NodeInputBP, NodeOutputBP, ExecConnection, dtypes, \
     LogsManager, Logger, Flow, DataConnection
-from ..ryvencore.script_variables import VarsManager
+from ryvencore.script_variables import VarsManager
 
 # wrapped classes
 from .Node import Node

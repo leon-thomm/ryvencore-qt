@@ -1,8 +1,8 @@
 from qtpy.QtCore import QObject, Signal
 
-from ..ryvencore import Node as RC_Node
+from ryvencore import Node as RC_Node
 from ..GlobalAttributes import Location
-from ..ryvencore.dtypes import DType
+from ryvencore.dtypes import DType
 
 
 class Node(RC_Node, QObject):

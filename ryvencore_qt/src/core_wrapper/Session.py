@@ -3,8 +3,8 @@ from qtpy.QtCore import QObject, Signal, Qt
 
 from ..GUIBase import GUIBase
 from ..SessionThreadInterface import SessionThreadInterface_Backend
-from ..ryvencore import Session as RC_Session, Script
-from ..ryvencore.Base import Base
+from ryvencore import Session as RC_Session, Script
+from ryvencore.Base import Base
 
 from ..Design import Design
 from ..flows.connections.ConnectionItem import DataConnectionItem, ExecConnectionItem

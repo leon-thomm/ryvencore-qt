@@ -3,7 +3,7 @@ from qtpy.QtCore import Qt, QRectF, QObject, QPointF
 from qtpy.QtGui import QColor
 
 from ...GUIBase import GUIBase
-from ...ryvencore.NodePort import NodeInput, NodeOutput
+from ryvencore.NodePort import NodeInput, NodeOutput
 from .NodeItemAction import NodeItemAction
 from .NodeItemAnimator import NodeItemAnimator
 from .NodeItemWidget import NodeItemWidget
