@@ -13,7 +13,7 @@ The true power of flow-based visual scripting lies in optimization towards speci
 
 ### Future
 
-While `ryvencore-qt` is just a Qt frontend for `ryvencore`, other frontends might be also developed. Attempts to bring parts of this to the web by creating a `ryvencore-qt` equivalent for the browser are being discussed. If you want to help out, please hit me up!
+While `ryvencore-qt` is just a Qt frontend for `ryvencore`, other frontends might get developed too. Attempts to bring parts of this to the web by creating a `ryvencore-qt` equivalent for the browser are getting discussed. If you want to help out, please hit me up!
 
 Notice that `ryvencore-qt` is not a professional piece of software and sometimes there are major changes. Compared to commercial products or software with an extensive community, it is in an early stage.
 

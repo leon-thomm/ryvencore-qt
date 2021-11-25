@@ -1,6 +1,6 @@
 # Features
 
-## Flows - A Rigurous Definition
+## Flows - A Rigorous Definition
 
 A *flow* in this context is a directed, usually but not necessarily acyclic, multigraph whose vertices are *nodes* with *connections* as edges to other nodes.
 
