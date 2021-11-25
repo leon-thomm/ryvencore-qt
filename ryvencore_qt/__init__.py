@@ -16,4 +16,4 @@ from .src.flows.connections.ConnectionItem import DataConnectionItem, ExecConnec
 from .src.conv_gui import *
 
 # expose ryvencore
-from .src import ryvencore
+import ryvencore

@@ -59,10 +59,15 @@ class FlowUndoCommand(QObject, QUndoCommand):
     def call(self, target_method, args: tuple, then=None):
         """Calls the backend thread to execute some method and runs 'then' with the response if provided"""
 
-        ret = self.flow_view.thread_interface.run(target_method, args)
-
+        # disable threading for now
+        ret = target_method(*args)
         if then is not None:
             then(ret)
+
+        # ret = self.flow_view.thread_interface.run(target_method, args)
+        #
+        # if then is not None:
+        #     then(ret)
 
 
 class MoveComponents_Command(FlowUndoCommand):
@@ -180,9 +185,6 @@ class RemoveComponents_Command(FlowUndoCommand):
                         self.internal_connections.add(c)
 
     def undo_(self):
-        # add connections
-        self.restore_broken_connections()
-        self.restore_internal_connections()
 
         # add nodes
         for n in self.nodes:
@@ -191,6 +193,10 @@ class RemoveComponents_Command(FlowUndoCommand):
         # add drawings
         for d in self.drawings:
             self.flow_view.add_drawing(d)
+
+        # add connections
+        self.restore_broken_connections()
+        self.restore_internal_connections()
 
     def redo_(self):
 
