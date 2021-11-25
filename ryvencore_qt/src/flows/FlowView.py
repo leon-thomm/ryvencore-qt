@@ -5,23 +5,23 @@ from qtpy.QtGui import QPainter, QPen, QColor, QKeySequence, QTabletEvent, QImag
 from qtpy.QtWidgets import QGraphicsView, QGraphicsScene, QShortcut, QMenu, QGraphicsItem, QUndoStack
 
 from ..GUIBase import GUIBase
-from ..ryvencore.utils import node_from_identifier
+from ryvencore.utils import node_from_identifier
 from ..utils import *
-from ..ryvencore.Flow import Flow
+from ryvencore.Flow import Flow
 from .FlowCommands import MoveComponents_Command, PlaceNode_Command, \
     PlaceDrawing_Command, RemoveComponents_Command, ConnectPorts_Command, Paste_Command, FlowUndoCommand
 from .FlowViewProxyWidget import FlowViewProxyWidget
 from .FlowViewStylusModesWidget import FlowViewStylusModesWidget
-from ..ryvencore.Node import Node
-from ..ryvencore.NodePort import NodePort
+from ryvencore.Node import Node
+from ryvencore.NodePort import NodePort
 from .node_list_widget.NodeListWidget import NodeListWidget
 from .nodes.NodeItem import NodeItem
 from .nodes.PortItem import PortItemPin, PortItem
-from ..ryvencore.Connection import Connection, DataConnection
+from ryvencore.Connection import Connection, DataConnection
 from .connections.ConnectionItem import default_cubic_connection_path, ConnectionItem
 from .drawings.DrawingObject import DrawingObject
-from ..ryvencore.InfoMsgs import InfoMsgs
-from ..ryvencore.RC import PortObjPos
+from ryvencore.InfoMsgs import InfoMsgs
+from ryvencore.RC import PortObjPos
 
 
 class FlowView(GUIBase, QGraphicsView):
