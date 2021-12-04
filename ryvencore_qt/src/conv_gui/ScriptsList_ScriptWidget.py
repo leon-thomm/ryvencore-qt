@@ -13,7 +13,7 @@ class ScriptsList_ScriptWidget(QWidget):
     """A QWidget representing a single Script for the ScriptsListWidget."""
 
     def __init__(self, scripts_list_widget, session, script):
-        super(ScriptsList_ScriptWidget, self).__init__()
+        super().__init__()
 
         self.session = session
         self.script = script
@@ -25,15 +25,11 @@ class ScriptsList_ScriptWidget(QWidget):
 
 
         # UI
+
         main_layout = QHBoxLayout()
         main_layout.setContentsMargins(0, 0, 0, 0)
 
-        # create icon via label
-
-        # if isinstance(script, MacroScript):
-        #     script_icon = QIcon(Location.PACKAGE_PATH+'/resources/pics/macro_script_picture.png')
-        # else:
-        #     script_icon = QIcon(Location.PACKAGE_PATH+'/resources/pics/script_picture.png')
+        #   create icon
 
         script_icon = QIcon(Location.PACKAGE_PATH + '/resources/pics/script_picture.png')
 
@@ -43,14 +39,13 @@ class ScriptsList_ScriptWidget(QWidget):
         icon_label.setPixmap(script_icon.pixmap(20, 20))
         main_layout.addWidget(icon_label)
 
+        #   title line edit
+
         self.title_line_edit = ListWidget_NameLineEdit(script.title, self)
         self.title_line_edit.setPlaceholderText('title')
         self.title_line_edit.setEnabled(False)
         self.title_line_edit.editingFinished.connect(self.title_line_edit_editing_finished)
-        self.title_line_edit.unfocused.connect(self.title_line_edit_editing_finished)
 
-        # name_type_layout = QVBoxLayout()
-        # name_type_layout.addWidget(self.title_line_edit)
         main_layout.addWidget(self.title_line_edit)
 
         self.setLayout(main_layout)
@@ -96,16 +91,7 @@ class ScriptsList_ScriptWidget(QWidget):
         self.title_line_edit.setFocus()
         self.title_line_edit.selectAll()
 
-        # self.scripts_list_widget.currently_edited_script = self.script
         self.previous_script_title = self.title_line_edit.text()
-
-
-    def get_drag_data(self):
-        """not used so far..."""
-        data = {'type': 'script',
-                'title': self.script.title}
-        data_text = json.dumps(data)
-        return data_text
 
 
     def title_line_edit_editing_finished(self):
@@ -115,14 +101,11 @@ class ScriptsList_ScriptWidget(QWidget):
         title = self.title_line_edit.text()
 
         self.ignore_title_line_edit_signal = True
-        # self.title_LE_editing_finished.emit()
-        if not self.session.script_title_valid(title):
+
+        if self.session.script_title_valid(title):
+            self.session.rename_script(script=self.script, title=title)
+        else:
             self.title_line_edit.setText(self.previous_script_title)
-            return
 
-        # rename script
         self.title_line_edit.setEnabled(False)
-        self.script.title = title
-        self.session.rename_script(script=self.script, title=title)
-
         self.ignore_title_line_edit_signal = False

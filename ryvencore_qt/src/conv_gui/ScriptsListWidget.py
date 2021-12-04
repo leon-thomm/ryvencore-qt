@@ -7,107 +7,68 @@ from .ScriptsList_ScriptWidget import ScriptsList_ScriptWidget
 class ScriptsListWidget(QWidget):
     """Convenience class for a QWidget to easily manage the scripts of a session."""
 
-    # TODO: scroll area
-
-    def __init__(self, session, parent=None):
-        super(ScriptsListWidget, self).__init__(parent=parent)
+    def __init__(self, session):
+        super().__init__()
 
         self.session = session
-        self.session.flow_view_created.connect(self.add_new_script)
-        self.session.script_deleted.connect(self.recreate_list)
-
         self.list_widgets = []
         self.ignore_name_line_edit_signal = False  # because disabling causes firing twice otherwise
 
         self.setup_UI()
 
+        self.session.flow_view_created.connect(self.add_new_script)
+        self.session.script_deleted.connect(self.recreate_list)
+
 
     def setup_UI(self):
-        main_layout = QVBoxLayout()
-
-        self.list_layout = QVBoxLayout()
-        self.list_layout.setAlignment(Qt.AlignTop)
+        main_layout = QVBoxLayout(self)
+        main_layout.setAlignment(Qt.AlignTop)
+        self.setLayout(main_layout)
 
         # list scroll area
 
-        self.list_scroll_area = QScrollArea()
+        self.list_scroll_area = QScrollArea(self)
+        self.list_scroll_area.setVerticalScrollBarPolicy(Qt.ScrollBarAsNeeded)
+        self.list_scroll_area.setHorizontalScrollBarPolicy(Qt.ScrollBarAsNeeded)
         self.list_scroll_area.setWidgetResizable(True)
         self.list_scroll_area.setContentsMargins(0, 0, 0, 0)
 
-        w = QWidget()
-        w.setContentsMargins(0, 0, 0, 0)
-        w.setLayout(self.list_layout)
+        self.scroll_area_widget = QWidget()
+        self.scroll_area_widget.setContentsMargins(0, 0, 0, 0)
+        self.list_scroll_area.setWidget(self.scroll_area_widget)
 
-        self.list_scroll_area.setWidget(w)
+        self.list_layout = QVBoxLayout()
+        self.list_layout.setContentsMargins(0, 0, 0, 0)
+        self.list_layout.setAlignment(Qt.AlignTop)
+        self.scroll_area_widget.setLayout(self.list_layout)
 
-        main_layout.addWidget(self.list_scroll_area)
+        self.layout().addWidget(self.list_scroll_area)
 
-        # ------------------
-
-        # controls
+        # line edit
 
         self.new_script_title_lineedit = QLineEdit()
         self.new_script_title_lineedit.setPlaceholderText('new script\'s title')
-        self.new_script_title_lineedit.returnPressed.connect(self.new_script_LE_return_pressed)
+        self.new_script_title_lineedit.returnPressed.connect(self.create_script)
 
         main_layout.addWidget(self.new_script_title_lineedit)
 
-        buttons_layout = QHBoxLayout()
-
-        # self.create_macro_button = QPushButton('macro')
-        # self.create_macro_button.clicked.connect(self.on_create_macro_clicked)
-        # buttons_layout.addWidget(self.create_macro_button)
-
-        self.create_script_button = QPushButton('script')
-        self.create_script_button.clicked.connect(self.on_create_script_clicked)
-        buttons_layout.addWidget(self.create_script_button)
-
-        main_layout.addLayout(buttons_layout)
-
-        # ------------------
-
-        self.setContentsMargins(0, 0, 0, 0)
-        self.setLayout(main_layout)
 
         self.recreate_list()
 
 
     def recreate_list(self):
-        for w in self.list_widgets:
-            w.hide()
-            del w
+        # remove script widgets
+        for i in reversed(range(self.list_layout.count())):
+            self.list_layout.itemAt(i).widget().setParent(None)
 
         self.list_widgets.clear()
 
-        for s in self.session.scripts:  # all_scripts():
+        for s in self.session.scripts:
             new_widget = ScriptsList_ScriptWidget(self, self.session, s)
             self.list_widgets.append(new_widget)
 
-        self.rebuild_list()
-
-
-    def rebuild_list(self):
-        # for i in range(self.layout().count()):
-        #     self.list_layout.removeItem(self.layout().itemAt(0))
-
         for w in self.list_widgets:
             self.list_layout.addWidget(w)
-
-
-    def new_script_LE_return_pressed(self):
-        self.create_script()  # create normal scripts by default
-
-    # def on_create_macro_clicked(self):
-    #     self.create_macro_script()
-
-    def on_create_script_clicked(self):
-        self.create_script()
-
-    # def create_macro_script(self):
-    #     title = self.new_script_title_lineedit.text()
-    #
-    #     if self.session.script_title_valid(title):
-    #         self.session.create_macro(title=title)
 
     def create_script(self):
         title = self.new_script_title_lineedit.text()
@@ -115,10 +76,8 @@ class ScriptsListWidget(QWidget):
         if self.session.script_title_valid(title):
             self.session.create_script(title=title)
 
-
-    def add_new_script(self, script):
+    def add_new_script(self, script, flow_view):
         self.recreate_list()
-
 
     def del_script(self, script, script_widget):
         msg_box = QMessageBox(QMessageBox.Warning, 'sure about deleting script?',
