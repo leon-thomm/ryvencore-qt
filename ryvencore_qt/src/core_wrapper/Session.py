@@ -5,6 +5,7 @@ from ..GUIBase import GUIBase
 from ..SessionThreadInterface import SessionThreadInterface_Backend
 from ..Design import Design
 from ..flows.FlowView import FlowView
+from ..utils import translate_project
 
 from ryvencore import Session as RC_Session, Script
 from ryvencore.Base import Base
