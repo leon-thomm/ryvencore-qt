@@ -3,34 +3,26 @@
   <img src="./ryvencore_qt/resources/pics/logo.png" alt="drawing" width="70%"/>
 </p>
 
-`rvencore-qt` is a **Python library for building visual node editors**. It comes from the [Ryven](https://github.com/leon-thomm/Ryven) project and will be the foundation for future Ryven versions. Technically, `ryvencore-qt` provides a Qt-based frontend for what is now referred to as `ryvencore`. However, `ryvencore` itself is currently still included in this repository. `ryvencore` implements all the abstract functionality and can be used to easily deploy flows directly on the backend.
+`rvencore-qt` is a wrapper around [ryvencore](https://github.com/leon-thomm/ryvencore) and provides a Qt frontend for it. It comes from the [Ryven](https://github.com/leon-thomm/Ryven) project and will be the foundation for future Ryven versions. So, ryvencore-qt can be used to build cross-platform standalone visual node editors based on Python. Projects made with ryvencore-qt can be natively deployed directly on the backend, ryvencore. The development of ryvencore-qt is currently closely tied to Ryven.
 
-# Details
-
-**Installation**
+### Installation
 
 ```
 pip install ryvencore-qt
 ```
 
-or from sources
+or build from sources
 ```
 git clone https://github.com/leon-thomm/ryvencore-qt
 cd ryvencore-qt
-python setup.py install
+pip install .
 ```
 
-**Dependencies**
+### Dependencies
 
-`ryvencore-qt` runs on PySide2 (bindings for Qt) using [QtPy](https://github.com/spyder-ide/qtpy) as a wrapper to eventually enable seamless switching between PySide2 and PySide6. Notice that `ryvencore-qt` does not work with PyQt, due to crucial inheritance restrictions in PyQt.
+ryvencore-qt runs on PySide2 (Python bindings for Qt) using [QtPy](https://github.com/spyder-ide/qtpy) as a wrapper to (eventually, once supported) enable seamless switching between PySide2 and PySide6. Notice that `ryvencore-qt` does not work with PyQt, due to crucial inheritance restrictions in PyQt.
 
-Saved projects can be deployed directly on the backend (`ryvencore`) which does not have a single dependency so far.
-
-**Code**
-
-I tried structure all code nicely but it's not 100% PEP 8 conform, and it does not (yet) follow a particular standard for docstring formatting etc. The individual packages have their own READMEs giving a quick overview which should be quite helpful to gain understanding about the implementation.
-
-# quick start
+### quick start
 
 The below code demonstrates how to set up an editor with custom defined nodes. You can also find the code in the *examples* folder.
 
@@ -127,16 +119,15 @@ export_nodes = [
 ]
 ```
 
-For a more detailed overview, including a precise definition of flows, see [Features Page](https://leon-thomm.github.io/ryvencore-qt/features/).
+For a more detailed overview, including a precise definition of flows, see the [Features Page](https://leon-thomm.github.io/ryvencore-qt/features/) and [ryvencore](https://github.com/leon-thomm/ryvencore).
 
-***
+### Development
+
+The code is not 100% PEP 8 conform, and some parts which are under development might seem messy. I'm doing my best :) feel free to improve. The individual subpackages have their own READMEs giving a quick overview which should be quite helpful to gain understanding about implementations.
+
+Cheers.
 
 <!--
-#### threading compatibility  
-All communication between frontend (`ryvencore-qt`) and backend (`ryvencore`) is based on Qt signals. Therefore, there exists rudimentary threading compatibility, i.e. you can keep your session object in a separate thread to improve concurrency and prevent the backend from being slown down signicantly by the frontend, and all changes you perform directly on the backend are automatically noticed by the frontend. While this is currently extremely experimental and far from production ready, it opens the door to the world of realtime data processing and first successful tests have been made.
--->
-
-
 ### Contributions and Development
 
 This project will eventually need a community in order to survive. Particularly effective ways to contribute outside of direct development of the software are creating
@@ -153,3 +144,4 @@ If you have any questions, suggestions, or want to show something you've built w
 To give a quick overview over the most important class relations, see the below class diagram. The DrawIO diagram file is in the repository.
 
 ![](./docs/img/ryvencore-drawio_.png)
+-->
