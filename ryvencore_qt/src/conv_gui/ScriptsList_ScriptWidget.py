@@ -1,12 +1,9 @@
 from qtpy.QtWidgets import QWidget, QHBoxLayout, QLabel, QMenu, QAction
 from qtpy.QtGui import QIcon, QImage
-from qtpy.QtCore import Qt, QEvent
-
-import json
+from qtpy.QtCore import Qt, QEvent, QBuffer, QByteArray
 
 from ..GlobalAttributes import Location
 from .ListWidget_NameLineEdit import ListWidget_NameLineEdit
-# from ..ryvencore.MacroScript import MacroScript
 
 
 class ScriptsList_ScriptWidget(QWidget):
@@ -61,10 +58,19 @@ class ScriptsList_ScriptWidget(QWidget):
 
     def event(self, event):
         if event.type() == QEvent.ToolTip:
-            img: QImage = self.flow_view.get_viewport_img()
-            self._thumbnail_source = Location.PACKAGE_PATH+'/temp/script_' + self.script.title + '_thumbnail.png'
-            img.save(self._thumbnail_source)
-            self.setToolTip('<img height=100 src="' + self._thumbnail_source + '"/>')
+
+            # generate preview img as QImage
+            img: QImage = self.flow_view.get_viewport_img().scaledToHeight(200)
+
+            # store the img data in QBuffer to load it directly from memory
+            buffer = QBuffer()
+            img.save(buffer, 'PNG')
+
+            # generate html from data in memory
+            html = f"<img src='data:image/png;base64, { bytes( buffer.data().toBase64() ).decode() }'>"
+
+            # show tooltip
+            self.setToolTip(html)
 
         return QWidget.event(self, event)
 

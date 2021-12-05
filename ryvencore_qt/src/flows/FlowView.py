@@ -668,7 +668,11 @@ class FlowView(GUIBase, QGraphicsView):
         """Returns a clear image of the viewport"""
 
         self.hide_proxies()
-        img = QImage(self.viewport().rect().width(), self.viewport().height(), QImage.Format_ARGB32)
+        img = QImage(
+            self.viewport().rect().width(),
+            self.viewport().height(),
+            QImage.Format_ARGB32
+        )
         img.fill(Qt.transparent)
 
         painter = QPainter(img)

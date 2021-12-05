@@ -14,7 +14,7 @@ class VarsList_VarWidget(QWidget):
     """A QWidget representing a single script variable for the VariablesListWidget."""
 
     def __init__(self, vars_list_widget, vars_manager, var):
-        super(VarsList_VarWidget, self).__init__()
+        super().__init__()
 
         self.vars_manager = vars_manager
         self.var = var
@@ -25,25 +25,27 @@ class VarsList_VarWidget(QWidget):
 
 
         # UI
+
         main_layout = QHBoxLayout()
         main_layout.setContentsMargins(0, 0, 0, 0)
 
-        # create icon via label
+        # create icon
+
         variable_icon = QIcon(Location.PACKAGE_PATH+'/resources/pics/variable_picture.png')
+
         icon_label = QLabel()
         icon_label.setFixedSize(15, 15)
         icon_label.setStyleSheet('border:none;')
         icon_label.setPixmap(variable_icon.pixmap(15, 15))
         main_layout.addWidget(icon_label)
 
+        #   name line edit
+
         self.name_line_edit = ListWidget_NameLineEdit(var.name, self)
         self.name_line_edit.setPlaceholderText('name')
         self.name_line_edit.setEnabled(False)
         self.name_line_edit.editingFinished.connect(self.name_line_edit_editing_finished)
-        self.name_line_edit.unfocused.connect(self.name_line_edit_editing_finished)
 
-        # name_type_layout = QVBoxLayout()
-        # name_type_layout.addWidget(self.name_line_edit)
         main_layout.addWidget(self.name_line_edit)
 
         self.setLayout(main_layout)
@@ -75,7 +77,7 @@ class VarsList_VarWidget(QWidget):
             try:
                 val_str = str(self.var.val)
             except Exception as e:
-                val_str = 'couldn\'t stringify value'
+                val_str = "couldn't stringify value"
             self.setToolTip('val type: '+str(type(self.var.val))+'\nval: '+shorten(val_str, 3000, line_break=True))
 
         return QWidget.event(self, event)
