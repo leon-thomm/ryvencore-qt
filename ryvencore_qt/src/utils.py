@@ -1,8 +1,10 @@
+import bisect
 import enum
 import json
 import os
 from math import sqrt
 from waiting import wait
+from typing import List, Dict
 
 from ryvencore.utils import serialize, deserialize
 from qtpy.QtCore import QPointF
@@ -145,3 +147,87 @@ def change_svg_color(filepath: str, color_hex: str):
     # svg_renderer.render(pix_painter)
     #
     # return pix
+
+
+def translate_project(project: Dict) -> Dict:
+    """
+    Transforms a v3.0 project file into something that can be loaded in v3.1,
+    i.e. turns macros into scripts and removes macro nodes from the flows.
+    """
+
+    new_project = project.copy()
+
+    # turn macros into scripts
+
+    fixed_scripts = []
+
+    for script in (project['macro scripts']+project['scripts']):
+
+        new_script = script.copy()
+
+        # remove macro nodes
+        new_nodes, removed_node_indices = remove_macro_nodes(script['flow']['nodes'])
+        new_script['flow']['nodes'] = new_nodes
+
+        # fix connections
+        new_script['flow']['connections'] = fix_connections(script['flow']['connections'], removed_node_indices)
+
+        fixed_scripts.append(new_script)
+
+    del new_project['macro scripts']
+    new_project['scripts'] = fixed_scripts
+
+    return new_project
+
+
+def remove_macro_nodes(nodes):
+    """
+    removes all macro nodes from the nodes list and returns the new list as well as the indices of the removed nodes
+    """
+
+    new_nodes = []
+    removed_node_indices = []
+
+    for n_i in range(len(nodes)):
+        node = nodes[n_i]
+
+        if node['identifier'] in ('BUILTIN_MacroInputNode', 'BUILTIN_MacroOutputNode') or \
+                node['identifier'].startswith('MACRO_NODE_'):
+            removed_node_indices.append(n_i)
+        else:
+            new_nodes.append(node)
+
+    return new_nodes, removed_node_indices
+
+
+def fix_connections(connections: Dict, removed_node_indices: List) -> List:
+    """
+    removes connections to removed nodes and fixes node indices of the other ones
+    """
+
+    import bisect
+
+    new_connections = []
+
+    for conn in connections:
+        if conn['parent node index'] in removed_node_indices or conn['connected node'] in removed_node_indices:
+            # remove connection
+            continue
+        else:
+            # fix node indices
+            pni = conn['parent node index']
+            cni = conn['connected node']
+
+            #   calculate the number of removed nodes with indices < pni | cni
+            num_smaller_removed_pni = bisect.bisect_left(removed_node_indices, pni)
+            num_smaller_removed_cni = bisect.bisect_left(removed_node_indices, cni)
+
+            c = conn.copy()
+
+            #   decrease indices accordingly
+            c['parent node index'] = pni - num_smaller_removed_pni
+            c['connected node'] = cni - num_smaller_removed_cni
+
+            new_connections.append(c)
+
+    return new_connections
