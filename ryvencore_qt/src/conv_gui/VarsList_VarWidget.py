@@ -109,12 +109,12 @@ class VarsList_VarWidget(QWidget):
         if accepted:
             self.vars_manager.set_var(self.var.name, edit_var_val_dialog.get_val())
 
+
     def name_line_edit_double_clicked(self):
         self.name_line_edit.setEnabled(True)
         self.name_line_edit.setFocus()
         self.name_line_edit.selectAll()
 
-        # self.vars_list_widget.currently_edited_var = self.var
         self.previous_var_name = self.name_line_edit.text()
 
 
@@ -126,7 +126,6 @@ class VarsList_VarWidget(QWidget):
         return data_text
 
 
-
     def name_line_edit_editing_finished(self):
         if self.ignore_name_line_edit_signal:
             return
@@ -134,13 +133,11 @@ class VarsList_VarWidget(QWidget):
         name = self.name_line_edit.text()
 
         self.ignore_name_line_edit_signal = True
-        # self.name_LE_editing_finished.emit()
-        if not self.vars_manager.var_name_valid(name):
+
+        if self.vars_manager.var_name_valid(name):
+            self.var.name = name
+        else:
             self.name_line_edit.setText(self.previous_var_name)
-            return
 
-        # rename var
         self.name_line_edit.setEnabled(False)
-        self.var.name = name
-
         self.ignore_name_line_edit_signal = False
