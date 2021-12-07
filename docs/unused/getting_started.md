@@ -530,9 +530,9 @@ class LEDNode(NodeBase):
 </details>
 
 And now we have a basic little editor to play around with logic gates, yay!
-![](img/logic_editor_screenshot1.png)
-![](img/logic_editor_screenshot2.png)
-![](img/logic_editor_screenshot3.png) 
+![](../img/logic_editor_screenshot1.png)
+![](../img/logic_editor_screenshot2.png)
+![](../img/logic_editor_screenshot3.png) 
 The actual editor I made for this is a bit more sophisticated and pretty, and might get its own repository soon.
 
 > [!TIP|label:Done]
