@@ -2,4 +2,5 @@
 
 * [Welcome](/)
 * [Features](features.md)
-* [API](api.md)
+
+[comment]: <> (* [API]&#40;api.md&#41;)

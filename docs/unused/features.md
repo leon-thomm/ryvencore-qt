@@ -86,10 +86,6 @@ Node actions are saved and reloaded automatically.
 > [!WARNING]
 > Only refer to your according node's methods in the `method` field, not some other objects'. When saving, the referred method's name is stored and the method field in the `actions` entry is recreated on load via `getattr(node, method_name)`.
 
-### Custom GUI
-
-You can add custom Qt widgets to your nodes. For instructions on how to register custom widgets in your nodes see Ryven docs.
-
 ## Load&Save
 
 To save a project use `Session.serialize()`. To load a saved project use `Session.load()`. Before loading a project, you need to register all required nodes in the session.
@@ -135,13 +131,17 @@ Script variables are a nice way to improve the interface to your data. There is 
 
 ## Logging
 
-Every *script* has a *logs manager*. You can use [API](../api/#class-logger) to write messages to default loggers and to request custom loggers (`python.logging.Logger`) and write directly to them. The `Node`'s API already includes methods for requesting custom loggers.
+Every *script* has a *logs manager*. The `Node`'s API already includes methods for requesting custom loggers.
 
 <!--
 ## Convenience Classes
 
 ryvecore already comes with a few convenience classes for widgets. Those convenience classes only use ryvencore's public API, so if you have experience with Qt, you can totally implemenent them yourself. But in most cases they make it much easier to get started. See [convenience GUI section](../conv_gui).
 -->
+
+### Custom GUI
+
+You can add custom Qt widgets to your nodes. For instructions on how to register custom widgets in your nodes see Ryven docs.
 
 ## Styling
 
@@ -296,18 +296,13 @@ The `FlowView` class, which is a subclass of `QGraphicsView`, supports some spec
 - stylus support for adding simple handwritten notes
 - rendered images of the flow including high-res for presentations
 
-[comment]: <> (
-## Threading
-The internal communication between backend &#40;`ryvencore`&#41; and frontend &#40;`ryvencore-qt`&#41; is done in a somewhat thread-safe way. This means, you can initialize the `Session` object in a separate thread, and provide a GUI parent for the `FlowView` which will then be initialized in this GUI component's thread. Of course, Python is very limited for threading due to the GIL. However, threading your components still improves concurrency, i.e. your session is not significantly slown down by the frontend. Further parallelization of the tasks that your individual nodes perform is up to you. Threading generally adds a lot of design work and danger of hard to resolve bugs. If there will be a web frontend in the future, it will probably make more sense to use that for anything that's supposed to run concurrently, due to its asynchronous nature.
-)
-
 ## GUI-less Deployment
 
 You can deploy saved projects (`Session.serialize()`) directly on `ryvencore` without any frontend dependencies. You have full access to the whole `ryvencore` API, so you can even perform all modifications with the expected results. GUI-less deployment is like code generation but better, since you still have API access and `ryvencore` is lightweight.
 
 ```python
 import json
-import ryvencore_qt.ryvencore as rc
+import ryvencore as rc
 
 if __name__ == '__main__':
 
@@ -317,7 +312,7 @@ if __name__ == '__main__':
     project_dict = json.loads(project_str)
 
     # creating session and loading the contents
-    session = rc.Session(gui=False)
+    session = rc.Session()
     session.register_nodes([ <your_used_nodes_here> ])
     scripts = session.load(project_dict)
 
@@ -330,7 +325,7 @@ if __name__ == '__main__':
     ...
 ```
 
-Which of the API calls you use in `ryvencore-qt` don't come from `ryvencore` is indicated in the API ref (basically everything frontend/widgets-related). Of course, your nodes are not allowed to access `ryvencore-qt` API, as this API does not exist when running it on the backend, since there is no frontend then. To make your nodes compatible with this, you can check the boolean `Session.gui` attribute to determine whether the session is aware of a frontend or not.
+Of course, your nodes are not allowed to access `ryvencore-qt` API, as this API does not exist when running it on the backend, since there is no frontend then. To make your nodes compatible with this, you can check the boolean `Session.gui` attribute to determine whether the session is aware of a frontend or not.
 
 ``` python
 def update_event(self, inp=-1):
