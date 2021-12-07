@@ -4,9 +4,9 @@ from qtpy.QtCore import QMimeData, Qt, QEvent, QByteArray
 
 import json
 
-from ryvencore_qt.src.GlobalAttributes import Location
+from ..GlobalAttributes import Location
 from .ListWidget_NameLineEdit import ListWidget_NameLineEdit
-from ..tools import shorten
+from ..utils import shorten
 from .EditVal_Dialog import EditVal_Dialog
 
 
@@ -14,7 +14,7 @@ class VarsList_VarWidget(QWidget):
     """A QWidget representing a single script variable for the VariablesListWidget."""
 
     def __init__(self, vars_list_widget, vars_manager, var):
-        super(VarsList_VarWidget, self).__init__()
+        super().__init__()
 
         self.vars_manager = vars_manager
         self.var = var
@@ -25,25 +25,27 @@ class VarsList_VarWidget(QWidget):
 
 
         # UI
+
         main_layout = QHBoxLayout()
         main_layout.setContentsMargins(0, 0, 0, 0)
 
-        # create icon via label
+        # create icon
+
         variable_icon = QIcon(Location.PACKAGE_PATH+'/resources/pics/variable_picture.png')
+
         icon_label = QLabel()
         icon_label.setFixedSize(15, 15)
         icon_label.setStyleSheet('border:none;')
         icon_label.setPixmap(variable_icon.pixmap(15, 15))
         main_layout.addWidget(icon_label)
 
+        #   name line edit
+
         self.name_line_edit = ListWidget_NameLineEdit(var.name, self)
         self.name_line_edit.setPlaceholderText('name')
         self.name_line_edit.setEnabled(False)
         self.name_line_edit.editingFinished.connect(self.name_line_edit_editing_finished)
-        self.name_line_edit.unfocused.connect(self.name_line_edit_editing_finished)
 
-        # name_type_layout = QVBoxLayout()
-        # name_type_layout.addWidget(self.name_line_edit)
         main_layout.addWidget(self.name_line_edit)
 
         self.setLayout(main_layout)
@@ -75,7 +77,7 @@ class VarsList_VarWidget(QWidget):
             try:
                 val_str = str(self.var.val)
             except Exception as e:
-                val_str = 'couldn\'t stringify value'
+                val_str = "couldn't stringify value"
             self.setToolTip('val type: '+str(type(self.var.val))+'\nval: '+shorten(val_str, 3000, line_break=True))
 
         return QWidget.event(self, event)
@@ -107,12 +109,12 @@ class VarsList_VarWidget(QWidget):
         if accepted:
             self.vars_manager.set_var(self.var.name, edit_var_val_dialog.get_val())
 
+
     def name_line_edit_double_clicked(self):
         self.name_line_edit.setEnabled(True)
         self.name_line_edit.setFocus()
         self.name_line_edit.selectAll()
 
-        # self.vars_list_widget.currently_edited_var = self.var
         self.previous_var_name = self.name_line_edit.text()
 
 
@@ -124,7 +126,6 @@ class VarsList_VarWidget(QWidget):
         return data_text
 
 
-
     def name_line_edit_editing_finished(self):
         if self.ignore_name_line_edit_signal:
             return
@@ -132,13 +133,11 @@ class VarsList_VarWidget(QWidget):
         name = self.name_line_edit.text()
 
         self.ignore_name_line_edit_signal = True
-        # self.name_LE_editing_finished.emit()
-        if not self.vars_manager.var_name_valid(name):
+
+        if self.vars_manager.var_name_valid(name):
+            self.var.name = name
+        else:
             self.name_line_edit.setText(self.previous_var_name)
-            return
 
-        # rename var
         self.name_line_edit.setEnabled(False)
-        self.var.name = name
-
         self.ignore_name_line_edit_signal = False

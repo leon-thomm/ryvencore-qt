@@ -1,19 +1,16 @@
 from qtpy.QtWidgets import QWidget, QHBoxLayout, QLabel, QMenu, QAction
 from qtpy.QtGui import QIcon, QImage
-from qtpy.QtCore import Qt, QEvent
+from qtpy.QtCore import Qt, QEvent, QBuffer, QByteArray
 
-import json
-
-from ryvencore_qt.src.GlobalAttributes import Location
+from ..GlobalAttributes import Location
 from .ListWidget_NameLineEdit import ListWidget_NameLineEdit
-from ..ryvencore.MacroScript import MacroScript
 
 
 class ScriptsList_ScriptWidget(QWidget):
     """A QWidget representing a single Script for the ScriptsListWidget."""
 
     def __init__(self, scripts_list_widget, session, script):
-        super(ScriptsList_ScriptWidget, self).__init__()
+        super().__init__()
 
         self.session = session
         self.script = script
@@ -25,28 +22,27 @@ class ScriptsList_ScriptWidget(QWidget):
 
 
         # UI
+
         main_layout = QHBoxLayout()
         main_layout.setContentsMargins(0, 0, 0, 0)
 
-        # create icon via label
-        if isinstance(script, MacroScript):
-            script_icon = QIcon(Location.PACKAGE_PATH+'/resources/pics/macro_script_picture.png')
-        else:
-            script_icon = QIcon(Location.PACKAGE_PATH+'/resources/pics/script_picture.png')
+        #   create icon
+
+        script_icon = QIcon(Location.PACKAGE_PATH + '/resources/pics/script_picture.png')
+
         icon_label = QLabel()
         icon_label.setFixedSize(20, 20)
         icon_label.setStyleSheet('border:none;')
         icon_label.setPixmap(script_icon.pixmap(20, 20))
         main_layout.addWidget(icon_label)
 
+        #   title line edit
+
         self.title_line_edit = ListWidget_NameLineEdit(script.title, self)
         self.title_line_edit.setPlaceholderText('title')
         self.title_line_edit.setEnabled(False)
         self.title_line_edit.editingFinished.connect(self.title_line_edit_editing_finished)
-        self.title_line_edit.unfocused.connect(self.title_line_edit_editing_finished)
 
-        # name_type_layout = QVBoxLayout()
-        # name_type_layout.addWidget(self.title_line_edit)
         main_layout.addWidget(self.title_line_edit)
 
         self.setLayout(main_layout)
@@ -62,10 +58,19 @@ class ScriptsList_ScriptWidget(QWidget):
 
     def event(self, event):
         if event.type() == QEvent.ToolTip:
-            img: QImage = self.flow_view.get_viewport_img()
-            self._thumbnail_source = Location.PACKAGE_PATH+'/temp/script_' + self.script.title + '_thumbnail.png'
-            img.save(self._thumbnail_source)
-            self.setToolTip('<img height=100 src="' + self._thumbnail_source + '"/>')
+
+            # generate preview img as QImage
+            img: QImage = self.flow_view.get_viewport_img().scaledToHeight(200)
+
+            # store the img data in QBuffer to load it directly from memory
+            buffer = QBuffer()
+            img.save(buffer, 'PNG')
+
+            # generate html from data in memory
+            html = f"<img src='data:image/png;base64, { bytes( buffer.data().toBase64() ).decode() }'>"
+
+            # show tooltip
+            self.setToolTip(html)
 
         return QWidget.event(self, event)
 
@@ -92,16 +97,7 @@ class ScriptsList_ScriptWidget(QWidget):
         self.title_line_edit.setFocus()
         self.title_line_edit.selectAll()
 
-        # self.scripts_list_widget.currently_edited_script = self.script
         self.previous_script_title = self.title_line_edit.text()
-
-
-    def get_drag_data(self):
-        """not used so far..."""
-        data = {'type': 'script',
-                'title': self.script.title}
-        data_text = json.dumps(data)
-        return data_text
 
 
     def title_line_edit_editing_finished(self):
@@ -111,14 +107,11 @@ class ScriptsList_ScriptWidget(QWidget):
         title = self.title_line_edit.text()
 
         self.ignore_title_line_edit_signal = True
-        # self.title_LE_editing_finished.emit()
-        if not self.session.script_title_valid(title):
+
+        if self.session.script_title_valid(title):
+            self.session.rename_script(script=self.script, title=title)
+        else:
             self.title_line_edit.setText(self.previous_script_title)
-            return
 
-        # rename script
         self.title_line_edit.setEnabled(False)
-        self.script.title = title
-        self.session.rename_script(script=self.script, title=title)
-
         self.ignore_title_line_edit_signal = False

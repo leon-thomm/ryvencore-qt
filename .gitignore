@@ -7,4 +7,5 @@ dist/
 ryvencore_qt.egg-info/
 site/
 reinstall.bat
+reinstall_for_blender.bat
 upload.bat
