@@ -2,12 +2,12 @@
   <img src="img/logo.png" width="60%"/>
 </p>
 
-<h1 align="center"> Welcome to the ryvencore-qt documentation </h1>
+<h1 align="center"> Welcome to the ryvencore[-qt] documentation </h1>
 
 > [!NOTE]
 > All this is in the making and some information and examples might not be 100% up to date. This documentation is generated using [Docsify](https://github.com/docsifyjs/docsify/), so feel free to fork the project and improve it by simply editing the markdown.
 
-The `ryvencore-qt` library provides a Qt frontend for [`ryvencore`](https://github.com/leon-thomm/ryvencore). It can be used to build Python-based cross platform node editors, but so far it mainly serves as base for [Ryven](https://github.com/leon-thomm/ryven) and the development is closely tied to it.
+The [`ryvencore-qt`](https://github.com/leon-thomm/ryvencore-qt) library provides a Qt frontend for [`ryvencore`](https://github.com/leon-thomm/ryvencore). It can be used to build Python-based cross platform node editors, but so far it mainly serves as base for [Ryven](https://github.com/leon-thomm/ryven) and the development is closely tied to it.
 
 Following are some specifications of the fundamental concepts (regarding both, ryvencore and ryvencore-qt)
 
@@ -17,13 +17,13 @@ Following are some specifications of the fundamental concepts (regarding both, r
 
 ## Flows - A Rigorous Definition
 
-A *flow* in this context is a directed, usually but not necessarily acyclic, multigraph whose vertices are *nodes* with *connections* as edges to other nodes.
+A *flow* in this context is a directed, usually but not necessarily acyclic, multigraph whose vertices are *nodes* with edges as *connections* between them.
 
 The fundamental operations to perform on a flow are
 
 - adding a node
 - removing a node and all incident connections
-- adding a connection between ports of two different nodes
+- adding a connection between ports (output -> input) of two different nodes
 - removing an existing connection
 
 ### Flow Modes
@@ -32,18 +32,16 @@ The fundamental operations to perform on a flow are
 
 The default flow mode is *data*. The flow execution here is defined as follows:
 
-By calling `Node.set_output_val(index, val)`, every outgoing connection is *activated*, with `val` as payload, which leads to an *update event* in every connected node. No automatic inspection, nor modification is performed on `val`. If there are multiple connections, the order of activation is the order in which they have been added.
+By calling `Node.set_output_val(index, val)`, every connection at the output with given index is *activated* with `val` as payload, which leads to an *update event* in the according connected node. No automatic inspection, nor modification is performed on `val`. If there are multiple connections, the order of activation is the order in which they have been added.
 
 ### exec flows
 
 > [!NOTE]
-> While the *data* mode is the more common use case, you can think of the *exec* mode as UnrealEngine's BluePrints (*exec*) compared to their material editor (*data*). The *exec* mode implementation might receive some modifications in the future.
+> While the *data* mode is the more common use case, you can think of the *exec* mode as UnrealEngine's BluePrints system (*exec*) compared to their material editor (*data*). The *exec* mode implementation might receive some modifications in the future.
 
-<!-- There are two types of connections, namely *data* and *exec* connections, and hence, two types of node ports. Usually you will want to only use data connections and ports (-> *data flows*).  -->
+For exec connections, by calling `Node.exec_output(index)`, the same process of connection activation takes place, just that there is no `val` payload, it's just an activation signal causing an update in the connected nodes.
 
-For exec connections, by calling `Node.exec_output(index)`, the same effects take place as for data propagation described above, just that there is no `val` payload, it's just an activation signal causing an update.
-
-The fundamental difference is that in contrast to *data* mode, data is not forward propagated on change, but requested backwards, meaning a combinational node passively generating some data (like an addition on two values at inputs) not updated when input data changes, but when the output is requested in another connected node via `Node.input(index)`. See the Ryven documentation for an example.
+The fundamental difference is that in contrast to *data* mode, values residing on data connections is not forward propagated on change, but requested (backwards), meaning a combinational node passively generating some data (like addition of two values at inputs) is not updated when input data changes, but when the output is requested in another connected node via `Node.input(index)`. See the Ryven documentation for an example.
 
 ### advanced flow executors
 
@@ -53,19 +51,15 @@ There are some (very experimental) flow executors in the making which make some 
 
 The mode of a flow can be set at any time via `Flow.set_algorithm_mode`, default is `'data'`.
 
-In both cases the `inp` parameter in `Node.update_event` represents the input index that received data or a signal respectively.
+The `inp` parameter in `Node.update_event` represents the input index that received data or an activation signal. If data was requested backwards in exec mode (so an output was called rather than an input), `inp` will be `-1`.
 
 ## Nodes System
 
-Nodes are subclasses of the `Node` class. Single node instances are instances of their class, and the basic properties that apply on all those nodes equally are stored as static attributes. Individually changing properties include inputs and outputs (which can be added, removed and modified at any time), display title, actions (see below) etc. You can put any code into your node classes, no limitations, and for sophisticated usage you can override the default behavior by reimplementing methods and creating your own `NodeBase` class(es).
-
-<!--
-One very important feature is the possibility of defining custom GUI components, i.e. widgets, for your nodes. A node can have a `main_widget` and input widgets, whose classes are stored in the `input_widget_classes` attribute.
--->
+Nodes are subclasses of the `Node` class. Single node instances/objects are instances of their class, and the basic properties that apply on all those nodes equally are stored as static attributes. Individually changing properties include inputs and outputs (which can be added, removed and modified at any time), display title, actions (see below) etc. You can put any code into your node classes, no limitations, and for sophisticated applications you can override the default behavior by reimplementing methods and by creating node class hierarchies.
 
 ### Node Actions
 
-Node actions are a very simple way to define an interface of possible (in most cases state changing) operations for your node. `ryvencore-qt` generates right-click menus for them. The non-static `Node.actions` attribute is a dictionary which you can edit like this
+Node actions are a very simple way to define an interface of possible (in most cases state changing) operations for your node. `ryvencore-qt` generates right-click menus for them. The (non-static) `Node.actions` attribute is a dictionary which you can edit like this
 
 ```python
 # creating a new entry
@@ -101,7 +95,7 @@ Node actions are saved and reloaded automatically.
 > [!WARNING]
 > Only refer to your according node's methods in the `method` field, not some other objects'. When saving, the referred method's name is stored and the method field in the `actions` entry is recreated on load via `getattr(node, method_name)`.
 
-## Load&Save
+## Load & Save
 
 To save a project use `Session.serialize()`. To load a saved project use `Session.load()`. Before loading a project, you need to register all required nodes in the session.
 
