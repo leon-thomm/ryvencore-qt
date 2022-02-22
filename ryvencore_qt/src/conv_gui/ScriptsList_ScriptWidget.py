@@ -2,7 +2,7 @@ from qtpy.QtWidgets import QWidget, QHBoxLayout, QLabel, QMenu, QAction
 from qtpy.QtGui import QIcon, QImage
 from qtpy.QtCore import Qt, QEvent, QBuffer, QByteArray
 
-from ..GlobalAttributes import Location
+from ..utils import get_resource
 from .ListWidget_NameLineEdit import ListWidget_NameLineEdit
 
 
@@ -28,7 +28,7 @@ class ScriptsList_ScriptWidget(QWidget):
 
         #   create icon
 
-        script_icon = QIcon(Location.PACKAGE_PATH + '/resources/pics/script_picture.png')
+        script_icon = QIcon(get_resource('pics/script_picture.png'))
 
         icon_label = QLabel()
         icon_label.setFixedSize(20, 20)

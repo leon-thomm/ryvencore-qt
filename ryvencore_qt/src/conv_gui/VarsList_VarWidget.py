@@ -4,9 +4,8 @@ from qtpy.QtCore import QMimeData, Qt, QEvent, QByteArray
 
 import json
 
-from ..GlobalAttributes import Location
 from .ListWidget_NameLineEdit import ListWidget_NameLineEdit
-from ..utils import shorten
+from ..utils import shorten, get_resource
 from .EditVal_Dialog import EditVal_Dialog
 
 
@@ -31,7 +30,7 @@ class VarsList_VarWidget(QWidget):
 
         # create icon
 
-        variable_icon = QIcon(Location.PACKAGE_PATH+'/resources/pics/variable_picture.png')
+        variable_icon = QIcon(get_resource('pics/variable_picture.png'))
 
         icon_label = QLabel()
         icon_label.setFixedSize(15, 15)

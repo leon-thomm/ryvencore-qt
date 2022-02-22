@@ -1,7 +1,6 @@
 from qtpy.QtCore import QSize, QRectF, QPointF, QSizeF, Qt
 from qtpy.QtWidgets import QGraphicsWidget, QGraphicsLayoutItem
 
-from ...GlobalAttributes import Location
 from ...utils import change_svg_color
 
 
@@ -18,9 +17,9 @@ class NodeItem_CollapseButton(QGraphicsWidget):
         self.setCursor(Qt.PointingHandCursor)
 
 
-        self.collapse_pixmap = change_svg_color(Location.PACKAGE_PATH+'/resources/node_collapse_icon.svg',
+        self.collapse_pixmap = change_svg_color('node_collapse_icon.svg',
                                                 self.node.color)
-        self.expand_pixmap = change_svg_color(Location.PACKAGE_PATH+'/resources/node_expand_icon.svg',
+        self.expand_pixmap = change_svg_color('node_expand_icon.svg',
                                               self.node.color)
 
 

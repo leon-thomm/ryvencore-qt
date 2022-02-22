@@ -6,8 +6,12 @@ from math import sqrt
 from waiting import wait
 from typing import List, Dict
 
+from xdg import BaseDirectory
+
 from ryvencore.utils import serialize, deserialize
 from qtpy.QtCore import QPointF
+
+from .GlobalAttributes import Location
 
 
 class Container:
@@ -78,6 +82,20 @@ class MovementEnum(enum.Enum):
     mouse_released = 3
 
 
+def get_resource(filepath: str):
+    # find filepath in xdg data directories
+    if '/' in filepath:
+        path, file = filepath.rsplit('/', maxsplit=1)
+    else:
+        path, file = '', filepath
+    for p in BaseDirectory.load_data_paths('ryven/' + path):
+        if file in os.listdir(p):
+            return p + file
+
+    # use Location.PACKAGE_PATH
+    return Location.PACKAGE_PATH + '/resources/' + filepath
+
+
 def change_svg_color(filepath: str, color_hex: str):
     # doesnt seem to work properly yet :(
 
@@ -85,13 +103,19 @@ def change_svg_color(filepath: str, color_hex: str):
     from qtpy.QtGui import QPixmap, QPainter
     from qtpy.QtCore import Qt
 
-    with open(filepath) as f:
+    with open(get_resource(filepath)) as f:
         data = f.read()
     data = data.replace('fill:#000000', 'fill:'+color_hex)
-    with open(filepath, 'w') as f:
+
+    if '/' in filepath:
+        path, file = filepath.rsplit('/', maxsplit=1)
+    else:
+        path, file = '', filepath
+    savepath = BaseDirectory.save_data_path('ryven/' + path) + '/' + file
+    with open(savepath, 'w') as f:
         f.write(data)
 
-    svg_renderer = QSvgRenderer(filepath)
+    svg_renderer = QSvgRenderer(savepath)
     pix = QPixmap(svg_renderer.defaultSize())
     pix.fill(Qt.transparent)
     pix_painter = QPainter(pix)
