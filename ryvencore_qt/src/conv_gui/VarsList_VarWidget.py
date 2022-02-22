@@ -30,7 +30,7 @@ class VarsList_VarWidget(QWidget):
 
         # create icon
 
-        variable_icon = QIcon(get_resource('pics/variable_picture.png'))
+        variable_icon = QIcon(str(get_resource('pics/variable_picture.png')))
 
         icon_label = QLabel()
         icon_label.setFixedSize(15, 15)

@@ -28,7 +28,7 @@ class ScriptsList_ScriptWidget(QWidget):
 
         #   create icon
 
-        script_icon = QIcon(get_resource('pics/script_picture.png'))
+        script_icon = QIcon(str(get_resource('pics/script_picture.png')))
 
         icon_label = QLabel()
         icon_label.setFixedSize(20, 20)

@@ -1,10 +1,11 @@
 
 # set package path (for resources etc.)
-import os
+import pathlib
 from .src.GlobalAttributes import Location
-Location.PACKAGE_PATH = os.path.normpath(os.path.dirname(__file__))
+Location.PACKAGE_PATH = pathlib.PurePath(__file__).parent
 
 # set ryvencore gui mode
+import os
 os.environ['RC_MODE'] = 'gui'
 
 # import backend wrapper

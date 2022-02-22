@@ -1,7 +1,7 @@
 import bisect
 import enum
 import json
-import os
+import pathlib
 from math import sqrt
 from waiting import wait
 from typing import List, Dict
@@ -84,16 +84,13 @@ class MovementEnum(enum.Enum):
 
 def get_resource(filepath: str):
     # find filepath in xdg data directories
-    if '/' in filepath:
-        path, file = filepath.rsplit('/', maxsplit=1)
-    else:
-        path, file = '', filepath
-    for p in BaseDirectory.load_data_paths('ryven/' + path):
-        if file in os.listdir(p):
-            return p + file
+    path = pathlib.PurePath(filepath)
+    for p in BaseDirectory.load_data_paths(pathlib.PurePath('ryven', path.parent)):
+        if pathlib.Path(p, path.name).is_file():
+            return pathlib.Path(p, path.name)
 
     # use Location.PACKAGE_PATH
-    return Location.PACKAGE_PATH + '/resources/' + filepath
+    return pathlib.Path(Location.PACKAGE_PATH, 'resources', filepath)
 
 
 def change_svg_color(filepath: str, color_hex: str):
@@ -107,15 +104,14 @@ def change_svg_color(filepath: str, color_hex: str):
         data = f.read()
     data = data.replace('fill:#000000', 'fill:'+color_hex)
 
-    if '/' in filepath:
-        path, file = filepath.rsplit('/', maxsplit=1)
-    else:
-        path, file = '', filepath
-    savepath = BaseDirectory.save_data_path('ryven/' + path) + '/' + file
+    path = pathlib.PurePath(filepath)
+    savepath = pathlib.Path(
+        BaseDirectory.save_data_path(
+            pathlib.Path('ryven', path.parent))).with_name(path.name)
     with open(savepath, 'w') as f:
         f.write(data)
 
-    svg_renderer = QSvgRenderer(savepath)
+    svg_renderer = QSvgRenderer(str(savepath))
     pix = QPixmap(svg_renderer.defaultSize())
     pix.fill(Qt.transparent)
     pix_painter = QPainter(pix)

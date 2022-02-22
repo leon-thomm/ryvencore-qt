@@ -41,13 +41,13 @@ class Design(QObject):
     def register_fonts():
         db = QFontDatabase()
         db.addApplicationFont(
-            get_resource('fonts/poppins/Poppins-Medium.ttf')
+            str(get_resource('fonts/poppins/Poppins-Medium.ttf'))
         )
         db.addApplicationFont(
-            get_resource('fonts/source_code_pro/SourceCodePro-Regular.ttf')
+            str(get_resource('fonts/source_code_pro/SourceCodePro-Regular.ttf'))
         )
         db.addApplicationFont(
-            get_resource('fonts/asap/Asap-Regular.ttf')
+            str(get_resource('fonts/asap/Asap-Regular.ttf'))
         )
 
     def register_flow_themes(self):
