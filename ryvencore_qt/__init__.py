@@ -6,6 +6,7 @@ Location.PACKAGE_PATH = os.path.normpath(os.path.dirname(__file__))
 
 # set ryvencore gui mode
 os.environ['RC_MODE'] = 'gui'
+os.environ['QT_ENABLE_HIGHDPI_SCALING'] = '1'
 
 # import backend wrapper
 from .src.core_wrapper import *
