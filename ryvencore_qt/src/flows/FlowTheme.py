@@ -6,7 +6,7 @@ from ..utils import pythagoras
 
 
 class FlowTheme:
-    # STATIC ATTRIBUTES
+
     name = ''
     type_ = 'dark'
 
