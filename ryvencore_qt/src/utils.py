@@ -7,7 +7,7 @@ from waiting import wait
 from typing import List, Dict
 
 from ryvencore.utils import serialize, deserialize
-from qtpy.QtCore import QPointF
+from qtpy.QtCore import QPointF, QByteArray
 
 
 class Container:
@@ -78,6 +78,18 @@ class MovementEnum(enum.Enum):
     mouse_released = 3
 
 
+def get_resource(filepath: str):
+    # find filepath in xdg data directories
+    path = pathlib.PurePath(filepath)
+    for p in BaseDirectory.load_data_paths(pathlib.PurePath('ryven', path.parent)):
+        if pathlib.Path(p, path.name).is_file():
+            print('using base dir path!', pathlib.Path(p, path.name))
+            return pathlib.Path(p, path.name)
+
+    # use Location.PACKAGE_PATH
+    return pathlib.Path(Location.PACKAGE_PATH, 'resources', filepath)
+
+
 def change_svg_color(filepath: str, color_hex: str):
     # doesnt seem to work properly yet :(
 
@@ -87,11 +99,10 @@ def change_svg_color(filepath: str, color_hex: str):
 
     with open(filepath) as f:
         data = f.read()
-    data = data.replace('fill:#000000', 'fill:'+color_hex)
-    with open(filepath, 'w') as f:
-        f.write(data)
+    data = data.replace('fill:#xxxxxx', 'fill:'+color_hex)
 
-    svg_renderer = QSvgRenderer(filepath)
+    svg_renderer = QSvgRenderer(QByteArray(bytes(data, 'ascii')))
+
     pix = QPixmap(svg_renderer.defaultSize())
     pix.fill(Qt.transparent)
     pix_painter = QPainter(pix)
