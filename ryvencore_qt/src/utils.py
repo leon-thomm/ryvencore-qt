@@ -1,13 +1,15 @@
 import bisect
 import enum
 import json
-import os
+import pathlib
 from math import sqrt
 from waiting import wait
 from typing import List, Dict
 
-from ryvencore.utils import serialize, deserialize
 from qtpy.QtCore import QPointF, QByteArray
+
+from ryvencore.utils import serialize, deserialize
+from .GlobalAttributes import *
 
 
 class Container:
@@ -79,19 +81,13 @@ class MovementEnum(enum.Enum):
 
 
 def get_resource(filepath: str):
-    # find filepath in xdg data directories
-    path = pathlib.PurePath(filepath)
-    for p in BaseDirectory.load_data_paths(pathlib.PurePath('ryven', path.parent)):
-        if pathlib.Path(p, path.name).is_file():
-            print('using base dir path!', pathlib.Path(p, path.name))
-            return pathlib.Path(p, path.name)
-
-    # use Location.PACKAGE_PATH
     return pathlib.Path(Location.PACKAGE_PATH, 'resources', filepath)
 
 
 def change_svg_color(filepath: str, color_hex: str):
-    # doesnt seem to work properly yet :(
+    """Loads an SVG, changes all '#xxxxxx' occurrences to color_hex, renders it into and a pixmap and returns it"""
+
+    # https://stackoverflow.com/questions/15123544/change-the-color-of-an-svg-in-qt
 
     from qtpy.QtSvg import QSvgRenderer
     from qtpy.QtGui import QPixmap, QPainter
@@ -110,54 +106,6 @@ def change_svg_color(filepath: str, color_hex: str):
 
     return pix
 
-
-
-    # """
-    # Changes the color of an SVG image and returns a QPixmap
-    #
-    # https://stackoverflow.com/questions/15123544/change-the-color-of-an-svg-in-qt
-    # """
-    #
-    # from qtpy.QtGui import Qt, QPainter
-    # from qtpy.QtXml import QDomDocument, QDomElement
-    # from qtpy.QtSvg import QSvgRenderer
-    # from qtpy.QtGui import QPixmap
-    #
-    #
-    # def change_svg_color__set_attr_recur(elem: QDomElement, strtagname: str, strattr: str, strattrval: str):
-    #
-    #     # if it has the tag name then overwrite desired attribute
-    #     if elem.tagName() == strtagname:
-    #         elem.setAttribute(strattr, strattrval)
-    #
-    #     # loop all children
-    #     for i in range(elem.childNodes().count()):
-    #         if not elem.childNodes().at(i).isElement():
-    #             continue
-    #
-    #         change_svg_color__set_attr_recur(elem.childNodes().at(i).toElement(), strtagname, strattr, strattrval)
-    #
-    #
-    # # open svg resource load contents to qbytearray
-    # f = open(filepath)
-    # data = f.read()
-    # f.close()
-    # # load svg contents to xml document and edit contents
-    # doc = QDomDocument()
-    # doc.setContent(data)
-    # # recursively change color
-    # change_svg_color__set_attr_recur(doc.documentElement(), 'path', 'fill', color_hex)
-    # # create svg renderer with edited contents
-    # svg_renderer = QSvgRenderer(doc.toByteArray())
-    # # create pixmap target (could be a QImage)
-    # pix = QPixmap(svg_renderer.defaultSize())
-    # pix.fill(Qt.transparent)
-    # # create painter to act over pixmap
-    # pix_painter = QPainter(pix)
-    # # use renderer to render over painter which paints on pixmap
-    # svg_renderer.render(pix_painter)
-    #
-    # return pix
 
 
 def translate_project(project: Dict) -> Dict:

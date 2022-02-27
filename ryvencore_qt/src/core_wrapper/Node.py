@@ -33,6 +33,7 @@ class Node(RC_Node, QObject):
         self.default_actions = self.init_default_actions()
         self.actions = {}
         self.display_title = self.title
+        self.error_during_update = False
 
         self.item = None  # set by the flow view
 
@@ -97,8 +98,22 @@ class Node(RC_Node, QObject):
 
     # @override
     def update(self, inp=-1):
+        self.error_during_update = False
         RC_Node.update(self, inp)
         self.updated.emit()
+        if not self.error_during_update:
+            self.update_no_error()
+
+    def update_error(self, e):
+        RC_Node.update_error(self, e)
+        self.error_during_update = True
+        if self.item:
+            self.item.display_error(e)
+
+    def update_no_error(self):
+        # indicates successfull update -> might want to hide alert from previous fail
+        if self.item and self.item.displaying_error:
+            self.item.remove_error_message()
 
     # @override
     def create_input(self, label: str = '', type_: str = 'data', add_data={}, insert: int = None):

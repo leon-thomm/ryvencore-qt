@@ -3,7 +3,7 @@ from qtpy.QtWidgets import QGraphicsWidget, QGraphicsLayoutItem
 from qtpy.QtGui import QColor
 
 from ...GlobalAttributes import Location
-from ...utils import change_svg_color
+from ...utils import change_svg_color, get_resource
 
 
 class NodeItem_CollapseButton(QGraphicsWidget):
@@ -20,11 +20,11 @@ class NodeItem_CollapseButton(QGraphicsWidget):
 
 
         self.collapse_pixmap = change_svg_color(
-            'node_collapse_icon.svg',
+            get_resource('node_collapse_icon.svg'),
             self.node.color
         )
         self.expand_pixmap = change_svg_color(
-            'node_expand_icon.svg',
+            get_resource('node_expand_icon.svg'),
             self.node.color
         )
 

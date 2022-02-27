@@ -1,7 +1,10 @@
+import traceback
+
 from qtpy.QtWidgets import QGraphicsItem, QGraphicsObject, QMenu, QGraphicsDropShadowEffect
 from qtpy.QtCore import Qt, QRectF, QObject, QPointF
 from qtpy.QtGui import QColor
 
+from .NodeErrorIndicator import NodeErrorIndicator
 from ...GUIBase import GUIBase
 from ryvencore.NodePort import NodeInput, NodeOutput
 from .NodeItemAction import NodeItemAction
@@ -36,6 +39,7 @@ class NodeItem(GUIBase, QGraphicsObject):  # QGraphicsItem, QObject):
         self.collapsed = False
         self.hovered = False
         self.hiding_unconnected_ports = False
+        self.displaying_error = False
 
         self.personal_logs = []
 
@@ -71,13 +75,17 @@ class NodeItem(GUIBase, QGraphicsObject):  # QGraphicsItem, QObject):
             self.main_widget = self.node.main_widget_class((self.node, self))
         self.widget = NodeItemWidget(self.node, self)  # QGraphicsWidget(self)
         self.animator = NodeItemAnimator(self)  # needs self.title_label
+        self.error_indicator = NodeErrorIndicator(self)
+        self.error_indicator.hide()
 
         # TOOLTIP
-        if self.node.description_html:
-            self.setToolTip(self.node.description_html)
-        elif self.node.__doc__:
-            self.setToolTip('<html><head/><body><p>' + self.node.__doc__ + '</p></body></html>')
-        self.setCursor(Qt.SizeAllCursor)
+        self.tooltip_descr_html_content = \
+            self.node.description_html \
+            if self.node.description_html is not None \
+            else \
+            f'<p>{self.node.__doc__}</p>'
+
+        self.setToolTip(f'<html><head/><body>{self.tooltip_descr_html_content}</body></html>')
 
         # DESIGN THEME
         self.session_design.flow_theme_changed.connect(self.update_design)
@@ -119,7 +127,7 @@ class NodeItem(GUIBase, QGraphicsObject):  # QGraphicsItem, QObject):
         self.update()  # ... not sure if I need that
 
     # --------------------------------------------------------------------------------------
-    # UI STUFF ----------------------------------------
+    # UI STUFF -------------------------#---------------
 
     def node_updated(self):
         if self.session_design.animations_enabled:
@@ -129,6 +137,30 @@ class NodeItem(GUIBase, QGraphicsObject):  # QGraphicsItem, QObject):
                 self.animator.set_animation_max()
 
         self.update()
+
+    def display_error(self, e):
+        self.error_indicator.set_error(e)
+        self.error_indicator.show()
+        self.displaying_error = True
+
+    def remove_error_message(self):
+        self.error_indicator.hide()
+        self.setToolTip(f'<html><head/><body>{self.tooltip_descr_html_content}</body></html>')
+
+    def set_tooltip(self, error_msg=None):
+
+        if error_msg is not None:
+            err = f'<p style="background: red; color: white">{error_msg}</p>'
+        else:
+            err = ''
+
+        if self.node.description_html:
+            html = self.node.description_html + f'<html><head/><body>{err}</body></html>'
+        elif self.node.__doc__:
+            html = f'<html><head/><body><p>{self.node.__doc__}</p>{err}</body></html>'
+
+        self.setToolTip(html)
+        self.setCursor(Qt.SizeAllCursor)
 
     def add_new_input(self, inp: NodeInput, insert: int = None):
 
@@ -296,6 +328,7 @@ class NodeItem(GUIBase, QGraphicsObject):  # QGraphicsItem, QObject):
 
             self.update_shape()
             self.update_conn_pos()
+            self.error_indicator.setPos(self.boundingRect().bottomRight())
 
         self.session_design.flow_theme.paint_NI(
             node=self.node,
