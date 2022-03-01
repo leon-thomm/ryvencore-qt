@@ -1606,16 +1606,16 @@ class FlowTheme_Fusion(FlowTheme):
 
 
 flow_themes = [
-    FlowTheme_Toy,
-    FlowTheme_DarkTron,
-    FlowTheme_Ghost,
-    FlowTheme_Blender,
-    FlowTheme_Simple,
-    FlowTheme_Ueli,
-    FlowTheme_PureDark,
-    FlowTheme_Colorful,
-    FlowTheme_PureLight,
-    FlowTheme_ColorfulLight,
-    FlowTheme_Industrial,
-    FlowTheme_Fusion,
+    FlowTheme_Toy(),
+    FlowTheme_DarkTron(),
+    FlowTheme_Ghost(),
+    FlowTheme_Blender(),
+    FlowTheme_Simple(),
+    FlowTheme_Ueli(),
+    FlowTheme_PureDark(),
+    FlowTheme_Colorful(),
+    FlowTheme_PureLight(),
+    FlowTheme_ColorfulLight(),
+    FlowTheme_Industrial(),
+    FlowTheme_Fusion(),
 ]
