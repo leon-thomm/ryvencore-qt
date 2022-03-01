@@ -15,6 +15,7 @@ from .src.core_wrapper import *
 from .src.flows.nodes.WidgetBaseClasses import MWB, IWB
 from .src.flows.connections.ConnectionItem import DataConnectionItem, ExecConnectionItem
 from .src.conv_gui import *
+from .src.flows.FlowTheme import flow_themes
 
 # expose ryvencore
 import ryvencore

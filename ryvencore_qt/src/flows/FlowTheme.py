@@ -1603,3 +1603,19 @@ class FlowTheme_Fusion(FlowTheme):
         painter.setBrush(QBrush(self.node_small_bg_col))
         painter.setPen(Qt.NoPen)
         painter.drawRoundedRect(bounding_rect, 4, 4)
+
+
+flow_themes = [
+    FlowTheme_Toy,
+    FlowTheme_DarkTron,
+    FlowTheme_Ghost,
+    FlowTheme_Blender,
+    FlowTheme_Simple,
+    FlowTheme_Ueli,
+    FlowTheme_PureDark,
+    FlowTheme_Colorful,
+    FlowTheme_PureLight,
+    FlowTheme_ColorfulLight,
+    FlowTheme_Industrial,
+    FlowTheme_Fusion,
+]

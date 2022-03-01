@@ -3,9 +3,7 @@ import json
 from qtpy.QtCore import QObject, Signal
 from qtpy.QtGui import QFontDatabase
 
-from .flows.FlowTheme import FlowTheme_Toy, FlowTheme_DarkTron, FlowTheme_Ghost, FlowTheme_Blender, \
-    FlowTheme_Simple, FlowTheme_Ueli, FlowTheme_PureDark, FlowTheme, FlowTheme_PureLight, \
-    FlowTheme_Colorful, FlowTheme_ColorfulLight, FlowTheme_Industrial, FlowTheme_Fusion
+from .flows.FlowTheme import FlowTheme, flow_themes
 from .GlobalAttributes import Location
 
 
@@ -21,7 +19,7 @@ class Design(QObject):
     def __init__(self):
         super().__init__()
 
-        self.flow_themes = []
+        self.flow_themes = flow_themes
         self.flow_theme: FlowTheme = None
         self.default_flow_size = None
         self.performance_mode: str = None
@@ -30,7 +28,6 @@ class Design(QObject):
         self.node_selection_stylesheet: str = None
 
         # load standard default values
-        self.register_flow_themes()
         self._default_flow_theme = self.flow_themes[-1]
         self.set_performance_mode('pretty')
         self.set_animations_enabled(True)
@@ -49,22 +46,6 @@ class Design(QObject):
         db.addApplicationFont(
             Location.PACKAGE_PATH + '/resources/fonts/asap/Asap-Regular.ttf'
         )
-
-    def register_flow_themes(self):
-        self.flow_themes = [
-            FlowTheme_Toy(),
-            FlowTheme_DarkTron(),
-            FlowTheme_Ghost(),
-            FlowTheme_Blender(),
-            FlowTheme_Simple(),
-            FlowTheme_Ueli(),
-            FlowTheme_PureDark(),
-            FlowTheme_Colorful(),
-            FlowTheme_PureLight(),
-            FlowTheme_ColorfulLight(),
-            FlowTheme_Industrial(),
-            FlowTheme_Fusion(),
-        ]
 
     def load_from_config(self, filepath: str):
         """Loads design configs from a config json file"""
