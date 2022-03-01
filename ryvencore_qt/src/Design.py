@@ -99,7 +99,7 @@ class Design(QObject):
 
     def flow_theme_by_name(self, name: str) -> FlowTheme:
         for theme in self.flow_themes:
-            if theme.name == name:
+            if theme.name.lower() == name.lower():
                 return theme
         return None
 
