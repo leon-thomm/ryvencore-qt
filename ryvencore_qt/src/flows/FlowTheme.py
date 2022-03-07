@@ -5,6 +5,12 @@ from qtpy.QtWidgets import QStyle, QStyleOption
 from ..utils import pythagoras
 
 
+#
+#   notice: available themes are hardcoded in Ryven for CLI; make sure to update those
+#   in case of changes affecting it
+#
+
+
 class FlowTheme:
 
     name = ''

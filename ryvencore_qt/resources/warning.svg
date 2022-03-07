@@ -29,7 +29,7 @@
      showguides="false"
      inkscape:zoom="8.7679434"
      inkscape:cx="28.34188"
-     inkscape:cy="29.59645"
+     inkscape:cy="28.455932"
      inkscape:window-width="1920"
      inkscape:window-height="1026"
      inkscape:window-x="0"
@@ -84,10 +84,13 @@
      inkscape:groupmode="layer"
      id="layer1">
     <path
-       style="fill:none;stroke:#448aff;stroke-width:1.165;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;filter:url(#filter10145)"
+       style="fill:#172ec1;stroke:#448aff;stroke-width:1.165;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;filter:url(#filter10145);fill-opacity:0.43838"
        d="M 0.5944035,15.594628 H 19.53607 L 10.065237,0.59462737 Z"
        id="path857"
-       sodipodi:nodetypes="cccc" />
+       sodipodi:nodetypes="cccc"
+       inkscape:export-filename="/home/leon/projects/ryven_projects/ryvencore-qt/ryvencore_qt/resources/pics/warning.png"
+       inkscape:export-xdpi="619.08533"
+       inkscape:export-ydpi="619.08533" />
     <path
        style="fill:#448aff;fill-opacity:0.97647059;stroke:#448aff;stroke-width:0.865;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;filter:url(#filter10149)"
        d="m 9.4346169,5.6529604 0.6306201,5.0390326 0.67835,-5.0390326 z"
