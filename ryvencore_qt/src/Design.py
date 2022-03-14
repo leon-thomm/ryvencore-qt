@@ -99,7 +99,7 @@ class Design(QObject):
 
     def flow_theme_by_name(self, name: str) -> FlowTheme:
         for theme in self.flow_themes:
-            if theme.name == name:
+            if theme.name.casefold() == name.casefold():
                 return theme
         return None
 
