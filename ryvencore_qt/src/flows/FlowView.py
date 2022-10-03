@@ -212,7 +212,7 @@ class FlowView(GUIBase, QGraphicsView):
             self.add_connection(c)
 
     def show_framerate(self, show: bool = True, m_sec_interval: int = 1000):
-        self._showing_framerate = showy
+        self._showing_framerate = show
         self.framerate_timer.setInterval(m_sec_interval)
         self.framerate_timer.start()
 
