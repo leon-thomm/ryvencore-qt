@@ -6,8 +6,8 @@ from ..GlobalAttributes import Location
 from .ListWidget_NameLineEdit import ListWidget_NameLineEdit
 
 
-class ScriptsList_ScriptWidget(QWidget):
-    """A QWidget representing a single Script for the ScriptsListWidget."""
+class FlowsList_FlowWidget(QWidget):
+    """A QWidget representing a single Script for the FlowsListWidget."""
 
     def __init__(self, scripts_list_widget, session, script):
         super().__init__()

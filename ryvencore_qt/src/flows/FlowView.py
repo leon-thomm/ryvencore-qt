@@ -44,7 +44,7 @@ class FlowView(GUIBase, QGraphicsView):
 
     viewport_update_mode_changed = Signal(str)
 
-    def __init__(self, session, script, flow, load_data=None, flow_size: list = None, parent=None):
+    def __init__(self, session, flow, load_data=None, flow_size: list = None, parent=None):
         GUIBase.__init__(self, representing_component=flow)
         QGraphicsView.__init__(self, parent=parent)
 
@@ -61,7 +61,7 @@ class FlowView(GUIBase, QGraphicsView):
         # GENERAL ATTRIBUTES
         self.session = session
         # self.CLASSES = self.session.CLASSES
-        self.script = script
+
         self.flow: Flow = flow
         self.node_items: dict = {}  # {Node: NodeItem}
         self.node_items__cache: dict = {}
