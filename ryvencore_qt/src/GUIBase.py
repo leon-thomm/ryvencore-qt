@@ -47,7 +47,7 @@ class GUIBase:
     def __init__(self, representing_component: Base = None):
         """parameter `representing` indicates representation of a specific backend component"""
         if representing_component is not None:
-            GUIBase.FRONTEND_COMPONENT_ASSIGNMENTS[representing_component.GLOBAL_ID] = self
+            GUIBase.FRONTEND_COMPONENT_ASSIGNMENTS[representing_component.global_id] = self
 
     # OVERRIDE
     def complete_data(self, data: dict) -> dict:
