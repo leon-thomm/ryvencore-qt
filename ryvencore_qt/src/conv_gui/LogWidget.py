@@ -2,7 +2,7 @@ from qtpy.QtGui import QFont
 from qtpy.QtWidgets import QWidget, QHBoxLayout, QVBoxLayout, QLabel, QPushButton, QPlainTextEdit
 
 # from ..core_wrapper.WRAPPERS import Logger
-from ryvencore import Logger
+from ryvencore.addons.default.Logging import Logger
 import logging
 
 
