@@ -1,7 +1,7 @@
 # unwrapped backend classes
-from ryvencore import InfoMsgs, NodeInputBP, NodeOutputBP, ExecConnection, dtypes, \
-    LogsManager, Logger, Flow, DataConnection
-from ryvencore.script_variables import VarsManager
+from ryvencore import InfoMsgs, NodeInputType, NodeOutputType, dtypes, \
+    Flow
+#TODO: include addons here? Need to clarify structure of imports throughout ryvencore-qt, ryvencore and Ryven
 
 # wrapped classes
 from .Node import Node
