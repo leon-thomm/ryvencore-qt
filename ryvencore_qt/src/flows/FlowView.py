@@ -851,7 +851,7 @@ class FlowView(GUIBase, QGraphicsView):
             self._add_node_item(item)
 
         else:  # create new item
-            item_data = node.init_data
+            item_data = node.load_data
             item = NodeItem(node, params=(self, self.session.design, item_data))
             node.item = item
             item.initialize()
