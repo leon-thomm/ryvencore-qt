@@ -60,6 +60,7 @@ class IWB:
         pass
 
     def update_node_input(self, val):
+        # TODO: this doesn't work anymore since InputPorts don't store a value anymore.
         self.input.update(val)
 
     def update_node(self):

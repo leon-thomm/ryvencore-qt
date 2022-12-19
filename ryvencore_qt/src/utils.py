@@ -113,7 +113,7 @@ def translate_project(project: Dict) -> Dict:
     Transforms a v3.0 project file into something that can be loaded in v3.1,
     i.e. turns macros into scripts and removes macro nodes from the flows.
     """
-
+    # TODO: this needs to be changed to match ryvencore 0.4 structure
     new_project = project.copy()
 
     # turn macros into scripts
