@@ -2,7 +2,7 @@ from qtpy.QtCore import QObject, Signal
 
 from ryvencore import Node as RC_Node
 from ..GlobalAttributes import Location
-from ryvencore.dtypes import DType
+#from ryvencore.dtypes import DType
 
 
 class Node(RC_Node, QObject):
@@ -132,19 +132,19 @@ class Node(RC_Node, QObject):
             self.input_added.emit(self.inputs[-1], None)
 
     # @override
-    def create_input_dt(self, dtype: DType, label: str = '', add_data={}, insert: int = None):
-        RC_Node.create_input_dt(self, dtype=dtype, label=label, add_data=add_data, insert=insert)
-
-        if insert is not None:
-
-            if insert < 0:
-                index = insert-1
-            else:
-                index = insert
-
-            self.input_added.emit(self.inputs[index], insert)
-        else:
-            self.input_added.emit(self.inputs[-1], None)
+    # def create_input_dt(self, dtype: DType, label: str = '', add_data={}, insert: int = None):
+    #     RC_Node.create_input_dt(self, dtype=dtype, label=label, add_data=add_data, insert=insert)
+    #
+    #     if insert is not None:
+    #
+    #         if insert < 0:
+    #             index = insert-1
+    #         else:
+    #             index = insert
+    #
+    #         self.input_added.emit(self.inputs[index], insert)
+    #     else:
+    #         self.input_added.emit(self.inputs[-1], None)
 
     # @override
     def rename_input(self, index: int, label: str):
