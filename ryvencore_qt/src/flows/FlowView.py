@@ -214,6 +214,12 @@ class FlowView(GUIBase, QGraphicsView):
         for c in [(o, i) for i, o in self.flow.graph_adj_rev.items()]:
             self.add_connection(c)
 
+    def node_view_placed(self, node: Node):
+        """Triggered after the node's GUI content has been fully initialized"""
+
+        node.view_place_event()
+
+
     def show_framerate(self, show: bool = True, m_sec_interval: int = 1000):
         self._showing_framerate = showy
         self.framerate_timer.setInterval(m_sec_interval)

@@ -304,3 +304,17 @@ class Node(RC_Node, QObject):
         d.exec_()
         if d.new_title:
             self.set_display_title(d.new_title)
+
+    """
+    Overriden by node implementation
+    """
+    def view_place_event(self):
+        """
+        Called once all GUI for the node has been created by the frontend, if one exists.
+        Any initial communication to widgets is supposed to happen here, and this method is not called
+        when running without gui.
+        Notice that this method gets executed *every time* the node is added to the flow, which can happen
+        multiple times for the same object (e.g. due to undo/redo operations).
+        """
+
+        pass
