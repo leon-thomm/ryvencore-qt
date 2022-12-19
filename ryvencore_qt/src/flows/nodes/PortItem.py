@@ -7,11 +7,42 @@ from ...GUIBase import GUIBase
 from .PortItemInputWidgets import \
     Data_IW_S, Data_IW_M, Data_IW_L, Float_IW, Integer_IW, Choice_IW, Boolean_IW, String_IW_S, String_IW_M, String_IW_L
 from ryvencore import dtypes, serialize
+from ryvencore.NodePort import NodeOutput, NodeInput
 from ryvencore.utils import deserialize
 from ...utils import get_longest_line, shorten
 
 from ..FlowViewProxyWidget import FlowViewProxyWidget
 
+# Utility methods -------------------------------------------------------------------------------------------------------------
+# These could be moved to another module for clarity
+
+def is_connected(port):
+    if isinstance(port, NodeOutput):
+        is_connected = len(port.node.flow.connected_inputs(port)) > 0
+    else:
+        is_connected = port.node.flow.connected_output(port) is not None
+    return is_connected
+
+def val(port):
+    if isinstance(port, NodeOutput):
+        return port.val.payload
+    else:
+        conn_out = port.node.flow.connected_output(port)
+        if conn_out:
+            return conn_out.val.payload
+        else:
+            return None
+
+def connections(port):
+    if isinstance(port, NodeOutput):
+        return [(port, i) for i in port.node.flow.connected_inputs(port)]
+    else:
+        conn_out = port.node.flow.connected_output(port)
+        if conn_out:
+            return [(port.node.flow.connected_output(port), port)]
+        else:
+            return []
+# ==========
 
 class PortItem(GUIBase, QGraphicsWidget):
     """The GUI representative for ports of nodes, also handling mouse events for connections."""
@@ -73,7 +104,7 @@ class InputPortItem(PortItem):
         self.update_widget_value = self.widget is not None  # modified by FlowView when performance mode changes
 
         # catch up to missed connections
-        if len(self.port.connections) > 0:
+        if self.node.flow.connected_output(self.port) is not None:
             self.port_connected()
 
         if self.port.add_data:
@@ -261,7 +292,7 @@ class PortItemPin(QGraphicsWidget):
             option=option,
             node_color=self.node_item.color,
             type_=self.port.type_,
-            connected=len(self.port.connections) > 0,
+            connected=is_connected(self.port),
             rect=QRectF(self.padding, self.padding, self.width-2*self.padding, self.height-2*self.padding)
         )
 
@@ -290,11 +321,11 @@ class PortItemPin(QGraphicsWidget):
 
     def hoverEnterEvent(self, event):
         if self.port.type_ == 'data':  # and self.parent_port_instance.io_pos == PortPos.OUTPUT:
-            self.setToolTip(shorten(str(self.port.val), 1000, line_break=True))
+            self.setToolTip(shorten(str(val(self.port)), 1000, line_break=True))
 
         # highlight connections
         items = self.flow_view.connection_items
-        for c in self.port.connections:
+        for c in connections(self.port):
             items[c].set_highlighted(True)
 
         self.hovered = True
@@ -305,7 +336,7 @@ class PortItemPin(QGraphicsWidget):
 
         # un-highlight connections
         items = self.flow_view.connection_items
-        for c in self.port.connections:
+        for c in connections(self.port):
             items[c].set_highlighted(False)
 
         self.hovered = False
@@ -355,7 +386,7 @@ class PortItemLabel(QGraphicsWidget):
             self.node,
             painter, option,
             self.port.type_,
-            len(self.port.connections) > 0,
+            is_connected(self.port),
             self.port.label_str,
             self.node_item.color,
             self.boundingRect()

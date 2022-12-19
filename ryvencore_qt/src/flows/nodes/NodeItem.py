@@ -410,10 +410,10 @@ class NodeItem(GUIBase, QGraphicsObject):  # QGraphicsItem, QObject):
         """Updates the scene positions of connections"""
 
         for o in self.node.outputs:
-            for c in o.connections:
+            for i in self.node.flow.connected_inputs(o):
                 # c.item.recompute()
 
-                if c not in self.flow_view.connection_items:
+                if (o, i) not in self.flow_view.connection_items:
                     # it can happen that the connection item hasn't been
                     # created yet
                     continue
@@ -421,16 +421,16 @@ class NodeItem(GUIBase, QGraphicsObject):  # QGraphicsItem, QObject):
                 item = self.flow_view.connection_items[c]
                 item.recompute()
         for i in self.node.inputs:
-            for c in i.connections:
-                # c.item.recompute()
+            o = self.node.flow.connected_output(i)
+            # c.item.recompute()
 
-                if c not in self.flow_view.connection_items:
-                    # it can happen that the connection item hasn't been
-                    # created yet
-                    continue
+            if (o, i) not in self.flow_view.connection_items:
+                # it can happen that the connection item hasn't been
+                # created yet
+                continue
 
-                item = self.flow_view.connection_items[c]
-                item.recompute()
+            item = self.flow_view.connection_items[c]
+            item.recompute()
 
     def hoverEnterEvent(self, event):
         self.hovered = True

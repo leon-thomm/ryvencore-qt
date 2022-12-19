@@ -1,13 +1,15 @@
 import json
 
+from typing import Tuple
+
 from qtpy.QtCore import Qt, QPointF, QPoint, QRectF, QSizeF, Signal, QTimer, QTimeLine, QEvent
 from qtpy.QtGui import QPainter, QPen, QColor, QKeySequence, QTabletEvent, QImage, QGuiApplication, QFont, QTouchEvent
 from qtpy.QtWidgets import QGraphicsView, QGraphicsScene, QShortcut, QMenu, QGraphicsItem, QUndoStack
 
 from ryvencore.Flow import Flow
 from ryvencore.Node import Node
-from ryvencore.NodePort import NodePort
-from ryvencore.Connection import Connection, DataConnection
+from ryvencore.NodePort import NodePort, NodeInput, NodeOutput
+#from ryvencore.Connection import Connection, DataConnection
 from ryvencore.InfoMsgs import InfoMsgs
 from ryvencore.RC import PortObjPos
 from ryvencore.utils import node_from_identifier
@@ -35,11 +37,11 @@ class FlowView(GUIBase, QGraphicsView):
     create_node_request = Signal(object, dict)
     remove_node_request = Signal(Node)
 
-    check_connection_validity_request = Signal(NodePort, NodePort, bool)
+    check_connection_validity_request = Signal((NodeOutput, NodeInput), bool)
     connect_request = Signal(NodePort, NodePort)
 
-    get_nodes_data_request = Signal(list)
-    get_connections_data_request = Signal(list)
+    #get_nodes_data_request = Signal(list)
+    #get_connections_data_request = Signal(list)
     get_flow_data_request = Signal()
 
     viewport_update_mode_changed = Signal(str)
@@ -96,10 +98,11 @@ class FlowView(GUIBase, QGraphicsView):
         # CONNECTIONS TO FLOW
         self.create_node_request.connect(self.flow.create_node)
         self.remove_node_request.connect(self.flow.remove_node)
-        self.node_placed.connect(self.flow.node_view_placed)
+        self.node_placed.connect(self.node_view_placed)
         self.check_connection_validity_request.connect(self.flow.check_connection_validity)
-        self.get_nodes_data_request.connect(self.flow.gen_nodes_data)
-        self.get_connections_data_request.connect(self.flow.gen_conns_data)
+        # TODO: need to check if the 2 lines below are used
+        #self.get_nodes_data_request.connect(self.flow.gen_nodes_data)
+        #self.get_connections_data_request.connect(self.flow.gen_conns_data)
         self.get_flow_data_request.connect(self.flow.data)
 
         # CONNECTIONS FROM FLOW
@@ -208,7 +211,7 @@ class FlowView(GUIBase, QGraphicsView):
         # CATCH UP ON FLOW
         for node in self.flow.nodes:
             self.add_node(node)
-        for c in self.flow.connections:
+        for c in [(o, i) for i, o in self.flow.graph_adj_rev.items()]:
             self.add_connection(c)
 
     def show_framerate(self, show: bool = True, m_sec_interval: int = 1000):
@@ -887,9 +890,19 @@ class FlowView(GUIBase, QGraphicsView):
 
     # CONNECTIONS
     def connect_node_ports__cmd(self, p1: NodePort, p2: NodePort):
-        self._temp_connection_ports = (p1, p2)
-        self._waiting_for_connection_request = True
-        self.check_connection_validity_request.emit(p1, p2, True)
+        # Need to check order of ports since Flow.check_connection_validity needs (NodeOutput, NodeInput)
+        if isinstance(p1, NodeOutput) and isinstance(p2, NodeInput):
+            self._temp_connection_ports = (p1, p2)
+            self._waiting_for_connection_request = True
+            self.check_connection_validity_request.emit((p1, p2), True)
+
+        elif isinstance(p1, NodeInput) and isinstance(p2, NodeOutput):
+            self._temp_connection_ports = (p2, p1)
+            self._waiting_for_connection_request = True
+            self.check_connection_validity_request.emit((p2, p1), True)
+
+        else:
+            self.connection_request_valid(False)
 
     def connection_request_valid(self, valid: bool):
         """
@@ -909,28 +922,26 @@ class FlowView(GUIBase, QGraphicsView):
 
             # remove forbidden connections
             if inp.type_ == 'data':
-                for c in inp.connections:
-
-                    if c.out == out:
-                        # if the exact connection exists, we want to remove it by command
-                        continue
-
+                if self.flow.connected_output(inp) == out:
+                    # if the exact connection exists, we want to remove it by command
                     self._push_undo(
-                        ConnectPorts_Command(self, out=c.out, inp=inp)
+                        ConnectPorts_Command(self, out=self.flow.connected_output(inp), inp=inp)
                     )
 
             self._push_undo(
                 ConnectPorts_Command(self, out=out, inp=inp)
             )
 
-    def add_connection(self, c: Connection):
+    def add_connection(self, c: Tuple[NodeOutput, NodeInput]):
+        out, inp = c
 
+        #TODO: need to verify that connection_items_cache still works fine with new connection object
         item: ConnectionItem = None
         if c in self.connection_items__cache.keys():
             item = self.connection_items__cache[c]
 
         else:
-            if isinstance(c, DataConnection):
+            if inp.type_ == 'data':
                 # item = self.CLASSES['data conn item'](c, self.session.design)
                 item = DataConnectionItem(c, self.session.design)
             else:
@@ -948,7 +959,7 @@ class FlowView(GUIBase, QGraphicsView):
         item.setZValue(10)
         # self.viewport().repaint()
 
-    def remove_connection(self, c: Connection):
+    def remove_connection(self, c: Tuple[NodeOutput, NodeInput]):
         item = self.connection_items[c]
         self._remove_connection_item(item)
 
@@ -975,7 +986,7 @@ class FlowView(GUIBase, QGraphicsView):
                     self.connect_node_ports__cmd(p, out)
                     return
 
-    def update_conn_item(self, c: Connection):
+    def update_conn_item(self, c: Tuple[NodeOutput, NodeInput]):
         if c in self.connection_items:
             self.connection_items[c].changed = True
             self.connection_items[c].update()

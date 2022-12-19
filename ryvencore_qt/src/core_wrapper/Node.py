@@ -197,7 +197,7 @@ class Node(RC_Node, QObject):
 
     # @override
     def input(self, index: int):
-        if len(self.inputs[index].connections) == 0 and self.item:
+        if self.flow.connected_output(self.inputs[index]) is None and self.item:
             iw = self.input_widget(index)
             return iw.get_val() if iw else None
         else:

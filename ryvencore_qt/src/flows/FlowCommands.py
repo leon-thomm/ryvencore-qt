@@ -15,6 +15,8 @@ from qtpy.QtWidgets import QUndoCommand
 
 from .drawings.DrawingObject import DrawingObject
 from .nodes.NodeItem import NodeItem
+from typing import Tuple
+from ryvencore.NodePort import NodePort, NodeInput, NodeOutput
 
 
 class FlowUndoCommand(QObject, QUndoCommand):
@@ -241,9 +243,9 @@ class ConnectPorts_Command(FlowUndoCommand):
         self.connection = None
         self.connecting = True
 
-        for c in self.out.connections:
-            if c.inp == self.inp:
-                self.connection = c
+        for i in flow_view.flow.connected_inputs(out):
+            if i == self.inp:
+                self.connection = (out, i)
                 self.connecting = False
 
 
@@ -267,7 +269,7 @@ class ConnectPorts_Command(FlowUndoCommand):
             # remove existing connection
             self.call(self.flow.remove_connection, (self.connection,))
 
-    def connection_created(self, c):
+    def connection_created(self, c: Tuple[NodeOutput, NodeInput]):
         self.flow.connection_added.disconnect(self.connection_created)
         self.connection = c
 

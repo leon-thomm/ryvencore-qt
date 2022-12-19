@@ -15,15 +15,14 @@ class ConnectionItem(GUIBase, QGraphicsPathItem):
     like input fields for weights."""
 
     def __init__(self, connection, session_design):
-        GUIBase.__init__(self, representing_component=connection)
+        #GUIBase.__init__(self, representing_component=connection) # ConnectionItem doesn't have a representing component
         QGraphicsPathItem.__init__(self)
 
         self.setAcceptHoverEvents(True)
 
         self.connection = connection
+        out, inp = self.connection
 
-        out = self.connection.out
-        inp = self.connection.inp
         out_node = out.node
         inp_node = inp.node
         self.out_item = out_node.port_item(out)
