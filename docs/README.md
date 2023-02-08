@@ -147,7 +147,7 @@ Every *script* has a *logs manager*. The `Node`'s API already includes methods f
 <!--
 ## Convenience Classes
 
-ryvecore already comes with a few convenience classes for widgets. Those convenience classes only use ryvencore's public API, so if you have experience with Qt, you can totally implemenent them yourself. But in most cases they make it much easier to get started. See [convenience GUI section](../conv_gui).
+ryvecore already comes with a few convenience classes for widgets. Those convenience classes only use ryvencore's public API, so if you have experience with Qt, you can totally implemenent them yourself. But in most cases they make it much easier to get started. See [convenience GUI section](../widgets).
 -->
 
 # `ryvencore-qt`
