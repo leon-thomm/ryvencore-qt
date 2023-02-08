@@ -46,11 +46,11 @@ class FlowView(GUIBase, QGraphicsView):
 
     viewport_update_mode_changed = Signal(str)
 
-    def __init__(self, session, flow, load_data=None, flow_size: list = None, parent=None):
+    def __init__(self, session_gui, flow, parent=None):
         GUIBase.__init__(self, representing_component=flow)
         QGraphicsView.__init__(self, parent=parent)
 
-        # UNDO/REDO
+        # UNDO STACK
         self._undo_stack = QUndoStack(self)
         self._undo_action = self._undo_stack.createUndoAction(self, 'undo')
         self._undo_action.setShortcuts(QKeySequence.Undo)
@@ -61,8 +61,7 @@ class FlowView(GUIBase, QGraphicsView):
         self._init_shortcuts()
 
         # GENERAL ATTRIBUTES
-        self.session = session
-        # self.CLASSES = self.session.CLASSES
+        self.session_gui = session_gui
 
         self.flow: Flow = flow
         self.node_items: dict = {}  # {Node: NodeItem}
@@ -113,15 +112,12 @@ class FlowView(GUIBase, QGraphicsView):
         self.flow.connection_request_valid.connect(self.connection_request_valid)
 
         # SESSION THREAD
-        self.thread_interface = self.session.threading_bridge__frontend
+        self.thread_interface = self.session_gui.threading_bridge__frontend
 
         # CREATE UI
         scene = QGraphicsScene(self)
         scene.setItemIndexMethod(QGraphicsScene.NoIndex)
-        if flow_size is None:
-            scene.setSceneRect(0, 0, 10 * self.width(), 10 * self.height())
-        else:
-            scene.setSceneRect(0, 0, flow_size[0], flow_size[1])
+        scene.setSceneRect(0, 0, 10 * self.width(), 10 * self.height())
 
         self.setScene(scene)
         self.setCacheMode(QGraphicsView.CacheBackground)
@@ -138,7 +134,7 @@ class FlowView(GUIBase, QGraphicsView):
         self.scene_rect_height = self.mapFromScene(self.sceneRect()).boundingRect().height()
 
         # NODE LIST WIDGET
-        self._node_list_widget = NodeListWidget(self.session)
+        self._node_list_widget = NodeListWidget(self.session_gui)
         self._node_list_widget.setMinimumWidth(260)
         self._node_list_widget.setFixedHeight(300)
         self._node_list_widget.escaped.connect(self.hide_node_list_widget)
@@ -182,8 +178,8 @@ class FlowView(GUIBase, QGraphicsView):
         self.last_pinch_points_dist = 0
 
         # DESIGN
-        self.session.design.flow_theme_changed.connect(self._theme_changed)
-        self.session.design.performance_mode_changed.connect(self._perf_mode_changed)
+        self.session_gui.design.flow_theme_changed.connect(self._theme_changed)
+        self.session_gui.design.performance_mode_changed.connect(self._perf_mode_changed)
 
         # FRAMERATE TRACKING
         self.num_frames = 0
@@ -194,15 +190,11 @@ class FlowView(GUIBase, QGraphicsView):
         # self.show_framerate(m_sec_interval=100)  # for testing
 
         # DATA
-        if load_data is not None:
-            if 'flow view' in load_data:
-                view_data = load_data['flow view']
-            else:
-                view_data = load_data  # backwards compatibility
-
+        data = self.flow.load_data
+        if data is not None:
+            view_data = data['flow view']
             if 'drawings' in view_data:  # not all (old) project files have drawings arr
                 self.place_drawings_from_data(view_data['drawings'])
-
             if 'view size' in view_data:
                 self.setSceneRect(0, 0, view_data['view size'][0], view_data['view size'][1])
 
@@ -255,7 +247,7 @@ class FlowView(GUIBase, QGraphicsView):
         redo_shortcut.activated.connect(self._redo_activated)
 
     def _theme_changed(self, t):
-        self._node_list_widget.setStyleSheet(self.session.design.node_selection_stylesheet)
+        self._node_list_widget.setStyleSheet(self.session_gui.design.node_selection_stylesheet)
         for n, ni in self.node_items.items():
             ni.widget.rebuild_ui()
 
@@ -581,7 +573,7 @@ class FlowView(GUIBase, QGraphicsView):
             if data['type'] == 'node':
                 self._node_place_pos = self.mapToScene(event.pos())
                 self.create_node__cmd(
-                    node_from_identifier(data['node identifier'], self.session.nodes)
+                    node_from_identifier(data['node identifier'], self.session_gui.nodes)
                 )
         except Exception:
             pass
@@ -589,13 +581,13 @@ class FlowView(GUIBase, QGraphicsView):
     # PAINTING
     def drawBackground(self, painter, rect):
 
-        painter.setBrush(self.session.design.flow_theme.flow_background_brush)
+        painter.setBrush(self.session_gui.design.flow_theme.flow_background_brush)
         painter.drawRect(rect.intersected(self.sceneRect()))
         painter.setPen(Qt.NoPen)
         painter.drawRect(self.sceneRect())
 
-        if self.session.design.performance_mode == 'pretty':
-            theme = self.session.design.flow_theme
+        if self.session_gui.design.performance_mode == 'pretty':
+            theme = self.session_gui.design.flow_theme
             if theme.flow_background_grid and self._current_scale >= 0.7:
                 if theme.flow_background_grid[0] == 'points':
                     color = theme.flow_background_grid[1]
@@ -751,7 +743,7 @@ class FlowView(GUIBase, QGraphicsView):
         # open nodes dialog
         # the dialog emits 'node_chosen' which is connected to self.place_node__cmd
         self._node_list_widget.update_list(
-            nodes if nodes is not None else self.session.nodes
+            nodes if nodes is not None else self.session_gui.nodes
         )
         self._node_list_widget_proxy.setPos(dialog_pos)
         self._node_list_widget_proxy.show()
@@ -852,7 +844,7 @@ class FlowView(GUIBase, QGraphicsView):
 
         else:  # create new item
             item_data = node.load_data
-            item = NodeItem(node, params=(self, self.session.design, item_data))
+            item = NodeItem(node, params=(self, self.session_gui.design, item_data))
             node.item = item
             item.initialize()
             self.node_placed.emit(node)
@@ -949,10 +941,10 @@ class FlowView(GUIBase, QGraphicsView):
         else:
             if inp.type_ == 'data':
                 # item = self.CLASSES['data conn item'](c, self.session.design)
-                item = DataConnectionItem(c, self.session.design)
+                item = DataConnectionItem(c, self.session_gui.design)
             else:
                 # item = self.CLASSES['exec conn item'](c, self.session.design)
-                item = ExecConnectionItem(c, self.session.design)
+                item = ExecConnectionItem(c, self.session_gui.design)
 
         self._add_connection_item(item)
 
