@@ -76,7 +76,6 @@ class FlowView(GUIBase, QGraphicsView):
         self._temp_connection_ports = None
         self._waiting_for_connection_request: bool = False
         self.mouse_event_taken = False  # for stylus - see tablet event
-        self._showing_framerate = False
         self._last_mouse_move_pos: QPointF = None
         self._node_place_pos = QPointF()
         self._left_mouse_pressed_in_flow = False
@@ -589,16 +588,6 @@ class FlowView(GUIBase, QGraphicsView):
         # self.set_zoom_proxy_pos()
 
     def drawForeground(self, painter, rect):
-
-        if self._showing_framerate:
-            self.num_frames += 1
-            pen = QPen(QColor('#A9D5EF'))
-            pen.setWidthF(2)
-            painter.setPen(pen)
-
-            pos = self.mapToScene(10, 23)
-            painter.setFont(QFont('Poppins', round(11 * self._total_scale_div)))
-            painter.drawText(pos, "{:.2f}".format(self.framerate))
 
         # DRAW CURRENTLY DRAGGED CONNECTION
         if self._dragging_connection:
