@@ -181,14 +181,6 @@ class FlowView(GUIBase, QGraphicsView):
         self.session_gui.design.flow_theme_changed.connect(self._theme_changed)
         self.session_gui.design.performance_mode_changed.connect(self._perf_mode_changed)
 
-        # FRAMERATE TRACKING
-        self.num_frames = 0
-        self.framerate = 0
-        self.framerate_timer = QTimer(self)
-        self.framerate_timer.timeout.connect(self._on_framerate_timer_timeout)
-
-        # self.show_framerate(m_sec_interval=100)  # for testing
-
         # DATA
         data = self.flow.load_data
         if data is not None:
@@ -210,16 +202,6 @@ class FlowView(GUIBase, QGraphicsView):
         """Triggered after the node's GUI content has been fully initialized"""
 
         node.view_place_event()
-
-
-    def show_framerate(self, show: bool = True, m_sec_interval: int = 1000):
-        self._showing_framerate = showy
-        self.framerate_timer.setInterval(m_sec_interval)
-        self.framerate_timer.start()
-
-    def _on_framerate_timer_timeout(self):
-        self.framerate = self.num_frames
-        self.num_frames = 0
 
     def _init_shortcuts(self):
         place_new_node_shortcut = QShortcut(QKeySequence('Shift+P'), self)
