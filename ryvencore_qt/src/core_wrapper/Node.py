@@ -3,6 +3,8 @@ from qtpy.QtCore import QObject, Signal
 from ryvencore import Node as RC_Node
 from ..GlobalAttributes import Location
 #from ryvencore.dtypes import DType
+from typing import List, Optional, Dict
+from ryvencore.Data import Data
 
 
 class Node(RC_Node, QObject):
@@ -116,8 +118,9 @@ class Node(RC_Node, QObject):
             self.item.remove_error_message()
 
     # @override
-    def create_input(self, label: str = '', type_: str = 'data', add_data={}, insert: int = None):
-        RC_Node.create_input(self, label=label, type_=type_, add_data=add_data, insert=insert)
+    def create_input(self, label: str = '', type_: str = 'data', default: Optional[Data] = None, load_from=None, insert: int = None):
+        inp = RC_Node.create_input(self, label=label, type_=type_, default=default, load_from=None, insert=insert)
+        inp.add_data = load_from
 
         if insert is not None:
 
@@ -158,8 +161,8 @@ class Node(RC_Node, QObject):
         self.input_removed.emit(inp)
 
     # @override
-    def create_output(self, label: str = '', type_: str = 'data', insert: int = None):
-        RC_Node.create_output(self, label=label, type_=type_, insert=insert)
+    def create_output(self, label: str = '', type_: str = 'data', load_from=None, insert: int = None):
+        RC_Node.create_output(self, label=label, type_=type_, load_from=None, insert=insert)
 
         if insert is not None:
 
@@ -196,12 +199,12 @@ class Node(RC_Node, QObject):
         self.display_title = data['display title']
 
     # @override
-    def input(self, index: int):
-        if self.flow.connected_output(self.inputs[index]) is None and self.item:
-            iw = self.input_widget(index)
-            return iw.get_val() if iw else None
-        else:
-            return RC_Node.input(self, index)
+    # def input(self, index: int): #TODO this overrides RC Node behavior and is not needed anymore
+    #     if self.flow.connected_output(self.inputs[index]) is None and self.item:
+    #         iw = self.input_widget(index)
+    #         return iw.get_val() if iw else None
+    #     else:
+    #         return RC_Node.input(self, index)
 
     # @override
     def prepare_removal(self):  # gets also subclassed by user

@@ -1,5 +1,5 @@
 # unwrapped backend classes
-from ryvencore import InfoMsgs, NodeInputType, NodeOutputType, dtypes, \
+from ryvencore import InfoMsgs, NodeInputType, NodeOutputType, dtypes, Data,\
     Flow
 #TODO: include addons here? Need to clarify structure of imports throughout ryvencore-qt, ryvencore and Ryven
 

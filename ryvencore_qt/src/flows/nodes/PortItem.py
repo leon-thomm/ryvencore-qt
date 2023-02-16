@@ -10,6 +10,7 @@ from ryvencore import dtypes, serialize
 from ryvencore.NodePort import NodeOutput, NodeInput
 from ryvencore.utils import deserialize
 from ryvencore.addons.default import DTypes
+from ryvencore.Data import Data
 from ...utils import get_longest_line, shorten
 
 from ..FlowViewProxyWidget import FlowViewProxyWidget
@@ -211,11 +212,11 @@ class InputPortItem(PortItem):
         if self.widget:
             self.widget.setEnabled(True)
 
-    def _port_val_updated(self, val):
-        """Called from output port"""
+    def _port_val_updated(self, val: Data):
+        """Called from the backend's input port"""
 
         if self.update_widget_value:  # this might be quite slow
-            self.widget.val_update_event(val)
+            self.widget.val_update_event(val.payload)
 
     def complete_data(self, data: dict) -> dict:
         if self.port.type_ == 'data':

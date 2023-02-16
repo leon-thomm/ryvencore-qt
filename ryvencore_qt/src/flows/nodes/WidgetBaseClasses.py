@@ -1,5 +1,5 @@
 """The base classes for node custom widgets for nodes."""
-
+from ryvencore.Data import Data
 
 class MWB:
     """MainWidgetBase"""
@@ -60,8 +60,10 @@ class IWB:
         pass
 
     def update_node_input(self, val):
-        # TODO: this doesn't work anymore since InputPorts don't store a value anymore.
-        self.input.update(val)
+        # This updates the ryvencore flow value to reflect the widget's value
+        #self.input.update(val)
+        self.input.default = Data(val)
+        self.input.node.update()
 
     def update_node(self):
         self.node.update(self.node.inputs.index(self.input))
