@@ -211,7 +211,7 @@ class FlowView(GUIBase, QGraphicsView):
         # CATCH UP ON FLOW
         for node in self.flow.nodes:
             self.add_node(node)
-        for c in [(o, i) for i, o in self.flow.graph_adj_rev.items()]:
+        for c in [(o, i) for i, o in self.flow.graph_adj_rev.items() if o is not None]:
             self.add_connection(c)
 
     def node_view_placed(self, node: Node):
