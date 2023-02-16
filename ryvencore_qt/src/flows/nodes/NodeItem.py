@@ -19,14 +19,14 @@ class NodeItem(GUIBase, QGraphicsObject):  # QGraphicsItem, QObject):
     """The GUI representative for nodes. Unlike the Node class, this class is not subclassed individually and works
     the same for every node."""
 
-    def __init__(self, node, params):
+    def __init__(self, node, flow_view, design):
         # QGraphicsItem.__init__(self)
         # QObject.__init__(self)
         GUIBase.__init__(self, representing_component=node)
         QGraphicsObject.__init__(self)
 
         self.node = node
-        flow_view, design, load_data = params
+        self.node_gui = None    # set manually by FlowView
         self.flow_view = flow_view
         self.session_design = design
         self.movement_state = None
@@ -47,7 +47,7 @@ class NodeItem(GUIBase, QGraphicsObject):  # QGraphicsItem, QObject):
         self.initializing = True
 
         # self.temp_state_data = None
-        self.init_data = load_data
+        self.init_data = self.node.load_data
 
         # CONNECT TO NODE
         self.node.updated.connect(self.node_updated)
@@ -115,6 +115,8 @@ class NodeItem(GUIBase, QGraphicsObject):  # QGraphicsItem, QObject):
                 self.hide_unconnected_ports_triggered()
             if self.init_data.get('collapsed'):
                 self.collapse()
+
+        self.node_gui.load(self.init_data)
 
         self.initializing = False
 
@@ -502,5 +504,7 @@ class NodeItem(GUIBase, QGraphicsObject):  # QGraphicsItem, QObject):
 
         data['unconnected ports hidden'] = self.hiding_unconnected_ports
         data['collapsed'] = self.collapsed
+
+        data = {**data, **self.node_gui.data()}
 
         return data

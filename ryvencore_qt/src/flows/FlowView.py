@@ -21,6 +21,7 @@ from .FlowCommands import MoveComponents_Command, PlaceNode_Command, \
 from .FlowViewProxyWidget import FlowViewProxyWidget
 from .FlowViewStylusModesWidget import FlowViewStylusModesWidget
 from .node_list_widget.NodeListWidget import NodeListWidget
+from .nodes.NodeGUI import NodeGUI
 from .nodes.NodeItem import NodeItem
 from .nodes.PortItem import PortItemPin, PortItem
 from .connections.ConnectionItem import default_cubic_connection_path, ConnectionItem, DataConnectionItem, \
@@ -814,18 +815,15 @@ class FlowView(GUIBase, QGraphicsView):
             self._add_node_item(item)
 
         else:  # create new item
-            item_data = node.load_data
-            item = NodeItem(node, params=(self, self.session_gui.design, item_data))
-            node.item = item
+            item = NodeItem(node, self, self.session_gui.design)
+            # spawn gui interface (stores itself in node)
+            item.node_gui = NodeGUI(node, item, self.session_gui)
             item.initialize()
             self.node_placed.emit(node)
 
-            pos = None
-            if item_data is not None:
-                if 'pos x' in item_data:
-                    pos = QPointF(item_data['pos x'], item_data['pos y'])
-                elif 'position x' in item_data:  # backwards compatibility
-                    pos = QPointF(item_data['position x'], item_data['position y'])
+            item_data = node.load_data
+            if item_data is not None and 'pos x' in item_data:
+                pos = QPointF(item_data['pos x'], item_data['pos y'])
             else:
                 pos = self._node_place_pos
 
