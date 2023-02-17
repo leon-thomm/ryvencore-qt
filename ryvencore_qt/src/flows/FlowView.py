@@ -105,11 +105,11 @@ class FlowView(GUIBase, QGraphicsView):
         self.get_flow_data_request.connect(self.flow.data)
 
         # CONNECTIONS FROM FLOW
-        self.flow.node_added.connect(self.add_node)
-        self.flow.node_removed.connect(self.remove_node)
-        self.flow.connection_added.connect(self.add_connection)
-        self.flow.connection_removed.connect(self.remove_connection)
-        self.flow.connection_request_valid.connect(self.connection_request_valid)
+        self.flow.node_added.sub(self.add_node)
+        self.flow.node_removed.sub(self.remove_node)
+        self.flow.connection_added.sub(self.add_connection)
+        self.flow.connection_removed.sub(self.remove_connection)
+        self.flow.connection_request_valid.sub(self.connection_request_valid)
 
         # CREATE UI
         scene = QGraphicsScene(self)
