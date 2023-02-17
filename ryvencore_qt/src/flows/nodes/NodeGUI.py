@@ -6,7 +6,7 @@ class NodeGUI(QObject):
     Interface class between nodes and their GUI representation.
     """
 
-    updated = Signal()
+    updating = Signal()
     update_error = Signal(object)
     input_added = Signal(object, object)
     output_added = Signal(object, object)
@@ -27,16 +27,18 @@ class NodeGUI(QObject):
         # TODO: move actions to ryvencore
         self.actions = self.init_default_actions()
 
-        self.display_title = self.title
+        self.display_title = self.node.title
+        self.color = '#aaaaaa'
+
         self.error_during_update = False
 
         # turn ryvencore signals into Qt signals
-        self.node.updated.connect(self.on_updated)
-        self.node.update_error.connect(self.on_update_error)
-        self.node.input_added.connect(self.input_added.emit)
-        self.node.output_added.connect(self.output_added.emit)
-        self.node.input_removed.connect(self.input_removed.emit)
-        self.node.output_removed.connect(self.output_removed.emit)
+        self.node.updating.sub(self.updating.emit)
+        self.node.update_error.sub(self.on_update_error)
+        self.node.input_added.sub(self.input_added.emit)
+        self.node.output_added.sub(self.output_added.emit)
+        self.node.input_removed.sub(self.input_removed.emit)
+        self.node.output_removed.sub(self.output_removed.emit)
 
     """
     actions
@@ -90,18 +92,22 @@ class NodeGUI(QObject):
     extensions
     """
 
-    def on_updated(self, inp):
-        if self.error_during_update:
-            # an error should prevent an update event, so if we
-            # are here, the update was successful
-            self.self.error_during_update = False
-            self.item.remove_error_message()
-        self.updated.emit()
+    # TODO: displaying update errors is currently prevented by the
+    #   lack of an appropriate updated event in ryvencore.
+    #   Update: there is an updating event now.
 
-    def on_update_error(self, e):
-        self.item.display_error(e)
-        self.error_during_update = True
-        self.update_error.emit(e)
+    # def on_updated(self, inp):
+    #     if self.error_during_update:
+    #         # an error should prevent an update event, so if we
+    #         # are here, the update was successful
+    #         self.self.error_during_update = False
+    #         self.item.remove_error_message()
+    #     self.updated.emit()
+    #
+    # def on_update_error(self, e):
+    #     self.item.display_error(e)
+    #     self.error_during_update = True
+    #     self.update_error.emit(e)
 
     def data(self):
         return {

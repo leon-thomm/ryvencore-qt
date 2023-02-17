@@ -1,10 +1,12 @@
 import traceback
+from typing import Optional
 
 from qtpy.QtWidgets import QGraphicsItem, QGraphicsObject, QMenu, QGraphicsDropShadowEffect
 from qtpy.QtCore import Qt, QRectF, QObject, QPointF
 from qtpy.QtGui import QColor
 
 from .NodeErrorIndicator import NodeErrorIndicator
+from .NodeGUI import NodeGUI
 from ...GUIBase import GUIBase
 from ryvencore.NodePort import NodeInput, NodeOutput
 from .NodeItemAction import NodeItemAction
@@ -26,7 +28,7 @@ class NodeItem(GUIBase, QGraphicsObject):  # QGraphicsItem, QObject):
         QGraphicsObject.__init__(self)
 
         self.node = node
-        self.node_gui = None    # set manually by FlowView
+        self.node_gui: Optional[NodeGUI] = None    # set manually by FlowView
         self.flow_view = flow_view
         self.session_design = design
         self.movement_state = None
@@ -50,14 +52,14 @@ class NodeItem(GUIBase, QGraphicsObject):  # QGraphicsItem, QObject):
         self.init_data = self.node.load_data
 
         # CONNECT TO NODE
-        self.node.updated.connect(self.node_updated)
-        self.node.update_shape_triggered.connect(self.update_shape)
-        self.node.hide_unconnected_ports_triggered.connect(self.hide_unconnected_ports_triggered)
-        self.node.show_unconnected_ports_triggered.connect(self.show_unconnected_ports_triggered)
-        self.node.input_added.connect(self.add_new_input)
-        self.node.output_added.connect(self.add_new_output)
-        self.node.input_removed.connect(self.remove_input)
-        self.node.output_removed.connect(self.remove_output)
+        self.node_gui.updating.connect(self.node_updating)
+        self.node_gui.update_shape_triggered.connect(self.update_shape)
+        self.node_gui.hide_unconnected_ports_triggered.connect(self.hide_unconnected_ports_triggered)
+        self.node_gui.show_unconnected_ports_triggered.connect(self.show_unconnected_ports_triggered)
+        self.node_gui.input_added.connect(self.add_new_input)
+        self.node_gui.output_added.connect(self.add_new_output)
+        self.node_gui.input_removed.connect(self.remove_input)
+        self.node_gui.output_removed.connect(self.remove_output)
 
         # FLAGS
         self.setFlags(
@@ -131,7 +133,7 @@ class NodeItem(GUIBase, QGraphicsObject):  # QGraphicsItem, QObject):
     # --------------------------------------------------------------------------------------
     # UI STUFF -------------------------#---------------
 
-    def node_updated(self):
+    def node_updating(self):
         if self.session_design.animations_enabled:
             if not self.animator.running():
                 self.animator.start()
