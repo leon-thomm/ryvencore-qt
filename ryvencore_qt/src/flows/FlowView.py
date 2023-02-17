@@ -552,7 +552,7 @@ class FlowView(GUIBase, QGraphicsView):
             if data['type'] == 'node':
                 self._node_place_pos = self.mapToScene(event.pos())
                 self.create_node__cmd(
-                    node_from_identifier(data['node identifier'], self.session_gui.nodes)
+                    node_from_identifier(data['node identifier'], self.session_gui.session.nodes)
                 )
         except Exception:
             pass
@@ -712,7 +712,7 @@ class FlowView(GUIBase, QGraphicsView):
         # open nodes dialog
         # the dialog emits 'node_chosen' which is connected to self.place_node__cmd
         self._node_list_widget.update_list(
-            nodes if nodes is not None else self.session_gui.nodes
+            nodes if nodes is not None else self.session_gui.session.nodes
         )
         self._node_list_widget_proxy.setPos(dialog_pos)
         self._node_list_widget_proxy.show()
