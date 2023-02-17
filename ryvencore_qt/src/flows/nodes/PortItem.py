@@ -6,7 +6,7 @@ from qtpy.QtGui import QFontMetricsF, QFont
 from ...GUIBase import GUIBase
 from .PortItemInputWidgets import \
     Data_IW_S, Data_IW_M, Data_IW_L, Float_IW, Integer_IW, Choice_IW, Boolean_IW, String_IW_S, String_IW_M, String_IW_L
-from ryvencore import dtypes, serialize
+from ryvencore import serialize
 from ryvencore.NodePort import NodeOutput, NodeInput
 from ryvencore.utils import deserialize
 from ryvencore.addons.default import DTypes
