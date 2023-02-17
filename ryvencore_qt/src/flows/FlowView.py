@@ -111,9 +111,6 @@ class FlowView(GUIBase, QGraphicsView):
         self.flow.connection_removed.connect(self.remove_connection)
         self.flow.connection_request_valid.connect(self.connection_request_valid)
 
-        # SESSION THREAD
-        self.thread_interface = self.session_gui.threading_bridge__frontend
-
         # CREATE UI
         scene = QGraphicsScene(self)
         scene.setItemIndexMethod(QGraphicsScene.NoIndex)
@@ -1187,28 +1184,14 @@ class FlowView(GUIBase, QGraphicsView):
 
     def _get_nodes_data(self, nodes):
         """generates the data for the specified list of nodes"""
-
-        data = self.thread_interface.run(
-            self.flow.gen_nodes_data, (nodes,)
-        )
-
-        complete_data = self.thread_interface.run(
-            self.flow.complete_data, (data,)
-        )
-
-        return complete_data
+        f_complete_data = self.session_gui.session.complete_data
+        return f_complete_data(self.flow._gen_nodes_data(nodes))
 
     def _get_connections_data(self, nodes):
         """generates the connections data for connections between a specified list of nodes"""
 
-        data = self.thread_interface.run(
-            self.flow.gen_conns_data, (nodes,)
-        )
-        complete_data = self.thread_interface.run(
-            self.flow.complete_data, (data,)
-        )
-
-        return complete_data
+        f_complete_data = self.session_gui.session.complete_data
+        return f_complete_data(self.flow._gen_conns_data(nodes))
 
     def _get_drawings_data(self, drawings):
         """generates the data for a list of drawings"""
