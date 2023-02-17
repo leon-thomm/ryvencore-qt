@@ -33,12 +33,38 @@ class NodeGUI(QObject):
         self.error_during_update = False
 
         # turn ryvencore signals into Qt signals
-        self.node.updating.sub(self.updating.emit)
+        self.node.updating.sub(self.on_updating)
         self.node.update_error.sub(self.on_update_error)
         self.node.input_added.sub(self.input_added.emit)
         self.node.output_added.sub(self.output_added.emit)
         self.node.input_removed.sub(self.input_removed.emit)
         self.node.output_removed.sub(self.output_removed.emit)
+
+    """
+    slots
+    """
+
+    # TODO: displaying update errors is currently prevented by the
+    #   lack of an appropriate updated event in ryvencore.
+    #   Update: there is an updating event now.
+
+    # def on_updated(self, inp):
+    #     if self.error_during_update:
+    #         # an error should prevent an update event, so if we
+    #         # are here, the update was successful
+    #         self.self.error_during_update = False
+    #         self.item.remove_error_message()
+    #     self.updated.emit()
+    #
+    # def on_update_error(self, e):
+    #     self.item.display_error(e)
+    #     self.error_during_update = True
+    #     self.update_error.emit(e)
+
+    def on_updating(self, inp: int):
+        # TODO: if input[inp] is connected and has a widget, update
+        #   the widget's value
+        self.updating.emit()
 
     """
     actions
@@ -89,25 +115,8 @@ class NodeGUI(QObject):
         return _transform(actions)
 
     """
-    extensions
+    serialization
     """
-
-    # TODO: displaying update errors is currently prevented by the
-    #   lack of an appropriate updated event in ryvencore.
-    #   Update: there is an updating event now.
-
-    # def on_updated(self, inp):
-    #     if self.error_during_update:
-    #         # an error should prevent an update event, so if we
-    #         # are here, the update was successful
-    #         self.self.error_during_update = False
-    #         self.item.remove_error_message()
-    #     self.updated.emit()
-    #
-    # def on_update_error(self, e):
-    #     self.item.display_error(e)
-    #     self.error_during_update = True
-    #     self.update_error.emit(e)
 
     def data(self):
         return {
