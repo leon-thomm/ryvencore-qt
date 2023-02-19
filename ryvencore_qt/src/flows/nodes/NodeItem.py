@@ -419,7 +419,7 @@ class NodeItem(GUIBase, QGraphicsObject):  # QGraphicsItem, QObject):
                     # created yet
                     continue
 
-                item = self.flow_view.connection_items[c]
+                item = self.flow_view.connection_items[(o,i)]
                 item.recompute()
         for i in self.node.inputs:
             o = self.node.flow.connected_output(i)
@@ -430,7 +430,7 @@ class NodeItem(GUIBase, QGraphicsObject):  # QGraphicsItem, QObject):
                 # created yet
                 continue
 
-            item = self.flow_view.connection_items[c]
+            item = self.flow_view.connection_items[(o,i)]
             item.recompute()
 
     def hoverEnterEvent(self, event):

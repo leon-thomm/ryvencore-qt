@@ -23,10 +23,10 @@ class ConnectionItem(GUIBase, QGraphicsPathItem):
         self.connection = connection
         out, inp = self.connection
 
-        out_node = out.node
-        inp_node = inp.node
-        self.out_item = out_node.port_item(out)
-        self.inp_item = inp_node.port_item(inp)
+        out_port_index = out.node.outputs.index(out)
+        inp_port_index = inp.node.inputs.index(inp)
+        self.out_item = out.node.gui.item.outputs[out_port_index]
+        self.inp_item = inp.node.gui.item.inputs[inp_port_index]
 
         self.session_design = session_design
         self.session_design.flow_theme_changed.connect(self.recompute)
