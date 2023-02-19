@@ -403,7 +403,7 @@ class NodeItem(GUIBase, QGraphicsObject):  # QGraphicsItem, QObject):
             if self.movement_state == MovementEnum.mouse_clicked:
                 self.movement_state = MovementEnum.position_changed
 
-        self.update_conn_pos()
+            self.update_conn_pos()
 
         return QGraphicsItem.itemChange(self, change, value)
 
