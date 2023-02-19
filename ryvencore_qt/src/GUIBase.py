@@ -26,9 +26,7 @@ class GUIBase:
                     # find representative
                     comp = GUIBase.FRONTEND_COMPONENT_ASSIGNMENTS.get(GID)
                     if comp:
-                        obj = session.threading_bridge__backend.run(
-                            comp.complete_data, (obj,)
-                        )  # run complete_data() (in frontend thread)
+                        obj = comp.complete_data(obj)
 
                 # look for child objects
                 for key, value in obj.items():
