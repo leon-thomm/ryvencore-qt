@@ -140,21 +140,20 @@ class RemoveComponents_Command(FlowUndoCommand):
 
         for n in self.nodes:
             for i in n.inputs:
-                for c in i.connections:
-                    cp = c.out
+                cp = n.flow.connected_output(i)
+                if cp is not None:
                     cn = cp.node
                     if cn not in self.nodes:
-                        self.broken_connections.append(c)
+                        self.broken_connections.append((cp, i))
                     else:
-                        self.internal_connections.add(c)
+                        self.internal_connections.add((cp, i))
             for o in n.outputs:
-                for c in o.connections:
-                    cp = c.inp
+                for cp in n.flow.connected_inputs(o):
                     cn = cp.node
                     if cn not in self.nodes:
-                        self.broken_connections.append(c)
+                        self.broken_connections.append((o, cp))
                     else:
-                        self.internal_connections.add(c)
+                        self.internal_connections.add((o, cp))
 
     def undo_(self):
 
@@ -278,10 +277,10 @@ class Paste_Command(FlowUndoCommand):
 
     def undo_(self):
         # remove components and their items from flow
-        for n in self.pasted_components['nodes']:
-            self.flow.remove_node(n)
         for c in self.pasted_components['connections']:
             self.flow.remove_connection(c)
+        for n in self.pasted_components['nodes']:
+            self.flow.remove_node(n)
         for d in self.pasted_components['drawings']:
             self.flow_view.remove_drawing(d)
 
