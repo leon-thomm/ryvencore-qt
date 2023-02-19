@@ -81,8 +81,12 @@ class NodeGUI(QObject):
         self.update_error.emit(e)
 
     def _on_updating(self, inp: int):
-        # TODO: if input[inp] is connected and has a widget, update
-        #   the widget's value
+        # update input widget
+        if self.node_item.inputs[inp].widget is not None:
+            o = self.node.flow.connected_output(self.node.inputs[inp])
+            if o is not None:
+                self.node_item.inputs[inp].widget.val_update_event(o.val)
+
         self.updating.emit()
 
     """
