@@ -1,20 +1,18 @@
-from qtpy.QtWidgets import QGraphicsGridLayout, QGraphicsWidget, \
-    QGraphicsLayoutItem
+from qtpy.QtWidgets import QGraphicsGridLayout, QGraphicsWidget, QGraphicsLayoutItem
 from qtpy.QtCore import Qt, QRectF, QPointF, QSizeF
 from qtpy.QtGui import QFontMetricsF, QFont
 
 from ...GUIBase import GUIBase
-from .PortItemInputWidgets import \
-    Data_IW_S, Data_IW_M, Data_IW_L, Float_IW, Integer_IW, Choice_IW, Boolean_IW, String_IW_S, String_IW_M, String_IW_L
-from ryvencore import serialize
+from .PortItemInputWidgets import Data_IW_S, Data_IW_M, Data_IW_L, Float_IW, Integer_IW, \
+    Choice_IW, Boolean_IW, String_IW_S, String_IW_M, String_IW_L
+from ryvencore import serialize, Data
 from ryvencore.NodePort import NodeOutput, NodeInput
 from ryvencore.utils import deserialize
-from ryvencore.addons.default import DTypes
 from ...utils import get_longest_line, shorten
 
 from ..FlowViewProxyWidget import FlowViewProxyWidget
 
-# Utility methods -------------------------------------------------------------------------------------------------------------
+# Utility methods ------------------------------------------------------------------------------------------------------
 # These could be moved to another module for clarity
 
 def is_connected(port):
@@ -26,11 +24,11 @@ def is_connected(port):
 
 def val(port):
     if isinstance(port, NodeOutput):
-        return port.val.payload
+        return port.val.payload if isinstance(port.val, Data) else None
     else:
         conn_out = port.node.flow.connected_output(port)
         if conn_out:
-            return conn_out.val.payload
+            return conn_out.val.payload if conn_out.val is not None else None
         else:
             return None
 
