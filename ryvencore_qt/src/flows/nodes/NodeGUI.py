@@ -6,6 +6,16 @@ class NodeGUI(QObject):
     Interface class between nodes and their GUI representation.
     """
 
+    # customizable gui attributes
+    description_html: str = None
+    main_widget_class: list = None
+    main_widget_pos: str = 'below ports'
+    input_widget_classes: dict = {}
+    style: str = 'normal'
+    color: str = '#c69a15'
+    icon: str = None
+
+    # qt signals
     updating = Signal()
     update_error = Signal(object)
     input_added = Signal(object, object)
@@ -16,16 +26,17 @@ class NodeGUI(QObject):
     hide_unconnected_ports_triggered = Signal()
     show_unconnected_ports_triggered = Signal()
 
-    def __init__(self, node, node_item, session_gui):
+    def __init__(self, params):
         QObject.__init__(self)
 
+        node, session_gui = params
         self.node = node
-        self.node_item = node_item
+        self.node_item = None   # set by the node item directly after this __init__ call
         self.session_gui = session_gui
         setattr(node, 'gui', self)
 
         # TODO: move actions to ryvencore
-        self.actions = self.init_default_actions()
+        self.actions = self._init_default_actions()
 
         self.display_title = self.node.title
         self.color = '#aaaaaa'
@@ -33,12 +44,20 @@ class NodeGUI(QObject):
         self.error_during_update = False
 
         # turn ryvencore signals into Qt signals
-        self.node.updating.sub(self.on_updating)
-        self.node.update_error.sub(self.on_update_error)
+        self.node.updating.sub(self._on_updating)
+        self.node.update_error.sub(self._on_update_error)
         self.node.input_added.sub(self.input_added.emit)
         self.node.output_added.sub(self.output_added.emit)
         self.node.input_removed.sub(self.input_removed.emit)
         self.node.output_removed.sub(self.output_removed.emit)
+
+    def initialized(self):
+        """
+        *VIRTUAL*
+
+        Called after the node GUI has been fully initialized.
+        """
+        pass
 
     """
     slots
@@ -56,21 +75,23 @@ class NodeGUI(QObject):
     #         self.item.remove_error_message()
     #     self.updated.emit()
     #
-    # def on_update_error(self, e):
+    def _on_update_error(self, e):
     #     self.item.display_error(e)
     #     self.error_during_update = True
-    #     self.update_error.emit(e)
+        self.update_error.emit(e)
 
-    def on_updating(self, inp: int):
+    def _on_updating(self, inp: int):
         # TODO: if input[inp] is connected and has a widget, update
         #   the widget's value
         self.updating.emit()
 
     """
     actions
+    
+    TODO: move actions to ryvencore?
     """
 
-    def init_default_actions(self):
+    def _init_default_actions(self):
         """
         Returns the default actions every node should have
         """
@@ -80,7 +101,7 @@ class NodeGUI(QObject):
             'change title': {'method': self.change_title},
         }
 
-    def deserialize_actions(self, actions_data):
+    def _deserialize_actions(self, actions_data):
         """
         Recursively reconstructs the actions dict from the serialized version
         """
@@ -88,29 +109,35 @@ class NodeGUI(QObject):
         def _transform(actions_data: dict):
             """
             Mutates the actions_data argument by replacing the method names
-            with the actual methods.
+            with the actual methods. Doesn't modify the original dict.
             """
+            new_actions = {}
             for key, value in actions_data.items():
-                if isinstance(value, dict):
-                    if 'method' in value:
-                        value['method'] = getattr(self, value['method'])
-                    _transform(value)
+                if key == 'method':
+                    value = getattr(self, value)
+                elif isinstance(value, dict):
+                    value = _transform(value)
+                new_actions[key] = value
+            return new_actions
 
-        _transform(actions_data)
-        return actions_data
+        return _transform(actions_data)
 
-    def serialize_actions(self, actions):
+    def _serialize_actions(self, actions):
         """
         Recursively transforms the actions dict into a JSON-compatible dict
-        by replacing methods with their name
+        by replacing methods with their name. Doesn't modify the original dict.
         """
 
         def _transform(actions: dict):
+            new_actions = {}
             for key, value in actions.items():
-                if isinstance(value, dict):
-                    if 'method' in value:
-                        value['method'] = value['method'].__name__
-                    _transform(value)
+                if key == 'method':
+                    new_actions[key] = value.__name__
+                elif isinstance(value, dict):
+                    new_actions[key] = _transform(value)
+                else:
+                    new_actions[key] = value
+            return new_actions
 
         return _transform(actions)
 
@@ -120,16 +147,16 @@ class NodeGUI(QObject):
 
     def data(self):
         return {
-            'actions': self.serialize_actions(self.actions),
+            'actions': self._serialize_actions(self.actions),
             'display title': self.display_title,
         }
 
     def load(self, data):
-        self.actions = self.deserialize_actions(data['actions'])
+        self.actions = self._deserialize_actions(data['actions'])
         self.display_title = data['display title']
 
         if 'special actions' in data:   # backward compatibility
-            self.actions = self.deserialize_actions(data['special actions'])
+            self.actions = self._deserialize_actions(data['special actions'])
 
     """
     GUI access methods

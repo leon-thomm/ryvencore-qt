@@ -9,8 +9,8 @@ os.environ['QT_ENABLE_HIGHDPI_SCALING'] = '1'
 # expose ryvencore
 import ryvencore
 
-# Session wrapper
 from .src.SessionGUI import SessionGUI
+from .src.flows.nodes.NodeGUI import NodeGUI
 
 # customer base classes
 from ryvencore import Node

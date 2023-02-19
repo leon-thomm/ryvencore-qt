@@ -21,14 +21,15 @@ class NodeItem(GUIBase, QGraphicsObject):  # QGraphicsItem, QObject):
     """The GUI representative for nodes. Unlike the Node class, this class is not subclassed individually and works
     the same for every node."""
 
-    def __init__(self, node, flow_view, design):
+    def __init__(self, node, node_gui, flow_view, design):
         # QGraphicsItem.__init__(self)
         # QObject.__init__(self)
         GUIBase.__init__(self, representing_component=node)
         QGraphicsObject.__init__(self)
 
         self.node = node
-        self.node_gui: Optional[NodeGUI] = None    # set manually by FlowView
+        self.node_gui = node_gui
+        self.node_gui.item = self
         self.flow_view = flow_view
         self.session_design = design
         self.movement_state = None
@@ -36,7 +37,7 @@ class NodeItem(GUIBase, QGraphicsObject):  # QGraphicsItem, QObject):
         self.painted_once = False
         self.inputs = []
         self.outputs = []
-        self.color = QColor(self.node.color)  # manipulated by self.animator
+        self.color = QColor(self.node_gui.color)  # manipulated by self.animator
 
         self.collapsed = False
         self.hovered = False
@@ -67,23 +68,24 @@ class NodeItem(GUIBase, QGraphicsObject):  # QGraphicsItem, QObject):
             QGraphicsItem.ItemIsMovable |
             QGraphicsItem.ItemSendsScenePositionChanges
         )
+
         self.setAcceptHoverEvents(True)
         self.setCacheMode(QGraphicsItem.DeviceCoordinateCache)
 
         # UI
         self.shadow_effect = None
         self.main_widget = None
-        if self.node.main_widget_class is not None:
+        if self.node_gui.main_widget_class is not None:
             self.main_widget = self.node.main_widget_class((self.node, self))
-        self.widget = NodeItemWidget(self.node, self)  # QGraphicsWidget(self)
+        self.widget = NodeItemWidget(self.node_gui, self)  # QGraphicsWidget(self)
         self.animator = NodeItemAnimator(self)  # needs self.title_label
         self.error_indicator = NodeErrorIndicator(self)
         self.error_indicator.hide()
 
         # TOOLTIP
         self.tooltip_descr_html_content = \
-            self.node.description_html \
-            if self.node.description_html is not None \
+            self.node_gui.description_html \
+            if self.node_gui.description_html is not None \
             else \
             f'<p>{self.node.__doc__}</p>'
 
@@ -118,7 +120,10 @@ class NodeItem(GUIBase, QGraphicsObject):  # QGraphicsItem, QObject):
             if self.init_data.get('collapsed'):
                 self.collapse()
 
-        self.node_gui.load(self.init_data)
+        if self.init_data is not None:
+            self.node_gui.load(self.init_data)
+
+        self.node_gui.initialized()
 
         self.initializing = False
 
@@ -338,7 +343,7 @@ class NodeItem(GUIBase, QGraphicsObject):  # QGraphicsItem, QObject):
             node=self.node,
             selected=self.isSelected(),
             hovered=self.hovered,
-            node_style=self.node.style,
+            node_style=self.node_gui.style,
             painter=painter,
             option=option,
             color=self.color,
@@ -379,15 +384,7 @@ class NodeItem(GUIBase, QGraphicsObject):  # QGraphicsItem, QObject):
     def get_context_menu(self):
         menu = QMenu(self.flow_view)
 
-        for a in self.get_actions(self.node.get_extended_default_actions(), menu):  # menu needed for 'parent'
-            if type(a) == NodeItemAction:
-                menu.addAction(a)
-            elif type(a) == QMenu:
-                menu.addMenu(a)
-
-        menu.addSeparator()
-
-        actions = self.get_actions(self.node.actions, menu)
+        actions = self.get_actions(self.node_gui.actions, menu)
         for a in actions:  # menu needed for 'parent'
             if type(a) == NodeItemAction:
                 menu.addAction(a)
@@ -480,10 +477,7 @@ class NodeItem(GUIBase, QGraphicsObject):  # QGraphicsItem, QObject):
                     data = v_dict['data']
                 except KeyError:
                     pass
-                action = NodeItemAction(node=self.node, text=k, method=method, menu=menu, data=data)
-                action.triggered_with_data.connect(self.flow_view.thread_interface.trigger_node_action)
-                action.triggered_without_data.connect(self.flow_view.thread_interface.trigger_node_action)
-
+                action = NodeItemAction(node_gui=self.node_gui, text=k, method=method, menu=menu, data=data)
                 actions.append(action)
             except KeyError:
                 action_menu = QMenu(k, menu)
