@@ -97,7 +97,6 @@ class FlowView(GUIBase, QGraphicsView):
         # CONNECTIONS TO FLOW
         self.create_node_request.connect(self.flow.create_node)
         self.remove_node_request.connect(self.flow.remove_node)
-        self.node_placed.connect(self.node_view_placed)
         self.check_connection_validity_request.connect(self.flow.check_connection_validity)
         # TODO: need to check if the 2 lines below are used
         #self.get_nodes_data_request.connect(self.flow.gen_nodes_data)
@@ -194,11 +193,6 @@ class FlowView(GUIBase, QGraphicsView):
             self.add_node(node)
         for c in [(o, i) for i, o in self.flow.graph_adj_rev.items()]:
             self.add_connection(c)
-
-    def node_view_placed(self, node: Node):
-        """Triggered after the node's GUI content has been fully initialized"""
-
-        node.view_place_event()
 
     def _init_shortcuts(self):
         place_new_node_shortcut = QShortcut(QKeySequence('Shift+P'), self)
