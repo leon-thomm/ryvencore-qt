@@ -84,22 +84,25 @@ class NodeWidget(QWidget):
         self.update_stylesheet()
 
     def update_stylesheet(self):
-        bcol = QColor(self.node.color)
+        color = '#888888'
+
+        r, g, b = QColor(color).red(), QColor(color).green(), QColor(color).blue()
+
         new_style_sheet = f'''
 NodeWidget {{
     border: 0px solid rgba({(
-        f'{QColor(self.node.color).red()},{QColor(self.node.color).green()},{QColor(self.node.color).blue()},150'
+        f'{r},{g},{b},150'
     )});
     border-radius: 2px;
     {(
-        f'background-color: rgba({bcol.red()},{bcol.green()},{bcol.blue()},40);'
+        f'background-color: rgba({r},{g},{b},40);'
     ) if self.custom_focused else ''}
 }}   
 QLabel {{
     background: transparent;
 }}
 QLineEdit {{
-    color: {self.node.color};
+    color: white;
     background: transparent;
     border: none;
 }}
