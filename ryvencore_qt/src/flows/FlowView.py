@@ -812,10 +812,16 @@ class FlowView(GUIBase, QGraphicsView):
             self._add_node_item(item)
 
         else:  # create new item
-            item = NodeItem(node, self, self.session_gui.design)
-            # spawn gui interface (stores itself in node)
-            item.node_gui = NodeGUI(node, item, self.session_gui)
+            item = NodeItem(
+                node=node,
+                node_gui=
+                    (node.GUI if hasattr(node, 'GUI') else NodeGUI)     # use custom GUI class if available
+                    ((node, self.session_gui)),                         # calls __init__ of NodeGUI class with tuple arg
+                flow_view=self,
+                design=self.session_gui.design,
+            )
             item.initialize()
+
             self.node_placed.emit(node)
 
             item_data = node.load_data
