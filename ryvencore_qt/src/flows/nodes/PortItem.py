@@ -108,22 +108,23 @@ class InputPortItem(PortItem):
         if self.node.flow.connected_output(self.port) is not None:
             self.port_connected()
 
-        if self.port.add_data:
-
-            if self.port.dtype:
-                c_d = self.port.add_data['widget data']
-                self.widget.set_state(deserialize(c_d))
-
-            elif 'widget data' in self.port.add_data:
-                try:
-                    c_d = self.port.add_data['widget data']
-                    if type(c_d) == dict:  # backwards compatibility
-                        self.widget.set_state(c_d)
-                    else:
-                        self.widget.set_state(deserialize(c_d))
-                except Exception as e:
-                    print('Exception while setting data in', self.node.title,
-                          '\'s input widget:', e, ' (was this intended?)')
+        # TODO: add DType support when Addon will be enabled
+        # if self.port.add_data:
+        #
+        #     if self.port.dtype:
+        #         c_d = self.port.add_data['widget data']
+        #         self.widget.set_state(deserialize(c_d))
+        #
+        #     elif 'widget data' in self.port.add_data:
+        #         try:
+        #             c_d = self.port.add_data['widget data']
+        #             if type(c_d) == dict:  # backwards compatibility
+        #                 self.widget.set_state(c_d)
+        #             else:
+        #                 self.widget.set_state(deserialize(c_d))
+        #         except Exception as e:
+        #             print('Exception while setting data in', self.node.title,
+        #                   '\'s input widget:', e, ' (was this intended?)')
 
         self.setup_ui()
 
@@ -147,49 +148,50 @@ class InputPortItem(PortItem):
 
         params = (self.port, self, self.node, self.node_item)
 
-        # Manually add dtype to port since in the current version of ryvencore it's disabled
         # TODO: add DType support when Addon will be enabled
-        self.port.dtype = DTypes.Data()
+        # self.port.dtype = DTypes.Data()
+        #
+        # if self.port.dtype:
+        #
+        #     dtype = self.port.dtype
+        #
+        #     if isinstance(dtype, DTypes.Data):
+        #         if dtype.size == 's':
+        #             return Data_IW_S(params)
+        #         elif dtype.size == 'm':
+        #             return Data_IW_M(params)
+        #         elif dtype.size == 'l':
+        #             return Data_IW_L(params)
+        #
+        #     elif isinstance(dtype, DTypes.String):
+        #         if dtype.size == 's':
+        #             return String_IW_S(params)
+        #         elif dtype.size == 'm':
+        #             return String_IW_M(params)
+        #         elif dtype.size == 'l':
+        #             return String_IW_L(params)
+        #
+        #     elif isinstance(dtype, DTypes.Integer):
+        #         return Integer_IW(params)
+        #
+        #     elif isinstance(dtype, DTypes.Float):
+        #         return Float_IW(params)
+        #
+        #     elif isinstance(dtype, DTypes.Boolean):
+        #         return Boolean_IW(params)
+        #
+        #     elif isinstance(dtype, DTypes.Choice):
+        #         return Choice_IW(params)
 
-        if self.port.dtype:
-
-            dtype = self.port.dtype
-
-            if isinstance(dtype, DTypes.Data):
-                if dtype.size == 's':
-                    return Data_IW_S(params)
-                elif dtype.size == 'm':
-                    return Data_IW_M(params)
-                elif dtype.size == 'l':
-                    return Data_IW_L(params)
-
-            elif isinstance(dtype, DTypes.String):
-                if dtype.size == 's':
-                    return String_IW_S(params)
-                elif dtype.size == 'm':
-                    return String_IW_M(params)
-                elif dtype.size == 'l':
-                    return String_IW_L(params)
-
-            elif isinstance(dtype, DTypes.Integer):
-                return Integer_IW(params)
-
-            elif isinstance(dtype, DTypes.Float):
-                return Float_IW(params)
-
-            elif isinstance(dtype, DTypes.Boolean):
-                return Boolean_IW(params)
-
-            elif isinstance(dtype, DTypes.Choice):
-                return Choice_IW(params)
-
-        elif self.port.type_ == 'data' and self.port.add_data and 'widget name' in self.port.add_data:
-
-            # custom input widget
-            return self.get_input_widget_class(self.port.add_data['widget name'])(params)
-
-        else:
-            return None
+        # TODO: re-enable custom widgets
+        # elif self.port.type_ == 'data' and self.port.add_data and 'widget name' in self.port.add_data:
+        #
+        #     # custom input widget
+        #     return self.get_input_widget_class(self.port.add_data['widget name'])(params)
+        #
+        # else:
+        #     return None
+        return None
 
 
     def get_input_widget_class(self, widget_name):
@@ -201,10 +203,11 @@ class InputPortItem(PortItem):
         if self.widget:
             self.widget.setEnabled(False)
 
-        if self.port.type_ == 'data':
-            self.port.connections[0].activated.connect(self._port_val_updated)
-
-        self._port_val_updated(self.port.val)
+        # https://github.com/leon-thomm/Ryven/pull/137#issuecomment-1433783052
+        # if self.port.type_ == 'data':
+        #     self.port.connections[0].activated.connect(self._port_val_updated)
+        #
+        # self._port_val_updated(self.port.val)
 
     def port_disconnected(self):
         """Enables the widget again"""
