@@ -3,7 +3,6 @@ import enum
 import json
 import pathlib
 from math import sqrt
-from waiting import wait
 from typing import List, Dict
 
 from qtpy.QtCore import QPointF, QByteArray
@@ -25,10 +24,6 @@ class Container:
 
     def is_set(self):
         return self.has_been_set
-
-
-def wait_until(func):
-    return wait(func, sleep_seconds=0.001)
 
 
 def pythagoras(a, b):
