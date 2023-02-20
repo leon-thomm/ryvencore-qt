@@ -13,6 +13,7 @@ class NodeGUI(QObject):
     input_widget_classes: dict = {}
     style: str = 'normal'
     color: str = '#c69a15'
+    display_title: str = None
     icon: str = None
 
     # qt signals
@@ -38,8 +39,8 @@ class NodeGUI(QObject):
         # TODO: move actions to ryvencore
         self.actions = self._init_default_actions()
 
-        self.display_title = self.node.title
-        self.color = '#aaaaaa'
+        if self.display_title is None:
+            self.display_title = self.node.title
 
         self.error_during_update = False
 

@@ -76,7 +76,7 @@ class NodeItem(GUIBase, QGraphicsObject):  # QGraphicsItem, QObject):
         self.shadow_effect = None
         self.main_widget = None
         if self.node_gui.main_widget_class is not None:
-            self.main_widget = self.node.main_widget_class((self.node, self))
+            self.main_widget = self.node_gui.main_widget_class((self.node, self))
         self.widget = NodeItemWidget(self.node_gui, self)  # QGraphicsWidget(self)
         self.animator = NodeItemAnimator(self)  # needs self.title_label
         self.error_indicator = NodeErrorIndicator(self)
