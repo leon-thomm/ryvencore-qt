@@ -113,7 +113,7 @@ class FlowView(GUIBase, QGraphicsView):
         # CREATE UI
         scene = QGraphicsScene(self)
         scene.setItemIndexMethod(QGraphicsScene.NoIndex)
-        scene.setSceneRect(0, 0, 10 * self.width(), 10 * self.height())
+        scene.setSceneRect(0, 0, 10000, 7000)
 
         self.setScene(scene)
         self.setCacheMode(QGraphicsView.CacheBackground)
