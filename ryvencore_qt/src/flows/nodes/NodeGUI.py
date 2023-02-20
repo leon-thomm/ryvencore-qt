@@ -31,7 +31,7 @@ class NodeGUI(QObject):
 
         node, session_gui = params
         self.node = node
-        self.node_item = None   # set by the node item directly after this __init__ call
+        self.item = None   # set by the node item directly after this __init__ call
         self.session_gui = session_gui
         setattr(node, 'gui', self)
 
@@ -82,10 +82,10 @@ class NodeGUI(QObject):
 
     def _on_updating(self, inp: int):
         # update input widget
-        if self.node_item.inputs[inp].widget is not None:
+        if inp != -1 and self.item.inputs[inp].widget is not None:
             o = self.node.flow.connected_output(self.node.inputs[inp])
             if o is not None:
-                self.node_item.inputs[inp].widget.val_update_event(o.val)
+                self.item.inputs[inp].widget.val_update_event(o.val)
 
         self.updating.emit()
 
@@ -171,12 +171,12 @@ class NodeGUI(QObject):
         self.update_shape()
 
     def flow_view(self):
-        return self.node_item.flow_view
+        return self.item.flow_view
 
     def main_widget(self):
         """Returns the main_widget object, or None if the item doesn't exist (yet)"""
 
-        return self.node_item.main_widget
+        return self.item.main_widget
 
     def input_widget(self, index: int):
         """Returns a reference to the widget of the corresponding input"""
