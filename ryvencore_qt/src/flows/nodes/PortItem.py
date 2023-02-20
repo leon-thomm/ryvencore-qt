@@ -290,7 +290,7 @@ class PortItemPin(QGraphicsWidget):
 
     def paint(self, painter, option, widget=None):
         self.node_item.session_design.flow_theme.paint_PI(
-            node=self.node_gui,
+            node_gui=self.node_gui,
             painter=painter,
             option=option,
             node_color=self.node_gui.color,

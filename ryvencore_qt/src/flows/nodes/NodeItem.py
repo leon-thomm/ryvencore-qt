@@ -347,7 +347,7 @@ class NodeItem(GUIBase, QGraphicsObject):  # QGraphicsItem, QObject):
             self.error_indicator.setPos(self.boundingRect().bottomRight())
 
         self.session_design.flow_theme.paint_NI(
-            node=self.node,
+            node_gui=self.node_gui,
             selected=self.isSelected(),
             hovered=self.hovered,
             node_style=self.node_gui.style,
