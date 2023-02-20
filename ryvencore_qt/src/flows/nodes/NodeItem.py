@@ -1,5 +1,5 @@
 import traceback
-from typing import Optional
+from typing import Optional, Tuple
 
 from qtpy.QtWidgets import QGraphicsItem, QGraphicsObject, QMenu, QGraphicsDropShadowEffect
 from qtpy.QtCore import Qt, QRectF, QObject, QPointF
@@ -107,12 +107,12 @@ class NodeItem(GUIBase, QGraphicsObject):  # QGraphicsItem, QObject):
                     print('Exception while setting data in', self.node.title, 'Node\'s main widget:', e,
                           ' (was this intended?)')
 
-        # catch up on ports
-        for i in self.node.inputs:
-            self.add_new_input(i)
+        # catch up on init ports
+        for inp in self.node.inputs:
+            self.add_new_input(inp)
 
-        for o in self.node.outputs:
-            self.add_new_output(o)
+        for out in self.node.outputs:
+            self.add_new_output(out)
 
         if self.init_data is not None:
             if self.init_data.get('unconnected ports hidden'):
@@ -173,9 +173,16 @@ class NodeItem(GUIBase, QGraphicsObject):  # QGraphicsItem, QObject):
 
     def add_new_input(self, inp: NodeInput, insert: int = None):
 
+        if inp in self.node_gui.input_widgets:
+            widget_name = self.node_gui.input_widgets[inp]['name']
+            widget_class = self.node_gui.input_widget_classes[widget_name]
+            widget_pos = self.node_gui.input_widgets[inp]['pos']
+            widget = (widget_class, widget_pos)
+        else:
+            widget = None
+
         # create item
-        # inp.item = InputPortItem(inp.node, self, inp)
-        item = InputPortItem(inp.node, self, inp)
+        item = InputPortItem(self.node_gui, self, inp, input_widget=widget)
 
         if insert is not None:
             self.inputs.insert(insert, item)
@@ -216,7 +223,7 @@ class NodeItem(GUIBase, QGraphicsObject):  # QGraphicsItem, QObject):
 
         # create item
         # out.item = OutputPortItem(out.node, self, out)
-        item = OutputPortItem(out.node, self, out)
+        item = OutputPortItem(self.node_gui, self, out)
 
         if insert is not None:
             self.outputs.insert(insert, item)

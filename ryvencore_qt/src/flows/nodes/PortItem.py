@@ -1,3 +1,5 @@
+from typing import Tuple
+
 from qtpy.QtWidgets import QGraphicsGridLayout, QGraphicsWidget, QGraphicsLayoutItem
 from qtpy.QtCore import Qt, QRectF, QPointF, QSizeF
 from qtpy.QtGui import QFontMetricsF, QFont
@@ -46,13 +48,13 @@ def connections(port):
 class PortItem(GUIBase, QGraphicsWidget):
     """The GUI representative for ports of nodes, also handling mouse events for connections."""
 
-    def __init__(self, node, node_item, port, flow_view):
+    def __init__(self, node_gui, node_item, port, flow_view):
         GUIBase.__init__(self, representing_component=port)
         QGraphicsWidget.__init__(self)
 
         self.setGraphicsItem(self)
 
-        self.node = node
+        self.node_gui = node_gui
         self.node_item = node_item
         self.port = port
         self.flow_view = flow_view
@@ -60,9 +62,9 @@ class PortItem(GUIBase, QGraphicsWidget):
         # self.port.has_been_connected.connect(self.port_connected)
         # self.port.has_been_disconnected.connect(self.port_disconnected)
 
-        self.pin = PortItemPin(self.port, self, self.node, self.node_item)
+        self.pin = PortItemPin(self.port, self, self.node_gui, self.node_item)
 
-        self.label = PortItemLabel(self.port, self, self.node, self.node_item)
+        self.label = PortItemLabel(self.port, self, self.node_gui, self.node_item)
 
         self._layout = QGraphicsGridLayout()
         self._layout.setSpacing(0)
@@ -90,20 +92,18 @@ class PortItem(GUIBase, QGraphicsWidget):
 
 
 class InputPortItem(PortItem):
-    def __init__(self, node, node_item, port):
-        super().__init__(node, node_item, port, node.flow)
+    def __init__(self, node_gui, node_item, port, input_widget: Tuple[type, str] = None):
+        super().__init__(node_gui, node_item, port, node_gui.flow_view())
 
-        self.proxy = None  # widget proxy
-        self.widget = self.create_widget()
-
-        if self.widget:
-            self.proxy = FlowViewProxyWidget(self.flow_view, parent=self.node_item)
-            self.proxy.setWidget(self.widget)
+        self.proxy = None   # widget proxy
+        self.widget = None  # widget
+        if input_widget is not None:
+            self.create_widget(input_widget[0], input_widget[1])
 
         self.update_widget_value = self.widget is not None  # modified by FlowView when performance mode changes
 
         # catch up to missed connections
-        if self.node.flow.connected_output(self.port) is not None:
+        if self.port.node.flow.connected_output(self.port) is not None:
             self.port_connected()
 
         # TODO: add DType support when Addon will be enabled
@@ -135,16 +135,25 @@ class InputPortItem(PortItem):
         l.addItem(self.label, 0, 1)
         l.setAlignment(self.label, Qt.AlignVCenter | Qt.AlignLeft)
         if self.widget:
-            if self.port.add_data and self.port.add_data.get('widget pos') == 'below':
+            if self.widget.position == 'below':
                 l.addItem(self.proxy, 1, 0, 1, 2)
+            elif self.widget.position == 'besides':
+                l.addItem(self.proxy, 0, 2)
             else:
-                l.addItem(self.proxy, 0, 2)  # besides
+                print('Unknown input widget position:', self.widget.position)
 
             l.setAlignment(self.proxy, Qt.AlignCenter)
 
-    def create_widget(self):
+    def create_widget(self, widget_class, widget_pos):
 
-        params = (self.port, self, self.node, self.node_item)
+        if widget_class is None:
+            return
+
+        if self.port.type_ != 'data':
+            # TODO: input widgets from exec inputs?
+            return
+
+        params = (self.port, self, self.node_gui, self.node_item, widget_pos)
 
         # TODO: add DType support when Addon will be enabled
         # self.port.dtype = DTypes.Data()
@@ -180,21 +189,12 @@ class InputPortItem(PortItem):
         #
         #     elif isinstance(dtype, DTypes.Choice):
         #         return Choice_IW(params)
-
-        # TODO: re-enable custom widgets
-        # elif self.port.type_ == 'data' and self.port.add_data and 'widget name' in self.port.add_data:
         #
-        #     # custom input widget
-        #     return self.get_input_widget_class(self.port.add_data['widget name'])(params)
-        #
-        # else:
-        #     return None
-        return None
 
-
-    def get_input_widget_class(self, widget_name):
-        """Returns the CLASS of a defined custom input widget"""
-        return self.node.input_widget_classes[widget_name]
+        # custom input widget
+        self.widget = widget_class(params)
+        self.proxy = FlowViewProxyWidget(self.flow_view, parent=self.node_item)
+        self.proxy.setWidget(self.widget)
 
     def port_connected(self):
         """Disables the widget"""
@@ -222,11 +222,8 @@ class InputPortItem(PortItem):
         if self.port.type_ == 'data':
             if self.widget:
                 data['has widget'] = True
-                if not self.port.dtype:
-                    # this stuff is statically stored in port.add_data
-                    data['widget name'] = self.port.add_data['widget name']
-                    data['widget pos'] = self.port.add_data['widget pos']
-
+                data['widget name'] = self.node_gui.input_widgets[self.port]['name']
+                data['widget pos'] = self.node_gui.input_widgets[self.port]['pos']
                 data['widget data'] = serialize(self.widget.get_state())
             else:
                 data['has widget'] = False
@@ -235,8 +232,8 @@ class InputPortItem(PortItem):
 
 
 class OutputPortItem(PortItem):
-    def __init__(self, node, node_item, port):
-        super().__init__(node, node_item, port, node.flow)
+    def __init__(self, node_gui, node_item, port):
+        super().__init__(node_gui, node_item, port, node_gui.flow_view())
         # super(OutputPortItem, self).__init__(parent_node_instance, PortObjPos.OUTPUT, type_, label_str)
 
         self.setup_ui()
@@ -256,12 +253,12 @@ class OutputPortItem(PortItem):
 
 
 class PortItemPin(QGraphicsWidget):
-    def __init__(self, port, port_item, node, node_item):
+    def __init__(self, port, port_item, node_gui, node_item):
         super(PortItemPin, self).__init__(node_item)
 
         self.port = port
         self.port_item = port_item
-        self.node = node
+        self.node_gui = node_gui
         self.node_item = node_item
         self.flow_view = self.node_item.flow_view
 
@@ -293,10 +290,10 @@ class PortItemPin(QGraphicsWidget):
 
     def paint(self, painter, option, widget=None):
         self.node_item.session_design.flow_theme.paint_PI(
-            node=self.node,
+            node=self.node_gui,
             painter=painter,
             option=option,
-            node_color=self.node_item.color,
+            node_color=self.node_gui.color,
             type_=self.port.type_,
             connected=is_connected(self.port),
             rect=QRectF(self.padding, self.padding, self.width-2*self.padding, self.height-2*self.padding)
@@ -361,13 +358,13 @@ class PortItemPin(QGraphicsWidget):
 
 
 class PortItemLabel(QGraphicsWidget):
-    def __init__(self, port, port_item, node, node_item):
+    def __init__(self, port, port_item, node_gui, node_item):
         super(PortItemLabel, self).__init__(node_item)
         self.setGraphicsItem(self)
 
         self.port = port
         self.port_item = port_item
-        self.node = node
+        self.node_gui = node_gui
         self.node_item = node_item
 
         self.font = QFont("Source Code Pro", 10, QFont.Bold)
@@ -389,11 +386,11 @@ class PortItemLabel(QGraphicsWidget):
 
     def paint(self, painter, option, widget=None):
         self.node_item.session_design.flow_theme.paint_PI_label(
-            self.node,
+            self.node_gui,
             painter, option,
             self.port.type_,
             is_connected(self.port),
             self.port.label_str,
-            self.node_item.color,
+            self.node_gui.color,
             self.boundingRect()
         )

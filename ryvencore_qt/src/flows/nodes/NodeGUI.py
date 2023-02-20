@@ -11,6 +11,7 @@ class NodeGUI(QObject):
     main_widget_class: list = None
     main_widget_pos: str = 'below ports'
     input_widget_classes: dict = {}
+    init_input_widgets: dict = {}
     style: str = 'normal'
     color: str = '#c69a15'
     display_title: str = None
@@ -41,6 +42,10 @@ class NodeGUI(QObject):
 
         if self.display_title is None:
             self.display_title = self.node.title
+
+        self.input_widgets = {}     # {input: widget name}
+        for i, name in self.init_input_widgets.items():
+            self.input_widgets[self.node.inputs[i]] = name
 
         self.error_during_update = False
 

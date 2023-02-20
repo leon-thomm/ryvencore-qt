@@ -31,7 +31,8 @@ class IWB:
     """InputWidgetBase"""
 
     def __init__(self, params):
-        self.input, self.input_item, self.node, self.node_item = params
+        self.input, self.input_item, self.node, self.node_gui, self.position = \
+            params
 
     # OVERRIDE
     def get_val(self):
@@ -67,4 +68,4 @@ class IWB:
         self.node.update(self.node.inputs.index(self.input))
 
     def update_node_shape(self):
-        self.node_item.update_shape()
+        self.node_gui.update_shape()
