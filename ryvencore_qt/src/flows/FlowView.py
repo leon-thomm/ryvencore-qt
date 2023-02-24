@@ -191,7 +191,7 @@ class FlowView(GUIBase, QGraphicsView):
         # CATCH UP ON FLOW
         for node in self.flow.nodes:
             self.add_node(node)
-        for c in [(o, i) for i, o in self.flow.graph_adj_rev.items()]:
+        for c in [(o, i) for o, conns in self.flow.graph_adj.items() for i in conns]:
             self.add_connection(c)
 
     def _init_shortcuts(self):
