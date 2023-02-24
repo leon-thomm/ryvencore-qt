@@ -212,12 +212,6 @@ class InputPortItem(PortItem):
         if self.widget:
             self.widget.setEnabled(True)
 
-    def _port_val_updated(self, val):
-        """Called from output port"""
-
-        if self.update_widget_value:  # this might be quite slow
-            self.widget.val_update_event(val)
-
     def complete_data(self, data: dict) -> dict:
         if self.port.type_ == 'data':
             if self.widget:
