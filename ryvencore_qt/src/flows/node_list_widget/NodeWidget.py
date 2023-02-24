@@ -28,7 +28,7 @@ class NodeWidget(QWidget):
                 super().__init__(text)
 
                 self.setReadOnly(True)
-                self.setFont(QFont('Poppins', 10))
+                self.setFont(QFont('Source Code Pro', 8))
             def mouseMoveEvent(self, ev):
                 self_.custom_focused_from_inside.emit()
                 ev.ignore()
@@ -84,20 +84,18 @@ class NodeWidget(QWidget):
         self.update_stylesheet()
 
     def update_stylesheet(self):
-        color = '#888888'
+        color = self.node.GUI.color if hasattr(self.node, 'GUI') else '#888888'
 
         r, g, b = QColor(color).red(), QColor(color).green(), QColor(color).blue()
 
         new_style_sheet = f'''
 NodeWidget {{
-    border: 0px solid rgba({(
-        f'{r},{g},{b},150'
-    )});
+    border: 1px solid rgba(255,255,255,150);
     border-radius: 2px;
     {(
-        f'background-color: rgba({r},{g},{b},40);'
+        f'background-color: rgba(255,255,255,80);'
     ) if self.custom_focused else ''}
-}}   
+}}
 QLabel {{
     background: transparent;
 }}
@@ -105,6 +103,7 @@ QLineEdit {{
     color: white;
     background: transparent;
     border: none;
+    padding: 2px;
 }}
         '''
 
