@@ -7,10 +7,10 @@ from ...utils import change_svg_color, get_resource
 
 
 class NodeItem_CollapseButton(QGraphicsWidget):
-    def __init__(self, node, node_item):
+    def __init__(self, node_gui, node_item):
         super().__init__(parent=node_item)
 
-        self.node = node
+        self.node_gui = node_gui
         self.node_item = node_item
 
         self.size = QSizeF(14, 7)
@@ -21,11 +21,11 @@ class NodeItem_CollapseButton(QGraphicsWidget):
 
         self.collapse_pixmap = change_svg_color(
             get_resource('node_collapse_icon.svg'),
-            self.node.color
+            self.node_gui.color
         )
         self.expand_pixmap = change_svg_color(
             get_resource('node_expand_icon.svg'),
-            self.node.color
+            self.node_gui.color
         )
 
 

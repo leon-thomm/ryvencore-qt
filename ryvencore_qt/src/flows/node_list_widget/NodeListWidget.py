@@ -1,6 +1,7 @@
 from qtpy.QtWidgets import QWidget, QVBoxLayout, QLineEdit, QScrollArea
 from qtpy.QtCore import Qt, Signal
 
+from ryvencore import Node
 from .utils import search, sort_nodes, inc, dec
 from ..node_list_widget.NodeWidget import NodeWidget
 
@@ -8,7 +9,6 @@ from statistics import median
 
 
 class NodeListWidget(QWidget):
-    """notice, that 'nodes' refers to node CLASSES here"""
 
     # SIGNALS
     escaped = Signal()
@@ -18,7 +18,7 @@ class NodeListWidget(QWidget):
         super().__init__()
 
         self.session = session
-        self.nodes = []
+        self.nodes: list[type[Node]] = []
 
         self.current_nodes = []             # currently selectable nodes
         self.active_node_widget_index = -1  # index of focused node widget
@@ -26,10 +26,10 @@ class NodeListWidget(QWidget):
         self.node_widgets = {}              # Node-NodeWidget assignments
         self._node_widget_index_counter = 0
 
-        self.setup_UI()
+        self._setup_UI()
 
 
-    def setup_UI(self):
+    def _setup_UI(self):
 
         self.main_layout = QVBoxLayout(self)
         self.main_layout.setAlignment(Qt.AlignTop)
@@ -38,7 +38,7 @@ class NodeListWidget(QWidget):
         # adding all stuff to the layout
         self.search_line_edit = QLineEdit(self)
         self.search_line_edit.setPlaceholderText('search for node...')
-        self.search_line_edit.textChanged.connect(self.update_view)
+        self.search_line_edit.textChanged.connect(self._update_view)
         self.layout().addWidget(self.search_line_edit)
 
 
@@ -59,7 +59,7 @@ class NodeListWidget(QWidget):
 
         self.layout().addWidget(self.list_scroll_area)
 
-        self.update_view('')
+        self._update_view('')
 
         self.setStyleSheet(self.session.design.node_selection_stylesheet)
 
@@ -81,17 +81,17 @@ class NodeListWidget(QWidget):
             self.escaped.emit()
 
         elif event.key() == Qt.Key_Down:
-            self.set_active_node_widget_index(
+            self._set_active_node_widget_index(
                 inc(self.active_node_widget_index, length=num_items)
             )
         elif event.key() == Qt.Key_Up:
-            self.set_active_node_widget_index(
+            self._set_active_node_widget_index(
                 dec(self.active_node_widget_index, num_items)
             )
 
         elif event.key() == Qt.Key_Return or event.key() == Qt.Key_Enter:
             if len(self.current_nodes) > 0:
-                self.place_node(self.active_node_widget_index)
+                self._place_node(self.active_node_widget_index)
         else:
             event.setAccepted(False)
 
@@ -111,10 +111,10 @@ class NodeListWidget(QWidget):
     def update_list(self, nodes):
         """update the list of available nodes"""
         self.nodes = sort_nodes(nodes)
-        self.update_view('')
+        self._update_view('')
 
 
-    def update_view(self, search_text=''):
+    def _update_view(self, search_text=''):
         if len(self.nodes) == 0:
             return
 
@@ -147,29 +147,29 @@ class NodeListWidget(QWidget):
             self.current_nodes.append(n)
 
             if self.node_widgets.get(n) is None:
-                self.node_widgets[n] = self.create_node_widget(n)
+                self.node_widgets[n] = self._create_node_widget(n)
 
             self.list_layout.addWidget(self.node_widgets[n])
 
         # focus on first result
         if len(self.current_nodes) > 0:
-            self.set_active_node_widget_index(0)
+            self._set_active_node_widget_index(0)
 
 
-    def create_node_widget(self, node):
+    def _create_node_widget(self, node):
         node_widget = NodeWidget(self, node)
-        node_widget.custom_focused_from_inside.connect(self.node_widget_focused_from_inside)
+        node_widget.custom_focused_from_inside.connect(self._node_widget_focused_from_inside)
         node_widget.setObjectName('node_widget_' + str(self._node_widget_index_counter))
         self._node_widget_index_counter += 1
-        node_widget.chosen.connect(self.node_widget_chosen)
+        node_widget.chosen.connect(self._node_widget_chosen)
 
         return node_widget
 
-    def node_widget_focused_from_inside(self):
+    def _node_widget_focused_from_inside(self):
         index = self.list_layout.indexOf(self.sender())
-        self.set_active_node_widget_index(index)
+        self._set_active_node_widget_index(index)
 
-    def set_active_node_widget_index(self, index):
+    def _set_active_node_widget_index(self, index):
         self.active_node_widget_index = index
         node_widget = self.list_layout.itemAt(index).widget()
 
@@ -181,12 +181,12 @@ class NodeListWidget(QWidget):
         self.list_scroll_area.ensureWidgetVisible(self.active_node_widget)
 
 
-    def node_widget_chosen(self):
+    def _node_widget_chosen(self):
         index = int(self.sender().objectName()[self.sender().objectName().rindex('_')+1:])
-        self.place_node(index)
+        self._place_node(index)
 
 
-    def place_node(self, index):
+    def _place_node(self, index):
         node_index = index
         node = self.current_nodes[node_index]
         self.node_chosen.emit(node)

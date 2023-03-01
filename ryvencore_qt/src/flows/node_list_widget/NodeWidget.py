@@ -28,7 +28,7 @@ class NodeWidget(QWidget):
                 super().__init__(text)
 
                 self.setReadOnly(True)
-                self.setFont(QFont('Poppins', 10))
+                self.setFont(QFont('Source Code Pro', 8))
             def mouseMoveEvent(self, ev):
                 self_.custom_focused_from_inside.emit()
                 ev.ignore()
@@ -41,12 +41,12 @@ class NodeWidget(QWidget):
 
         type_layout = QHBoxLayout()
 
-        type_label = QLabel(node.type_)
-        type_label.setFont(QFont('Segoe UI', 8, italic=True))
+        #type_label = QLabel(node.type_)
+        #type_label.setFont(QFont('Segoe UI', 8, italic=True))
         # type_label.setStyleSheet('color: white;')
 
         main_layout.addWidget(name_label, 0, 0)
-        main_layout.addWidget(type_label, 0, 1)
+        #main_layout.addWidget(type_label, 0, 1)
 
         self.setLayout(main_layout)
         self.setContentsMargins(0, 0, 0, 0)
@@ -84,24 +84,26 @@ class NodeWidget(QWidget):
         self.update_stylesheet()
 
     def update_stylesheet(self):
-        bcol = QColor(self.node.color)
+        color = self.node.GUI.color if hasattr(self.node, 'GUI') else '#888888'
+
+        r, g, b = QColor(color).red(), QColor(color).green(), QColor(color).blue()
+
         new_style_sheet = f'''
 NodeWidget {{
-    border: 0px solid rgba({(
-        f'{QColor(self.node.color).red()},{QColor(self.node.color).green()},{QColor(self.node.color).blue()},150'
-    )});
+    border: 1px solid rgba(255,255,255,150);
     border-radius: 2px;
     {(
-        f'background-color: rgba({bcol.red()},{bcol.green()},{bcol.blue()},40);'
+        f'background-color: rgba(255,255,255,80);'
     ) if self.custom_focused else ''}
-}}   
+}}
 QLabel {{
     background: transparent;
 }}
 QLineEdit {{
-    color: {self.node.color};
+    color: white;
     background: transparent;
     border: none;
+    padding: 2px;
 }}
         '''
 

@@ -12,19 +12,19 @@ from .PortItem import InputPortItem, OutputPortItem
 class NodeItemWidget(QGraphicsWidget):
     """The QGraphicsWidget managing all GUI components of a NodeItem in widgets and layouts."""
 
-    def __init__(self, node, node_item):
+    def __init__(self, node_gui, node_item):
         super().__init__(parent=node_item)
 
-        self.node = node
+        self.node_gui = node_gui
         self.node_item = node_item
         self.flow_view = self.node_item.flow_view
 
         self.body_padding = 6
         self.header_padding = (0, 0, 0, 0)  # theme dependent and hence updated in setup_layout()!
 
-        self.icon = NodeItem_Icon(node, node_item) if node.icon else None
-        self.collapse_button = NodeItem_CollapseButton(node, node_item) if node.style == 'normal' else None
-        self.title_label = TitleLabel(node, node_item)
+        self.icon = NodeItem_Icon(node_gui, node_item) if node_gui.icon else None
+        self.collapse_button = NodeItem_CollapseButton(node_gui, node_item) if node_gui.style == 'normal' else None
+        self.title_label = TitleLabel(node_gui, node_item)
         self.main_widget_proxy: FlowViewProxyWidget = None
         if self.node_item.main_widget:
             self.main_widget_proxy = FlowViewProxyWidget(self.flow_view)
@@ -46,7 +46,7 @@ class NodeItemWidget(QGraphicsWidget):
         layout.setContentsMargins(0, 0, 0, 0)
         layout.setSpacing(0)
 
-        if self.node.style == 'normal':
+        if self.node_gui.style == 'normal':
             self.header_widget = QGraphicsWidget()
             # self.header_widget.setContentsMargins(0, 0, 0, 0)
             self.header_widget.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
@@ -160,7 +160,7 @@ class NodeItemWidget(QGraphicsWidget):
         self.layout().activate()
         # very essential; repositions everything in case content has changed (inputs/outputs/widget)
 
-        if self.node.style == 'small':
+        if self.node_gui.style == 'small':
 
             # making it recompute its true minimumWidth here
             self.adjustSize()
@@ -175,7 +175,7 @@ class NodeItemWidget(QGraphicsWidget):
                       QPointF(w / 2, h / 2))
         self.setPos(rect.left(), rect.top())
 
-        if not self.node.style == 'normal':
+        if not self.node_gui.style == 'normal':
             if self.icon:
                 self.icon.setPos(
                     QPointF(-self.icon.boundingRect().width() / 2,
@@ -190,11 +190,11 @@ class NodeItemWidget(QGraphicsWidget):
 
 
     def add_main_widget_to_layout(self):
-        if self.node.main_widget_pos == 'between ports':
+        if self.node_gui.main_widget_pos == 'between ports':
             self.body_layout.insertItem(1, self.main_widget_proxy)
             self.body_layout.insertStretch(2)
 
-        elif self.node.main_widget_pos == 'below ports':
+        elif self.node_gui.main_widget_pos == 'below ports':
             self.layout().addItem(self.main_widget_proxy)
             self.layout().setAlignment(self.main_widget_proxy, Qt.AlignHCenter)
 
@@ -207,7 +207,7 @@ class NodeItemWidget(QGraphicsWidget):
     def insert_input_into_layout(self, index: int, inp: InputPortItem):
         self.inputs_layout.insertItem(index * 2 + 1, inp)  # *2 bcs of the stretches
         self.inputs_layout.setAlignment(inp, Qt.AlignLeft)
-        if len(self.node.inputs) > 1:
+        if len(self.node_gui.node.inputs) > 1:
             self.inputs_layout.insertStretch(index * 2 + 1)  # *2+1 because of the stretches, too
 
     def remove_input_from_layout(self, inp: InputPortItem):
@@ -226,7 +226,7 @@ class NodeItemWidget(QGraphicsWidget):
     def insert_output_into_layout(self, index: int, out: OutputPortItem):
         self.outputs_layout.insertItem(index * 2 + 1, out)  # *2 because of the stretches
         self.outputs_layout.setAlignment(out, Qt.AlignRight)
-        if len(self.node.outputs) > 1:
+        if len(self.node_gui.node.outputs) > 1:
             self.outputs_layout.insertStretch(index * 2 + 1)  # *2+1 because of the stretches, too
 
     def remove_output_from_layout(self, out: OutputPortItem):

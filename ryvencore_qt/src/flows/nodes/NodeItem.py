@@ -1,10 +1,12 @@
 import traceback
+from typing import Optional, Tuple
 
 from qtpy.QtWidgets import QGraphicsItem, QGraphicsObject, QMenu, QGraphicsDropShadowEffect
 from qtpy.QtCore import Qt, QRectF, QObject, QPointF
 from qtpy.QtGui import QColor
 
 from .NodeErrorIndicator import NodeErrorIndicator
+from .NodeGUI import NodeGUI
 from ...GUIBase import GUIBase
 from ryvencore.NodePort import NodeInput, NodeOutput
 from .NodeItemAction import NodeItemAction
@@ -19,14 +21,15 @@ class NodeItem(GUIBase, QGraphicsObject):  # QGraphicsItem, QObject):
     """The GUI representative for nodes. Unlike the Node class, this class is not subclassed individually and works
     the same for every node."""
 
-    def __init__(self, node, params):
+    def __init__(self, node, node_gui, flow_view, design):
         # QGraphicsItem.__init__(self)
         # QObject.__init__(self)
         GUIBase.__init__(self, representing_component=node)
         QGraphicsObject.__init__(self)
 
         self.node = node
-        flow_view, design, load_data = params
+        self.node_gui = node_gui
+        self.node_gui.item = self
         self.flow_view = flow_view
         self.session_design = design
         self.movement_state = None
@@ -34,7 +37,7 @@ class NodeItem(GUIBase, QGraphicsObject):  # QGraphicsItem, QObject):
         self.painted_once = False
         self.inputs = []
         self.outputs = []
-        self.color = QColor(self.node.color)  # manipulated by self.animator
+        self.color = QColor(self.node_gui.color)  # manipulated by self.animator
 
         self.collapsed = False
         self.hovered = False
@@ -47,17 +50,17 @@ class NodeItem(GUIBase, QGraphicsObject):  # QGraphicsItem, QObject):
         self.initializing = True
 
         # self.temp_state_data = None
-        self.init_data = load_data
+        self.init_data = self.node.load_data
 
         # CONNECT TO NODE
-        self.node.updated.connect(self.node_updated)
-        self.node.update_shape_triggered.connect(self.update_shape)
-        self.node.hide_unconnected_ports_triggered.connect(self.hide_unconnected_ports_triggered)
-        self.node.show_unconnected_ports_triggered.connect(self.show_unconnected_ports_triggered)
-        self.node.input_added.connect(self.add_new_input)
-        self.node.output_added.connect(self.add_new_output)
-        self.node.input_removed.connect(self.remove_input)
-        self.node.output_removed.connect(self.remove_output)
+        self.node_gui.updating.connect(self.node_updating)
+        self.node_gui.update_shape_triggered.connect(self.update_shape)
+        self.node_gui.hide_unconnected_ports_triggered.connect(self.hide_unconnected_ports_triggered)
+        self.node_gui.show_unconnected_ports_triggered.connect(self.show_unconnected_ports_triggered)
+        self.node_gui.input_added.connect(self.add_new_input)
+        self.node_gui.output_added.connect(self.add_new_output)
+        self.node_gui.input_removed.connect(self.remove_input)
+        self.node_gui.output_removed.connect(self.remove_output)
 
         # FLAGS
         self.setFlags(
@@ -65,23 +68,24 @@ class NodeItem(GUIBase, QGraphicsObject):  # QGraphicsItem, QObject):
             QGraphicsItem.ItemIsMovable |
             QGraphicsItem.ItemSendsScenePositionChanges
         )
+
         self.setAcceptHoverEvents(True)
         self.setCacheMode(QGraphicsItem.DeviceCoordinateCache)
 
         # UI
         self.shadow_effect = None
         self.main_widget = None
-        if self.node.main_widget_class is not None:
-            self.main_widget = self.node.main_widget_class((self.node, self))
-        self.widget = NodeItemWidget(self.node, self)  # QGraphicsWidget(self)
+        if self.node_gui.main_widget_class is not None:
+            self.main_widget = self.node_gui.main_widget_class((self.node, self))
+        self.widget = NodeItemWidget(self.node_gui, self)  # QGraphicsWidget(self)
         self.animator = NodeItemAnimator(self)  # needs self.title_label
         self.error_indicator = NodeErrorIndicator(self)
         self.error_indicator.hide()
 
         # TOOLTIP
         self.tooltip_descr_html_content = \
-            self.node.description_html \
-            if self.node.description_html is not None \
+            self.node_gui.description_html \
+            if self.node_gui.description_html is not None \
             else \
             f'<p>{self.node.__doc__}</p>'
 
@@ -103,18 +107,23 @@ class NodeItem(GUIBase, QGraphicsObject):  # QGraphicsItem, QObject):
                     print('Exception while setting data in', self.node.title, 'Node\'s main widget:', e,
                           ' (was this intended?)')
 
-        # catch up on ports
-        for i in self.node.inputs:
-            self.add_new_input(i)
+        # catch up on init ports
+        for inp in self.node.inputs:
+            self.add_new_input(inp)
 
-        for o in self.node.outputs:
-            self.add_new_output(o)
+        for out in self.node.outputs:
+            self.add_new_output(out)
 
         if self.init_data is not None:
             if self.init_data.get('unconnected ports hidden'):
                 self.hide_unconnected_ports_triggered()
             if self.init_data.get('collapsed'):
                 self.collapse()
+
+        if self.init_data is not None:
+            self.node_gui.load(self.init_data)
+
+        self.node_gui.initialized()
 
         self.initializing = False
 
@@ -129,7 +138,7 @@ class NodeItem(GUIBase, QGraphicsObject):  # QGraphicsItem, QObject):
     # --------------------------------------------------------------------------------------
     # UI STUFF -------------------------#---------------
 
-    def node_updated(self):
+    def node_updating(self):
         if self.session_design.animations_enabled:
             if not self.animator.running():
                 self.animator.start()
@@ -164,9 +173,16 @@ class NodeItem(GUIBase, QGraphicsObject):  # QGraphicsItem, QObject):
 
     def add_new_input(self, inp: NodeInput, insert: int = None):
 
+        if inp in self.node_gui.input_widgets:
+            widget_name = self.node_gui.input_widgets[inp]['name']
+            widget_class = self.node_gui.input_widget_classes[widget_name]
+            widget_pos = self.node_gui.input_widgets[inp]['pos']
+            widget = (widget_class, widget_pos)
+        else:
+            widget = None
+
         # create item
-        # inp.item = InputPortItem(inp.node, self, inp)
-        item = InputPortItem(inp.node, self, inp)
+        item = InputPortItem(self.node_gui, self, inp, input_widget=widget)
 
         if insert is not None:
             self.inputs.insert(insert, item)
@@ -207,7 +223,7 @@ class NodeItem(GUIBase, QGraphicsObject):  # QGraphicsItem, QObject):
 
         # create item
         # out.item = OutputPortItem(out.node, self, out)
-        item = OutputPortItem(out.node, self, out)
+        item = OutputPortItem(self.node_gui, self, out)
 
         if insert is not None:
             self.outputs.insert(insert, item)
@@ -331,10 +347,10 @@ class NodeItem(GUIBase, QGraphicsObject):  # QGraphicsItem, QObject):
             self.error_indicator.setPos(self.boundingRect().bottomRight())
 
         self.session_design.flow_theme.paint_NI(
-            node=self.node,
+            node_gui=self.node_gui,
             selected=self.isSelected(),
             hovered=self.hovered,
-            node_style=self.node.style,
+            node_style=self.node_gui.style,
             painter=painter,
             option=option,
             color=self.color,
@@ -375,15 +391,7 @@ class NodeItem(GUIBase, QGraphicsObject):  # QGraphicsItem, QObject):
     def get_context_menu(self):
         menu = QMenu(self.flow_view)
 
-        for a in self.get_actions(self.node.get_extended_default_actions(), menu):  # menu needed for 'parent'
-            if type(a) == NodeItemAction:
-                menu.addAction(a)
-            elif type(a) == QMenu:
-                menu.addMenu(a)
-
-        menu.addSeparator()
-
-        actions = self.get_actions(self.node.actions, menu)
+        actions = self.get_actions(self.node_gui.actions, menu)
         for a in actions:  # menu needed for 'parent'
             if type(a) == NodeItemAction:
                 menu.addAction(a)
@@ -402,7 +410,7 @@ class NodeItem(GUIBase, QGraphicsObject):  # QGraphicsItem, QObject):
             if self.movement_state == MovementEnum.mouse_clicked:
                 self.movement_state = MovementEnum.position_changed
 
-        self.update_conn_pos()
+            self.update_conn_pos()
 
         return QGraphicsItem.itemChange(self, change, value)
 
@@ -410,27 +418,27 @@ class NodeItem(GUIBase, QGraphicsObject):  # QGraphicsItem, QObject):
         """Updates the scene positions of connections"""
 
         for o in self.node.outputs:
-            for c in o.connections:
+            for i in self.node.flow.connected_inputs(o):
                 # c.item.recompute()
 
-                if c not in self.flow_view.connection_items:
+                if (o, i) not in self.flow_view.connection_items:
                     # it can happen that the connection item hasn't been
                     # created yet
                     continue
 
-                item = self.flow_view.connection_items[c]
+                item = self.flow_view.connection_items[(o,i)]
                 item.recompute()
         for i in self.node.inputs:
-            for c in i.connections:
-                # c.item.recompute()
+            o = self.node.flow.connected_output(i)
+            # c.item.recompute()
 
-                if c not in self.flow_view.connection_items:
-                    # it can happen that the connection item hasn't been
-                    # created yet
-                    continue
+            if (o, i) not in self.flow_view.connection_items:
+                # it can happen that the connection item hasn't been
+                # created yet
+                continue
 
-                item = self.flow_view.connection_items[c]
-                item.recompute()
+            item = self.flow_view.connection_items[(o,i)]
+            item.recompute()
 
     def hoverEnterEvent(self, event):
         self.hovered = True
@@ -476,10 +484,7 @@ class NodeItem(GUIBase, QGraphicsObject):  # QGraphicsItem, QObject):
                     data = v_dict['data']
                 except KeyError:
                     pass
-                action = NodeItemAction(node=self.node, text=k, method=method, menu=menu, data=data)
-                action.triggered_with_data.connect(self.flow_view.thread_interface.trigger_node_action)
-                action.triggered_without_data.connect(self.flow_view.thread_interface.trigger_node_action)
-
+                action = NodeItemAction(node_gui=self.node_gui, text=k, method=method, menu=menu, data=data)
                 actions.append(action)
             except KeyError:
                 action_menu = QMenu(k, menu)
@@ -502,5 +507,7 @@ class NodeItem(GUIBase, QGraphicsObject):  # QGraphicsItem, QObject):
 
         data['unconnected ports hidden'] = self.hiding_unconnected_ports
         data['collapsed'] = self.collapsed
+
+        data = {**data, **self.node_gui.data()}
 
         return data
