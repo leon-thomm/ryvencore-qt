@@ -7,16 +7,16 @@ from .ListWidget_NameLineEdit import ListWidget_NameLineEdit
 
 
 class FlowsList_FlowWidget(QWidget):
-    """A QWidget representing a single Script for the FlowsListWidget."""
+    """A QWidget representing a single Flow for the FlowsListWidget."""
 
-    def __init__(self, scripts_list_widget, session, script):
+    def __init__(self, flows_list_widget, session_gui, flow):
         super().__init__()
 
-        self.session = session
-        self.script = script
-        self.flow_view = self.session.flow_views[script]
-        self.scripts_list_widget = scripts_list_widget
-        self.previous_script_title = ''
+        self.session_gui = session_gui
+        self.flow = flow
+        self.flow_view = self.session_gui.core_session.flow_views[flow]
+        self.flows_list_widget = flows_list_widget
+        self.previous_flow_title = ''
         self._thumbnail_source = ''
         self.ignore_title_line_edit_signal = False
 
@@ -28,17 +28,18 @@ class FlowsList_FlowWidget(QWidget):
 
         #   create icon
 
-        script_icon = QIcon(Location.PACKAGE_PATH + '/resources/pics/script_picture.png')
+        # TODO: change this icon
+        flow_icon = QIcon(Location.PACKAGE_PATH + '/resources/pics/script_picture.png')
 
         icon_label = QLabel()
         icon_label.setFixedSize(20, 20)
         icon_label.setStyleSheet('border:none;')
-        icon_label.setPixmap(script_icon.pixmap(20, 20))
+        icon_label.setPixmap(flow_icon.pixmap(20, 20))
         main_layout.addWidget(icon_label)
 
         #   title line edit
 
-        self.title_line_edit = ListWidget_NameLineEdit(script.title, self)
+        self.title_line_edit = ListWidget_NameLineEdit(flow.title, self)
         self.title_line_edit.setPlaceholderText('title')
         self.title_line_edit.setEnabled(False)
         self.title_line_edit.editingFinished.connect(self.title_line_edit_editing_finished)
@@ -89,7 +90,7 @@ class FlowsList_FlowWidget(QWidget):
 
 
     def action_delete_triggered(self):
-        self.scripts_list_widget.del_script(self.script, self)
+        self.flows_list_widget.del_flow(self.flow, self)
 
 
     def title_line_edit_double_clicked(self):
@@ -97,7 +98,7 @@ class FlowsList_FlowWidget(QWidget):
         self.title_line_edit.setFocus()
         self.title_line_edit.selectAll()
 
-        self.previous_script_title = self.title_line_edit.text()
+        self.previous_flow_title = self.title_line_edit.text()
 
 
     def title_line_edit_editing_finished(self):
@@ -108,10 +109,10 @@ class FlowsList_FlowWidget(QWidget):
 
         self.ignore_title_line_edit_signal = True
 
-        if self.session.script_title_valid(title):
-            self.session.rename_script(script=self.script, title=title)
+        if self.session_gui.core_session.flow_title_valid(title):
+            self.session_gui.core_session.rename_flow(flow=self.flow, title=title)
         else:
-            self.title_line_edit.setText(self.previous_script_title)
+            self.title_line_edit.setText(self.previous_flow_title)
 
         self.title_line_edit.setEnabled(False)
         self.ignore_title_line_edit_signal = False
