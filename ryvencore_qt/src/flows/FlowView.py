@@ -546,7 +546,7 @@ class FlowView(GUIBase, QGraphicsView):
             if data['type'] == 'node':
                 self._node_place_pos = self.mapToScene(event.pos())
                 self.create_node__cmd(
-                    node_from_identifier(data['node identifier'], self.session_gui.session.nodes)
+                    node_from_identifier(data['node identifier'], self.session_gui.core_sesssion.nodes)
                 )
         except Exception:
             pass
@@ -706,7 +706,7 @@ class FlowView(GUIBase, QGraphicsView):
         # open nodes dialog
         # the dialog emits 'node_chosen' which is connected to self.place_node__cmd
         self._node_list_widget.update_list(
-            nodes if nodes is not None else self.session_gui.session.nodes
+            nodes if nodes is not None else self.session_gui.core_sesssion.nodes
         )
         self._node_list_widget_proxy.setPos(dialog_pos)
         self._node_list_widget_proxy.show()
@@ -1184,13 +1184,13 @@ class FlowView(GUIBase, QGraphicsView):
 
     def _get_nodes_data(self, nodes):
         """generates the data for the specified list of nodes"""
-        f_complete_data = self.session_gui.session.complete_data
+        f_complete_data = self.session_gui.core_sesssion.complete_data
         return f_complete_data(self.flow._gen_nodes_data(nodes))
 
     def _get_connections_data(self, nodes):
         """generates the connections data for connections between a specified list of nodes"""
 
-        f_complete_data = self.session_gui.session.complete_data
+        f_complete_data = self.session_gui.core_sesssion.complete_data
         return f_complete_data(self.flow._gen_conns_data(nodes))
 
     def _get_drawings_data(self, drawings):
