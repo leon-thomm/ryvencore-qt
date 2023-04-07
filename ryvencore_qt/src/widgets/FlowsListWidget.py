@@ -16,8 +16,8 @@ class FlowsListWidget(QWidget):
 
         self.setup_UI()
 
-        self.session_gui.core_sesssion.flow_view_created.connect(self.add_new_flow)
-        self.session_gui.core_sesssion.flow_deleted.connect(self.recreate_list)
+        self.session_gui.core_session.flow_view_created.connect(self.add_new_flow)
+        self.session_gui.core_session.flow_deleted.connect(self.recreate_list)
 
 
     def setup_UI(self):
@@ -63,7 +63,7 @@ class FlowsListWidget(QWidget):
 
         self.list_widgets.clear()
 
-        for s in self.session_gui.core_sesssion.flows:
+        for s in self.session_gui.core_session.flows:
             new_widget = FlowsList_FlowWidget(self, self.session_gui, s)
             self.list_widgets.append(new_widget)
 
@@ -73,8 +73,8 @@ class FlowsListWidget(QWidget):
     def create_flow(self):
         title = self.new_flow_title_lineedit.text()
 
-        if self.session_gui.core_sesssion.flow_title_valid(title):
-            self.session_gui.core_sesssion.create_flow(title=title)
+        if self.session_gui.core_session.flow_title_valid(title):
+            self.session_gui.core_session.create_flow(title=title)
 
     def add_new_flow(self, flow, flow_view):
         self.recreate_list()
@@ -90,5 +90,5 @@ class FlowsListWidget(QWidget):
 
         self.list_widgets.remove(flow_widget)
         flow_widget.setParent(None)
-        self.session_gui.core_sesssion.delete_flow(flow)
+        self.session_gui.core_session.delete_flow(flow)
         # self.recreate_list()

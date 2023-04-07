@@ -30,8 +30,8 @@ class SessionGUI(GUIBase, QObject):
         GUIBase.__init__(self)
         QObject.__init__(self)
 
-        self.core_sesssion = ryvencore.Session(gui=True)
-        setattr(self.core_sesssion, 'gui', self)
+        self.core_session = ryvencore.Session(gui=True)
+        setattr(self.core_session, 'gui', self)
 
         self.gui_parent = gui_parent
 
@@ -48,9 +48,9 @@ class SessionGUI(GUIBase, QObject):
         self.design = Design()
 
         # connect to session
-        self.core_sesssion.flow_created.sub(self._flow_created)
-        self.core_sesssion.flow_deleted.sub(self._flow_deleted)
-        self.core_sesssion.flow_renamed.sub(self._flow_renamed)
+        self.core_session.flow_created.sub(self._flow_created)
+        self.core_session.flow_deleted.sub(self._flow_deleted)
+        self.core_session.flow_renamed.sub(self._flow_renamed)
 
     def _flow_created(self, flow: ryvencore.Flow):
         """
