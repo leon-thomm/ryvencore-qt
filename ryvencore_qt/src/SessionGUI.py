@@ -30,7 +30,7 @@ class SessionGUI(GUIBase, QObject):
         GUIBase.__init__(self)
         QObject.__init__(self)
 
-        self.core_session = ryvencore.Session(gui=True)
+        self.core_session = ryvencore.Session(gui=True, load_addons=True)
         setattr(self.core_session, 'gui', self)
 
         self.gui_parent = gui_parent
