@@ -16,8 +16,8 @@ class FlowsListWidget(QWidget):
 
         self.setup_UI()
 
-        self.session_gui.core_session.flow_view_created.connect(self.add_new_flow)
-        self.session_gui.core_session.flow_deleted.connect(self.recreate_list)
+        self.session_gui.flow_view_created.connect(self.add_new_flow)
+        self.session_gui.flow_deleted.connect(self.recreate_list)
 
 
     def setup_UI(self):
