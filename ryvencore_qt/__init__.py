@@ -14,7 +14,7 @@ from .src.flows.nodes.NodeGUI import NodeGUI
 
 # customer base classes
 from ryvencore import Node
-from .src.flows.nodes.WidgetBaseClasses import MWB, IWB
+from .src.flows.nodes.WidgetBaseClasses import NodeMainWidget, NodeInputWidget
 
 # gui classes
 from .src.widgets import *

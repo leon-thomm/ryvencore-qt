@@ -1,10 +1,10 @@
 from qtpy.QtGui import QFontMetrics, QFont
 from qtpy.QtWidgets import QSpinBox, QLineEdit, QCheckBox, QComboBox
 
-from .WidgetBaseClasses import IWB
+from .WidgetBaseClasses import NodeInputWidget
 
 
-class DType_IW_Base(IWB):
+class DType_IW_Base(NodeInputWidget):
 
     def __init__(self, params):
         super().__init__(params)
