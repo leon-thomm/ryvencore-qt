@@ -266,10 +266,13 @@ class Paste_Command(FlowUndoCommand):
 
             # create components
             self.create_drawings()
-            nodes = self.flow._create_nodes_from_data(self.data['nodes'])
-            self.pasted_components['nodes'] = nodes
-            connections = self.flow._connect_nodes_from_data(nodes, self.data['connections'])
-            self.pasted_components['connections'] = connections
+
+            self.pasted_components['nodes'], self.pasted_components['connections'] = \
+                self.flow.load_components(
+                    nodes_data=self.data['nodes'],
+                    conns_data=self.data['connections'],
+                    output_data=self.data['output data'],
+                )
 
             self.select_new_components_in_view()
         else:

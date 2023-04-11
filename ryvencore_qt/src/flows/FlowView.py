@@ -1120,6 +1120,7 @@ class FlowView(GUIBase, QGraphicsView):
         data = {
             'nodes': self._get_nodes_data(self.selected_nodes()),
             'connections': self._get_connections_data(self.selected_nodes()),
+            'output data': self._get_output_data(self.selected_nodes()),
             'drawings': self._get_drawings_data(self.selected_drawings())
         }
         QGuiApplication.clipboard().setText(json.dumps(data))
@@ -1189,9 +1190,13 @@ class FlowView(GUIBase, QGraphicsView):
 
     def _get_connections_data(self, nodes):
         """generates the connections data for connections between a specified list of nodes"""
-
         f_complete_data = self.session_gui.core_session.complete_data
         return f_complete_data(self.flow._gen_conns_data(nodes))
+
+    def _get_output_data(self, nodes):
+        """generates the serialized data of output ports of the specified nodes"""
+        f_complete_data = self.session_gui.core_session.complete_data
+        return f_complete_data(self.flow._gen_output_data(nodes))
 
     def _get_drawings_data(self, drawings):
         """generates the data for a list of drawings"""
