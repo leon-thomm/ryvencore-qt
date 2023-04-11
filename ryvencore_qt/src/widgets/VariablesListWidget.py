@@ -67,8 +67,8 @@ class VariablesListWidget(QWidget):
         self.widgets.clear()
         # self.data_type_line_edits.clear()
 
-        for v in self.vars_addon.flow_variables[self.flow]:
-            new_widget = VarsList_VarWidget(self, self.vars_addon, self.flow, v)
+        for var_name, var_info in self.vars_addon.flow_variables[self.flow].items():
+            new_widget = VarsList_VarWidget(self, self.vars_addon, self.flow, var_info['var'])
             # new_widget.name_LE_editing_finished.connect(self.name_line_edit_editing_finished)
             self.widgets.append(new_widget)
 
@@ -85,11 +85,12 @@ class VariablesListWidget(QWidget):
 
     def new_var_LE_return_pressed(self):
         name = self.new_var_name_lineedit.text()
-
         if not self.vars_addon.var_name_valid(self.flow, name=name):
             return
-
-        self.vars_addon.create_var(self.flow, name=name)
+        v = self.vars_addon.create_var(self.flow, name=name)
+        if v is None:
+            return
+        self.add_new_var(v)
 
 
     def add_new_var(self, var):
