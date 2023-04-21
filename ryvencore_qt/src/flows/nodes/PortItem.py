@@ -153,7 +153,7 @@ class InputPortItem(PortItem):
             # TODO: input widgets from exec inputs?
             return
 
-        params = (self.port, self, self.node_gui, self.node_item, widget_pos)
+        params = (self.port, self, self.node_gui.node, self.node_gui, widget_pos)
 
         # TODO: add DType support when Addon will be enabled
         # self.port.dtype = DTypes.Data()
