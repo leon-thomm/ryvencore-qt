@@ -57,10 +57,10 @@ class NodeItem(GUIBase, QGraphicsObject):  # QGraphicsItem, QObject):
         self.node_gui.update_shape_triggered.connect(self.update_shape)
         self.node_gui.hide_unconnected_ports_triggered.connect(self.hide_unconnected_ports_triggered)
         self.node_gui.show_unconnected_ports_triggered.connect(self.show_unconnected_ports_triggered)
-        self.node_gui.input_added.connect(self.add_new_input)
-        self.node_gui.output_added.connect(self.add_new_output)
-        self.node_gui.input_removed.connect(self.remove_input)
-        self.node_gui.output_removed.connect(self.remove_output)
+        self.node_gui.input_added.connect(self.on_node_input_added)
+        self.node_gui.output_added.connect(self.on_node_output_added)
+        self.node_gui.input_removed.connect(self.on_node_input_removed)
+        self.node_gui.output_removed.connect(self.on_node_output_removed)
 
         # FLAGS
         self.setFlags(
@@ -171,6 +171,10 @@ class NodeItem(GUIBase, QGraphicsObject):  # QGraphicsItem, QObject):
         self.setToolTip(html)
         self.setCursor(Qt.SizeAllCursor)
 
+    def on_node_input_added(self, node, index, inp: NodeInput):
+        insert = index if index == len(node.inputs) - 1 else None
+        self.add_new_input(inp, insert)
+
     def add_new_input(self, inp: NodeInput, insert: int = None):
 
         if inp in self.node_gui.input_widgets:
@@ -194,6 +198,9 @@ class NodeItem(GUIBase, QGraphicsObject):  # QGraphicsItem, QObject):
         if not self.initializing:
             self.update_shape()
             self.update()
+
+    def on_node_input_removed(self, node, index, inp: NodeInput):
+        self.remove_input(inp)
 
     def remove_input(self, inp: NodeInput):
         item = None
@@ -219,6 +226,10 @@ class NodeItem(GUIBase, QGraphicsObject):  # QGraphicsItem, QObject):
             self.update_shape()
             self.update()
 
+    def on_node_output_added(self, node, index, out: NodeOutput):
+        insert = index if index == len(node.outputs) - 1 else None
+        self.add_new_output(out, insert)
+
     def add_new_output(self, out: NodeOutput, insert: int = None):
 
         # create item
@@ -235,6 +246,9 @@ class NodeItem(GUIBase, QGraphicsObject):  # QGraphicsItem, QObject):
         if not self.initializing:
             self.update_shape()
             self.update()
+
+    def on_node_output_removed(self, node, index, out: NodeOutput):
+        self.remove_output(out)
 
     def remove_output(self, out: NodeOutput):
         item = None
