@@ -14,7 +14,7 @@ class FlowsList_FlowWidget(QWidget):
 
         self.session_gui = session_gui
         self.flow = flow
-        self.flow_view = self.session_gui.core_session.flow_views[flow]
+        self.flow_view = self.session_gui.flow_views[flow]
         self.flows_list_widget = flows_list_widget
         self.previous_flow_title = ''
         self._thumbnail_source = ''
