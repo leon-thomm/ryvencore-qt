@@ -72,7 +72,7 @@ class NodeInputWidget:
     # def remove_event(self):
     #     pass
 
-    def val_update_event(self, val):
+    def val_update_event(self, val: Data):
         """
         *VIRTUAL*
 

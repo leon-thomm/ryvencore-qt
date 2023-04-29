@@ -8,14 +8,15 @@ from ...GUIBase import GUIBase
 from .PortItemInputWidgets import Data_IW_S, Data_IW_M, Data_IW_L, Float_IW, Integer_IW, \
     Choice_IW, Boolean_IW, String_IW_S, String_IW_M, String_IW_L
 from ryvencore import serialize, Data
-from ryvencore.NodePort import NodeOutput, NodeInput
+from ryvencore.NodePort import NodeOutput, NodeInput, NodePort
 from ryvencore.utils import deserialize
 from ...utils import get_longest_line, shorten
 
 from ..FlowViewProxyWidget import FlowViewProxyWidget
 
-# Utility methods ------------------------------------------------------------------------------------------------------
-# These could be moved to another module for clarity
+#
+# Utils
+#
 
 def is_connected(port):
     if isinstance(port, NodeOutput):
@@ -43,7 +44,10 @@ def connections(port):
             return [(port.node.flow.connected_output(port), port)]
         else:
             return []
-# ==========
+
+#
+# Classes
+#
 
 class PortItem(GUIBase, QGraphicsWidget):
     """The GUI representative for ports of nodes, also handling mouse events for connections."""
@@ -56,7 +60,7 @@ class PortItem(GUIBase, QGraphicsWidget):
 
         self.node_gui = node_gui
         self.node_item = node_item
-        self.port = port
+        self.port: NodePort = port
         self.flow_view = flow_view
 
         # self.port.has_been_connected.connect(self.port_connected)
@@ -106,23 +110,9 @@ class InputPortItem(PortItem):
         if self.port.node.flow.connected_output(self.port) is not None:
             self.port_connected()
 
-        # TODO: add DType support when Addon will be enabled
-        # if self.port.add_data:
-        #
-        #     if self.port.dtype:
-        #         c_d = self.port.add_data['widget data']
-        #         self.widget.set_state(deserialize(c_d))
-        #
-        #     elif 'widget data' in self.port.add_data:
-        #         try:
-        #             c_d = self.port.add_data['widget data']
-        #             if type(c_d) == dict:  # backwards compatibility
-        #                 self.widget.set_state(c_d)
-        #             else:
-        #                 self.widget.set_state(deserialize(c_d))
-        #         except Exception as e:
-        #             print('Exception while setting data in', self.node.title,
-        #                   '\'s input widget:', e, ' (was this intended?)')
+        if self.port.load_data is not None and self.port.load_data['has widget']:
+            c_d = self.port.load_data['widget data']
+            self.widget.set_state(deserialize(c_d))
 
         self.setup_ui()
 
@@ -150,46 +140,10 @@ class InputPortItem(PortItem):
             return
 
         if self.port.type_ != 'data':
-            # TODO: input widgets from exec inputs?
+            # TODO: how about input widgets for exec inputs?
             return
 
         params = (self.port, self, self.node_gui.node, self.node_gui, widget_pos)
-
-        # TODO: add DType support when Addon will be enabled
-        # self.port.dtype = DTypes.Data()
-        #
-        # if self.port.dtype:
-        #
-        #     dtype = self.port.dtype
-        #
-        #     if isinstance(dtype, DTypes.Data):
-        #         if dtype.size == 's':
-        #             return Data_IW_S(params)
-        #         elif dtype.size == 'm':
-        #             return Data_IW_M(params)
-        #         elif dtype.size == 'l':
-        #             return Data_IW_L(params)
-        #
-        #     elif isinstance(dtype, DTypes.String):
-        #         if dtype.size == 's':
-        #             return String_IW_S(params)
-        #         elif dtype.size == 'm':
-        #             return String_IW_M(params)
-        #         elif dtype.size == 'l':
-        #             return String_IW_L(params)
-        #
-        #     elif isinstance(dtype, DTypes.Integer):
-        #         return Integer_IW(params)
-        #
-        #     elif isinstance(dtype, DTypes.Float):
-        #         return Float_IW(params)
-        #
-        #     elif isinstance(dtype, DTypes.Boolean):
-        #         return Boolean_IW(params)
-        #
-        #     elif isinstance(dtype, DTypes.Choice):
-        #         return Choice_IW(params)
-        #
 
         # custom input widget
         self.widget = widget_class(params)
