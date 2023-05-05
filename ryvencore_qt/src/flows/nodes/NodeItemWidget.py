@@ -18,6 +18,7 @@ class NodeItemWidget(QGraphicsWidget):
         self.node_gui = node_gui
         self.node_item = node_item
         self.flow_view = self.node_item.flow_view
+        self.flow = self.flow_view.flow
 
         self.body_padding = 6
         self.header_padding = (0, 0, 0, 0)  # theme dependent and hence updated in setup_layout()!
@@ -247,11 +248,11 @@ class NodeItemWidget(QGraphicsWidget):
             self.main_widget_proxy.show()
 
     def hide_unconnected_ports(self):
-        for inp in self.node_item.inputs:
-            if len(inp.port.connections) == 0:
+        for inp in self.node_item.node.inputs:
+            if self.flow.connected_output(inp) is None:
                 inp.hide()
-        for out in self.node_item.outputs:
-            if len(out.port.connections) == 0:
+        for out in self.node_item.node.outputs:
+            if len(self.flow.connected_inputs(out)):
                 out.hide()
 
     def show_unconnected_ports(self):
