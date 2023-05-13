@@ -6,7 +6,7 @@ class NodeMainWidget:
     """Base class for the main widget of a node."""
 
     def __init__(self, params):
-        self.node, self.node_item = params
+        self.node, self.node_item, self.node_gui = params
 
     # OVERRIDE
     def get_state(self) -> dict:
