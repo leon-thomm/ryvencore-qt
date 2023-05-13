@@ -884,17 +884,15 @@ class FlowView(GUIBase, QGraphicsView):
             if out.io_pos == PortObjPos.INPUT:
                 out, inp = inp, out
 
-            # remove forbidden connections
-            if inp.type_ == 'data':
-                if self.flow.connected_output(inp) == out:
-                    # if the exact connection exists, we want to remove it by command
-                    self._push_undo(
-                        ConnectPorts_Command(self, out=self.flow.connected_output(inp), inp=inp)
-                    )
-
-            self._push_undo(
-                ConnectPorts_Command(self, out=out, inp=inp)
-            )
+            if self.flow.connected_output(inp) == out:
+                # if the exact connection exists, we want to remove it by command
+                self._push_undo(
+                    ConnectPorts_Command(self, out=self.flow.connected_output(inp), inp=inp)
+                )
+            else:
+                self._push_undo(
+                    ConnectPorts_Command(self, out=out, inp=inp)
+                )
 
     def add_connection(self, c: Tuple[NodeOutput, NodeInput]):
         out, inp = c
