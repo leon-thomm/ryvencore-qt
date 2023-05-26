@@ -1,3 +1,6 @@
+from queue import Queue
+from typing import List, Dict, Tuple, Optional, Union
+
 from qtpy.QtCore import QObject, Signal
 
 
@@ -20,10 +23,10 @@ class NodeGUI(QObject):
     # qt signals
     updating = Signal()
     update_error = Signal(object)
-    input_added = Signal(object, int, object)
-    output_added = Signal(object, int, object)
-    input_removed = Signal(object, int, object)
-    output_removed = Signal(object, int, object)
+    input_added = Signal(int, object)
+    output_added = Signal(int, object)
+    input_removed = Signal(int, object)
+    output_removed = Signal(int, object)
     update_shape_triggered = Signal()
     hide_unconnected_ports_triggered = Signal()
     show_unconnected_ports_triggered = Signal()
@@ -46,22 +49,27 @@ class NodeGUI(QObject):
         self.input_widgets = {}     # {input: widget name}
         for i, name in self.init_input_widgets.items():
             self.input_widgets[self.node.inputs[i]] = name
+        # using attach_input_widgets() one can buffer input widget
+        # names for inputs that are about to get created
+        self._next_input_widgets = Queue()
 
         self.error_during_update = False
 
         # turn ryvencore signals into Qt signals
         self.node.updating.sub(self._on_updating)
         self.node.update_error.sub(self._on_update_error)
-        self.node.input_added.sub(self.input_added.emit)
-        self.node.output_added.sub(self.output_added.emit)
-        self.node.input_removed.sub(self.input_removed.emit)
-        self.node.output_removed.sub(self.output_removed.emit)
+        self.node.input_added.sub(self._on_new_input_added)
+        self.node.output_added.sub(self._on_new_output_added)
+        self.node.input_removed.sub(self._on_input_removed)
+        self.node.output_removed.sub(self._on_output_removed)
 
     def initialized(self):
         """
         *VIRTUAL*
 
         Called after the node GUI has been fully initialized.
+        The Node has been created already (including all ports) and loaded.
+        No connections have been made to ports of the node yet.
         """
         pass
 
@@ -94,6 +102,20 @@ class NodeGUI(QObject):
                 self.item.inputs[inp].widget.val_update_event(o.val)
 
         self.updating.emit()
+
+    def _on_new_input_added(self, _, index, inp):
+        if not self._next_input_widgets.empty():
+            self.input_widgets[inp] = self._next_input_widgets.get()
+        self.input_added.emit(self, index, inp)
+
+    def _on_new_output_added(self, _, index, out):
+        self.output_added.emit(self, index, out)
+
+    def _on_input_removed(self, _, index, inp):
+        self.input_removed.emit(self, index, inp)
+
+    def _on_output_removed(self, _, index, out):
+        self.output_removed.emit(self, index, out)
 
     """
     actions
@@ -183,6 +205,12 @@ class NodeGUI(QObject):
         """Returns the main_widget object, or None if the item doesn't exist (yet)"""
 
         return self.item.main_widget
+
+    def attach_input_widgets(self, widget_names: List[str]):
+        """Attaches the input widget to the next created input."""
+
+        for w in widget_names:
+            self._next_input_widgets.queue(w)
 
     def input_widget(self, index: int):
         """Returns a reference to the widget of the corresponding input"""

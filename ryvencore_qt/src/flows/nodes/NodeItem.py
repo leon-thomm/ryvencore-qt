@@ -171,8 +171,8 @@ class NodeItem(GUIBase, QGraphicsObject):  # QGraphicsItem, QObject):
         self.setToolTip(html)
         self.setCursor(Qt.SizeAllCursor)
 
-    def on_node_input_added(self, node, index, inp: NodeInput):
-        insert = index if index == len(node.inputs) - 1 else None
+    def on_node_input_added(self, index, inp: NodeInput):
+        insert = index if index == len(self.node.inputs) - 1 else None
         self.add_new_input(inp, insert)
 
     def add_new_input(self, inp: NodeInput, insert: int = None):
@@ -199,7 +199,7 @@ class NodeItem(GUIBase, QGraphicsObject):  # QGraphicsItem, QObject):
             self.update_shape()
             self.update()
 
-    def on_node_input_removed(self, node, index, inp: NodeInput):
+    def on_node_input_removed(self, index, inp: NodeInput):
         self.remove_input(inp)
 
     def remove_input(self, inp: NodeInput):
@@ -226,8 +226,8 @@ class NodeItem(GUIBase, QGraphicsObject):  # QGraphicsItem, QObject):
             self.update_shape()
             self.update()
 
-    def on_node_output_added(self, node, index, out: NodeOutput):
-        insert = index if index == len(node.outputs) - 1 else None
+    def on_node_output_added(self, index, out: NodeOutput):
+        insert = index if index == len(self.node.outputs) - 1 else None
         self.add_new_output(out, insert)
 
     def add_new_output(self, out: NodeOutput, insert: int = None):
@@ -247,7 +247,7 @@ class NodeItem(GUIBase, QGraphicsObject):  # QGraphicsItem, QObject):
             self.update_shape()
             self.update()
 
-    def on_node_output_removed(self, node, index, out: NodeOutput):
+    def on_node_output_removed(self, index, out: NodeOutput):
         self.remove_output(out)
 
     def remove_output(self, out: NodeOutput):
