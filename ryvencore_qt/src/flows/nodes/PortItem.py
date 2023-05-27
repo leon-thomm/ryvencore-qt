@@ -110,7 +110,7 @@ class InputPortItem(PortItem):
         if self.port.node.flow.connected_output(self.port) is not None:
             self.port_connected()
 
-        if self.port.load_data is not None and self.port.load_data['has widget']:
+        if self.port.type_ == 'data' and self.port.load_data is not None and self.port.load_data['has widget']:
             c_d = self.port.load_data['widget data']
             self.widget.set_state(deserialize(c_d))
 
