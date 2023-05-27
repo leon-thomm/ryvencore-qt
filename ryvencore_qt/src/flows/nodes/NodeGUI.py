@@ -106,16 +106,16 @@ class NodeGUI(QObject):
     def _on_new_input_added(self, _, index, inp):
         if not self._next_input_widgets.empty():
             self.input_widgets[inp] = self._next_input_widgets.get()
-        self.input_added.emit(self, index, inp)
+        self.input_added.emit(index, inp)
 
     def _on_new_output_added(self, _, index, out):
-        self.output_added.emit(self, index, out)
+        self.output_added.emit(index, out)
 
     def _on_input_removed(self, _, index, inp):
-        self.input_removed.emit(self, index, inp)
+        self.input_removed.emit(index, inp)
 
     def _on_output_removed(self, _, index, out):
-        self.output_removed.emit(self, index, out)
+        self.output_removed.emit(index, out)
 
     """
     actions
