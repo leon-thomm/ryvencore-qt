@@ -102,7 +102,7 @@ class VarsList_VarWidget(QWidget):
 
 
     def action_delete_triggered(self):
-        self.vars_list_widget.del_variable(self.var.name, self)
+        self.vars_list_widget.del_var(self.var)
 
 
     def action_edit_val_triggered(self):
