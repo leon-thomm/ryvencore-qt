@@ -14,8 +14,8 @@ class LogWidget(QWidget):
 
         self.logger = logger
         self.logger.addHandler(logging.StreamHandler(self))
-        self.logger.sig_disabled.connect(self.disable)
-        self.logger.sig_enabled.connect(self.enable)
+        self.logger.sig_disabled.sub(self.disable)
+        self.logger.sig_enabled.sub(self.enable)
 
         self.main_layout = QVBoxLayout()
         self.header_layout = QHBoxLayout()
