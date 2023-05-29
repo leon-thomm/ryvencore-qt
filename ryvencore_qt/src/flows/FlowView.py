@@ -1,13 +1,15 @@
 import json
 
+from typing import Tuple
+
 from qtpy.QtCore import Qt, QPointF, QPoint, QRectF, QSizeF, Signal, QTimer, QTimeLine, QEvent
 from qtpy.QtGui import QPainter, QPen, QColor, QKeySequence, QTabletEvent, QImage, QGuiApplication, QFont, QTouchEvent
 from qtpy.QtWidgets import QGraphicsView, QGraphicsScene, QShortcut, QMenu, QGraphicsItem, QUndoStack
 
 from ryvencore.Flow import Flow
 from ryvencore.Node import Node
-from ryvencore.NodePort import NodePort
-from ryvencore.Connection import Connection, DataConnection
+from ryvencore.NodePort import NodePort, NodeInput, NodeOutput
+#from ryvencore.Connection import Connection, DataConnection
 from ryvencore.InfoMsgs import InfoMsgs
 from ryvencore.RC import PortObjPos
 from ryvencore.utils import node_from_identifier
@@ -19,6 +21,7 @@ from .FlowCommands import MoveComponents_Command, PlaceNode_Command, \
 from .FlowViewProxyWidget import FlowViewProxyWidget
 from .FlowViewStylusModesWidget import FlowViewStylusModesWidget
 from .node_list_widget.NodeListWidget import NodeListWidget
+from .nodes.NodeGUI import NodeGUI
 from .nodes.NodeItem import NodeItem
 from .nodes.PortItem import PortItemPin, PortItem
 from .connections.ConnectionItem import default_cubic_connection_path, ConnectionItem, DataConnectionItem, \
@@ -35,20 +38,20 @@ class FlowView(GUIBase, QGraphicsView):
     create_node_request = Signal(object, dict)
     remove_node_request = Signal(Node)
 
-    check_connection_validity_request = Signal(NodePort, NodePort, bool)
+    check_connection_validity_request = Signal((NodeOutput, NodeInput), bool)
     connect_request = Signal(NodePort, NodePort)
 
-    get_nodes_data_request = Signal(list)
-    get_connections_data_request = Signal(list)
+    #get_nodes_data_request = Signal(list)
+    #get_connections_data_request = Signal(list)
     get_flow_data_request = Signal()
 
     viewport_update_mode_changed = Signal(str)
 
-    def __init__(self, session, script, flow, load_data=None, flow_size: list = None, parent=None):
+    def __init__(self, session_gui, flow, parent=None):
         GUIBase.__init__(self, representing_component=flow)
         QGraphicsView.__init__(self, parent=parent)
 
-        # UNDO/REDO
+        # UNDO STACK
         self._undo_stack = QUndoStack(self)
         self._undo_action = self._undo_stack.createUndoAction(self, 'undo')
         self._undo_action.setShortcuts(QKeySequence.Undo)
@@ -59,9 +62,8 @@ class FlowView(GUIBase, QGraphicsView):
         self._init_shortcuts()
 
         # GENERAL ATTRIBUTES
-        self.session = session
-        # self.CLASSES = self.session.CLASSES
-        self.script = script
+        self.session_gui = session_gui
+
         self.flow: Flow = flow
         self.node_items: dict = {}  # {Node: NodeItem}
         self.node_items__cache: dict = {}
@@ -75,7 +77,6 @@ class FlowView(GUIBase, QGraphicsView):
         self._temp_connection_ports = None
         self._waiting_for_connection_request: bool = False
         self.mouse_event_taken = False  # for stylus - see tablet event
-        self._showing_framerate = False
         self._last_mouse_move_pos: QPointF = None
         self._node_place_pos = QPointF()
         self._left_mouse_pressed_in_flow = False
@@ -96,29 +97,23 @@ class FlowView(GUIBase, QGraphicsView):
         # CONNECTIONS TO FLOW
         self.create_node_request.connect(self.flow.create_node)
         self.remove_node_request.connect(self.flow.remove_node)
-        self.node_placed.connect(self.flow.node_view_placed)
         self.check_connection_validity_request.connect(self.flow.check_connection_validity)
-        self.get_nodes_data_request.connect(self.flow.gen_nodes_data)
-        self.get_connections_data_request.connect(self.flow.gen_conns_data)
+        # TODO: need to check if the 2 lines below are used
+        #self.get_nodes_data_request.connect(self.flow.gen_nodes_data)
+        #self.get_connections_data_request.connect(self.flow.gen_conns_data)
         self.get_flow_data_request.connect(self.flow.data)
 
         # CONNECTIONS FROM FLOW
-        self.flow.node_added.connect(self.add_node)
-        self.flow.node_removed.connect(self.remove_node)
-        self.flow.connection_added.connect(self.add_connection)
-        self.flow.connection_removed.connect(self.remove_connection)
-        self.flow.connection_request_valid.connect(self.connection_request_valid)
-
-        # SESSION THREAD
-        self.thread_interface = self.session.threading_bridge__frontend
+        self.flow.node_added.sub(self.add_node)
+        self.flow.node_removed.sub(self.remove_node)
+        self.flow.connection_added.sub(self.add_connection)
+        self.flow.connection_removed.sub(self.remove_connection)
+        self.flow.connection_request_valid.sub(self.connection_request_valid)
 
         # CREATE UI
         scene = QGraphicsScene(self)
         scene.setItemIndexMethod(QGraphicsScene.NoIndex)
-        if flow_size is None:
-            scene.setSceneRect(0, 0, 10 * self.width(), 10 * self.height())
-        else:
-            scene.setSceneRect(0, 0, flow_size[0], flow_size[1])
+        scene.setSceneRect(0, 0, 10000, 7000)
 
         self.setScene(scene)
         self.setCacheMode(QGraphicsView.CacheBackground)
@@ -135,7 +130,7 @@ class FlowView(GUIBase, QGraphicsView):
         self.scene_rect_height = self.mapFromScene(self.sceneRect()).boundingRect().height()
 
         # NODE LIST WIDGET
-        self._node_list_widget = NodeListWidget(self.session)
+        self._node_list_widget = NodeListWidget(self.session_gui)
         self._node_list_widget.setMinimumWidth(260)
         self._node_list_widget.setFixedHeight(300)
         self._node_list_widget.escaped.connect(self.hide_node_list_widget)
@@ -179,27 +174,15 @@ class FlowView(GUIBase, QGraphicsView):
         self.last_pinch_points_dist = 0
 
         # DESIGN
-        self.session.design.flow_theme_changed.connect(self._theme_changed)
-        self.session.design.performance_mode_changed.connect(self._perf_mode_changed)
-
-        # FRAMERATE TRACKING
-        self.num_frames = 0
-        self.framerate = 0
-        self.framerate_timer = QTimer(self)
-        self.framerate_timer.timeout.connect(self._on_framerate_timer_timeout)
-
-        # self.show_framerate(m_sec_interval=100)  # for testing
+        self.session_gui.design.flow_theme_changed.connect(self._theme_changed)
+        self.session_gui.design.performance_mode_changed.connect(self._perf_mode_changed)
 
         # DATA
-        if load_data is not None:
-            if 'flow view' in load_data:
-                view_data = load_data['flow view']
-            else:
-                view_data = load_data  # backwards compatibility
-
+        data = self.flow.load_data
+        if data is not None:
+            view_data = data['flow view']
             if 'drawings' in view_data:  # not all (old) project files have drawings arr
                 self.place_drawings_from_data(view_data['drawings'])
-
             if 'view size' in view_data:
                 self.setSceneRect(0, 0, view_data['view size'][0], view_data['view size'][1])
 
@@ -208,17 +191,8 @@ class FlowView(GUIBase, QGraphicsView):
         # CATCH UP ON FLOW
         for node in self.flow.nodes:
             self.add_node(node)
-        for c in self.flow.connections:
+        for c in [(o, i) for o, conns in self.flow.graph_adj.items() for i in conns]:
             self.add_connection(c)
-
-    def show_framerate(self, show: bool = True, m_sec_interval: int = 1000):
-        self._showing_framerate = show
-        self.framerate_timer.setInterval(m_sec_interval)
-        self.framerate_timer.start()
-
-    def _on_framerate_timer_timeout(self):
-        self.framerate = self.num_frames
-        self.num_frames = 0
 
     def _init_shortcuts(self):
         place_new_node_shortcut = QShortcut(QKeySequence('Shift+P'), self)
@@ -246,7 +220,7 @@ class FlowView(GUIBase, QGraphicsView):
         redo_shortcut.activated.connect(self._redo_activated)
 
     def _theme_changed(self, t):
-        self._node_list_widget.setStyleSheet(self.session.design.node_selection_stylesheet)
+        self._node_list_widget.setStyleSheet(self.session_gui.design.node_selection_stylesheet)
         for n, ni in self.node_items.items():
             ni.widget.rebuild_ui()
 
@@ -572,7 +546,7 @@ class FlowView(GUIBase, QGraphicsView):
             if data['type'] == 'node':
                 self._node_place_pos = self.mapToScene(event.pos())
                 self.create_node__cmd(
-                    node_from_identifier(data['node identifier'], self.session.nodes)
+                    node_from_identifier(data['node identifier'], self.session_gui.core_session.nodes)
                 )
         except Exception:
             pass
@@ -580,13 +554,13 @@ class FlowView(GUIBase, QGraphicsView):
     # PAINTING
     def drawBackground(self, painter, rect):
 
-        painter.setBrush(self.session.design.flow_theme.flow_background_brush)
+        painter.setBrush(self.session_gui.design.flow_theme.flow_background_brush)
         painter.drawRect(rect.intersected(self.sceneRect()))
         painter.setPen(Qt.NoPen)
         painter.drawRect(self.sceneRect())
 
-        if self.session.design.performance_mode == 'pretty':
-            theme = self.session.design.flow_theme
+        if self.session_gui.design.performance_mode == 'pretty':
+            theme = self.session_gui.design.flow_theme
             if theme.flow_background_grid and self._current_scale >= 0.7:
                 if theme.flow_background_grid[0] == 'points':
                     color = theme.flow_background_grid[1]
@@ -606,16 +580,6 @@ class FlowView(GUIBase, QGraphicsView):
         # self.set_zoom_proxy_pos()
 
     def drawForeground(self, painter, rect):
-
-        if self._showing_framerate:
-            self.num_frames += 1
-            pen = QPen(QColor('#A9D5EF'))
-            pen.setWidthF(2)
-            painter.setPen(pen)
-
-            pos = self.mapToScene(10, 23)
-            painter.setFont(QFont('Poppins', round(11 * self._total_scale_div)))
-            painter.drawText(pos, "{:.2f}".format(self.framerate))
 
         # DRAW CURRENTLY DRAGGED CONNECTION
         if self._dragging_connection:
@@ -742,7 +706,7 @@ class FlowView(GUIBase, QGraphicsView):
         # open nodes dialog
         # the dialog emits 'node_chosen' which is connected to self.place_node__cmd
         self._node_list_widget.update_list(
-            nodes if nodes is not None else self.session.nodes
+            nodes if nodes is not None else self.session_gui.core_session.nodes
         )
         self._node_list_widget_proxy.setPos(dialog_pos)
         self._node_list_widget_proxy.show()
@@ -842,18 +806,21 @@ class FlowView(GUIBase, QGraphicsView):
             self._add_node_item(item)
 
         else:  # create new item
-            item_data = node.init_data
-            item = NodeItem(node, params=(self, self.session.design, item_data))
-            node.item = item
+            item = NodeItem(
+                node=node,
+                node_gui=
+                    (node.GUI if hasattr(node, 'GUI') else NodeGUI)     # use custom GUI class if available
+                    ((node, self.session_gui)),                         # calls __init__ of NodeGUI class with tuple arg
+                flow_view=self,
+                design=self.session_gui.design,
+            )
             item.initialize()
+
             self.node_placed.emit(node)
 
-            pos = None
-            if item_data is not None:
-                if 'pos x' in item_data:
-                    pos = QPointF(item_data['pos x'], item_data['pos y'])
-                elif 'position x' in item_data:  # backwards compatibility
-                    pos = QPointF(item_data['position x'], item_data['position y'])
+            item_data = node.load_data
+            if item_data is not None and 'pos x' in item_data:
+                pos = QPointF(item_data['pos x'], item_data['pos y'])
             else:
                 pos = self._node_place_pos
 
@@ -887,9 +854,19 @@ class FlowView(GUIBase, QGraphicsView):
 
     # CONNECTIONS
     def connect_node_ports__cmd(self, p1: NodePort, p2: NodePort):
-        self._temp_connection_ports = (p1, p2)
-        self._waiting_for_connection_request = True
-        self.check_connection_validity_request.emit(p1, p2, True)
+        # Need to check order of ports since Flow.check_connection_validity needs (NodeOutput, NodeInput)
+        if isinstance(p1, NodeOutput) and isinstance(p2, NodeInput):
+            self._temp_connection_ports = (p1, p2)
+            self._waiting_for_connection_request = True
+            self.check_connection_validity_request.emit((p1, p2), True)
+
+        elif isinstance(p1, NodeInput) and isinstance(p2, NodeOutput):
+            self._temp_connection_ports = (p2, p1)
+            self._waiting_for_connection_request = True
+            self.check_connection_validity_request.emit((p2, p1), True)
+
+        else:
+            self.connection_request_valid(False)
 
     def connection_request_valid(self, valid: bool):
         """
@@ -907,35 +884,31 @@ class FlowView(GUIBase, QGraphicsView):
             if out.io_pos == PortObjPos.INPUT:
                 out, inp = inp, out
 
-            # remove forbidden connections
-            if inp.type_ == 'data':
-                for c in inp.connections:
+            if self.flow.connected_output(inp) == out:
+                # if the exact connection exists, we want to remove it by command
+                self._push_undo(
+                    ConnectPorts_Command(self, out=self.flow.connected_output(inp), inp=inp)
+                )
+            else:
+                self._push_undo(
+                    ConnectPorts_Command(self, out=out, inp=inp)
+                )
 
-                    if c.out == out:
-                        # if the exact connection exists, we want to remove it by command
-                        continue
+    def add_connection(self, c: Tuple[NodeOutput, NodeInput]):
+        out, inp = c
 
-                    self._push_undo(
-                        ConnectPorts_Command(self, out=c.out, inp=inp)
-                    )
-
-            self._push_undo(
-                ConnectPorts_Command(self, out=out, inp=inp)
-            )
-
-    def add_connection(self, c: Connection):
-
+        #TODO: need to verify that connection_items_cache still works fine with new connection object
         item: ConnectionItem = None
         if c in self.connection_items__cache.keys():
             item = self.connection_items__cache[c]
 
         else:
-            if isinstance(c, DataConnection):
+            if inp.type_ == 'data':
                 # item = self.CLASSES['data conn item'](c, self.session.design)
-                item = DataConnectionItem(c, self.session.design)
+                item = DataConnectionItem(c, self.session_gui.design)
             else:
                 # item = self.CLASSES['exec conn item'](c, self.session.design)
-                item = ExecConnectionItem(c, self.session.design)
+                item = ExecConnectionItem(c, self.session_gui.design)
 
         self._add_connection_item(item)
 
@@ -948,7 +921,7 @@ class FlowView(GUIBase, QGraphicsView):
         item.setZValue(10)
         # self.viewport().repaint()
 
-    def remove_connection(self, c: Connection):
+    def remove_connection(self, c: Tuple[NodeOutput, NodeInput]):
         item = self.connection_items[c]
         self._remove_connection_item(item)
 
@@ -975,7 +948,7 @@ class FlowView(GUIBase, QGraphicsView):
                     self.connect_node_ports__cmd(p, out)
                     return
 
-    def update_conn_item(self, c: Connection):
+    def update_conn_item(self, c: Tuple[NodeOutput, NodeInput]):
         if c in self.connection_items:
             self.connection_items[c].changed = True
             self.connection_items[c].update()
@@ -1145,6 +1118,7 @@ class FlowView(GUIBase, QGraphicsView):
         data = {
             'nodes': self._get_nodes_data(self.selected_nodes()),
             'connections': self._get_connections_data(self.selected_nodes()),
+            'output data': self._get_output_data(self.selected_nodes()),
             'drawings': self._get_drawings_data(self.selected_drawings())
         }
         QGuiApplication.clipboard().setText(json.dumps(data))
@@ -1209,28 +1183,18 @@ class FlowView(GUIBase, QGraphicsView):
 
     def _get_nodes_data(self, nodes):
         """generates the data for the specified list of nodes"""
-
-        data = self.thread_interface.run(
-            self.flow.gen_nodes_data, (nodes,)
-        )
-
-        complete_data = self.thread_interface.run(
-            self.flow.complete_data, (data,)
-        )
-
-        return complete_data
+        f_complete_data = self.session_gui.core_session.complete_data
+        return f_complete_data(self.flow._gen_nodes_data(nodes))
 
     def _get_connections_data(self, nodes):
         """generates the connections data for connections between a specified list of nodes"""
+        f_complete_data = self.session_gui.core_session.complete_data
+        return f_complete_data(self.flow._gen_conns_data(nodes))
 
-        data = self.thread_interface.run(
-            self.flow.gen_conns_data, (nodes,)
-        )
-        complete_data = self.thread_interface.run(
-            self.flow.complete_data, (data,)
-        )
-
-        return complete_data
+    def _get_output_data(self, nodes):
+        """generates the serialized data of output ports of the specified nodes"""
+        f_complete_data = self.session_gui.core_session.complete_data
+        return f_complete_data(self.flow._gen_output_data(nodes))
 
     def _get_drawings_data(self, drawings):
         """generates the data for a list of drawings"""

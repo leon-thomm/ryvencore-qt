@@ -1,23 +1,23 @@
 from qtpy.QtCore import Qt
 from qtpy.QtWidgets import QWidget, QMessageBox, QVBoxLayout, QLineEdit, QHBoxLayout, QPushButton, QScrollArea
 
-from .ScriptsList_ScriptWidget import ScriptsList_ScriptWidget
+from .FlowsList_FlowWidget import FlowsList_FlowWidget
 
 
-class ScriptsListWidget(QWidget):
-    """Convenience class for a QWidget to easily manage the scripts of a session."""
+class FlowsListWidget(QWidget):
+    """Convenience class for a QWidget to easily manage the flows of a session."""
 
-    def __init__(self, session):
+    def __init__(self, session_gui):
         super().__init__()
 
-        self.session = session
+        self.session_gui = session_gui
         self.list_widgets = []
         self.ignore_name_line_edit_signal = False  # because disabling causes firing twice otherwise
 
         self.setup_UI()
 
-        self.session.flow_view_created.connect(self.add_new_script)
-        self.session.script_deleted.connect(self.recreate_list)
+        self.session_gui.flow_view_created.connect(self.add_new_flow)
+        self.session_gui.flow_deleted.connect(self.recreate_list)
 
 
     def setup_UI(self):
@@ -46,49 +46,49 @@ class ScriptsListWidget(QWidget):
 
         # line edit
 
-        self.new_script_title_lineedit = QLineEdit()
-        self.new_script_title_lineedit.setPlaceholderText('new script\'s title')
-        self.new_script_title_lineedit.returnPressed.connect(self.create_script)
+        self.new_flow_title_lineedit = QLineEdit()
+        self.new_flow_title_lineedit.setPlaceholderText('new flow\'s title')
+        self.new_flow_title_lineedit.returnPressed.connect(self.create_flow)
 
-        main_layout.addWidget(self.new_script_title_lineedit)
+        main_layout.addWidget(self.new_flow_title_lineedit)
 
 
         self.recreate_list()
 
 
     def recreate_list(self):
-        # remove script widgets
+        # remove flow widgets
         for i in reversed(range(self.list_layout.count())):
             self.list_layout.itemAt(i).widget().setParent(None)
 
         self.list_widgets.clear()
 
-        for s in self.session.scripts:
-            new_widget = ScriptsList_ScriptWidget(self, self.session, s)
+        for s in self.session_gui.core_session.flows:
+            new_widget = FlowsList_FlowWidget(self, self.session_gui, s)
             self.list_widgets.append(new_widget)
 
         for w in self.list_widgets:
             self.list_layout.addWidget(w)
 
-    def create_script(self):
-        title = self.new_script_title_lineedit.text()
+    def create_flow(self):
+        title = self.new_flow_title_lineedit.text()
 
-        if self.session.script_title_valid(title):
-            self.session.create_script(title=title)
+        if self.session_gui.core_session.flow_title_valid(title):
+            self.session_gui.core_session.create_flow(title=title)
 
-    def add_new_script(self, script, flow_view):
+    def add_new_flow(self, flow, flow_view):
         self.recreate_list()
 
-    def del_script(self, script, script_widget):
-        msg_box = QMessageBox(QMessageBox.Warning, 'sure about deleting script?',
-                              'You are about to delete a script. This cannot be undone, all content will be lost. '
+    def del_flow(self, flow, flow_widget):
+        msg_box = QMessageBox(QMessageBox.Warning, 'sure about deleting flow?',
+                              'You are about to delete a flow. This cannot be undone, all content will be lost. '
                               'Do you want to continue?', QMessageBox.Cancel | QMessageBox.Yes, self)
         msg_box.setDefaultButton(QMessageBox.Cancel)
         ret = msg_box.exec_()
         if ret != QMessageBox.Yes:
             return
 
-        self.list_widgets.remove(script_widget)
-        script_widget.setParent(None)
-        self.session.delete_script(script)
+        self.list_widgets.remove(flow_widget)
+        flow_widget.setParent(None)
+        self.session_gui.core_session.delete_flow(flow)
         # self.recreate_list()

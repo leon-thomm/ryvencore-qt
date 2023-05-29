@@ -6,17 +6,17 @@ from ...utils import change_svg_color
 
 
 class NodeItem_Icon(QGraphicsWidget):
-    def __init__(self, node, node_item):
+    def __init__(self, node_gui, node_item):
         super().__init__(parent=node_item)
 
-        if node.style == 'normal':
+        if node_gui.style == 'normal':
             self.size = QSize(20, 20)
         else:
             self.size = QSize(50, 50)
 
         self.setGraphicsItem(self)
 
-        image = QImage(node.icon)
+        image = QImage(node_gui.icon)
         self.pixmap = QPixmap.fromImage(image)
         # self.pixmap = change_svg_color(node.icon, node.color)
 

@@ -3,15 +3,18 @@
   <img src="./ryvencore_qt/resources/pics/logo.png" alt="drawing" width="70%"/>
 </p>
 
-`rvencore-qt` is a wrapper around [ryvencore](https://github.com/leon-thomm/ryvencore) and provides a Qt frontend for it. It comes from the [Ryven](https://github.com/leon-thomm/Ryven) project and will be the foundation for future Ryven versions. So, ryvencore-qt can be used to build cross-platform standalone visual node editors based on Python. Projects made with ryvencore-qt can be natively deployed directly on the backend, ryvencore. The development of ryvencore-qt is currently closely tied to Ryven.
+`ryvencore-qt` provides Qt-based GUI classes for [ryvencore](https://github.com/leon-thomm/ryvencore), to provide a visual flow-based programming interface. The [Ryven](https://github.com/leon-thomm/Ryven) editor is built on top of `ryvencore-qt`, and their development is currently tightly coupled.
 
 ### Installation
+
+You need to have Python and pip installed. Then, either install from PyPI using pip:
 
 ```
 pip install ryvencore-qt
 ```
 
 or build from sources
+
 ```
 git clone https://github.com/leon-thomm/ryvencore-qt
 cd ryvencore-qt
@@ -20,7 +23,11 @@ pip install .
 
 ### Dependencies
 
-ryvencore-qt runs on PySide2 (Python bindings for Qt) using [QtPy](https://github.com/spyder-ide/qtpy) as a wrapper to (eventually, once supported) enable seamless switching between PySide2 and PySide6. Notice that `ryvencore-qt` does not work with PyQt, due to crucial inheritance restrictions in PyQt.
+ryvencore-qt uses Python bindings for Qt using [QtPy](https://github.com/spyder-ide/qtpy). I usually run it with PySide2, running on PySide6 should also work with minor changes. PyQt is not supported, due to crucial inheritance restrictions in PyQt.
+
+### Documentation
+
+An extensive documentation doesn't currently exist.
 
 ### quick start
 
@@ -119,29 +126,8 @@ export_nodes = [
 ]
 ```
 
-For a more detailed overview, including a precise definition of flows, see the [Features Page](https://leon-thomm.github.io/ryvencore-qt/features/) and [ryvencore](https://github.com/leon-thomm/ryvencore).
-
 ### Development
 
-The code is not 100% PEP 8 conform, and some parts which are under development might seem messy. I'm doing my best :) feel free to improve. The individual subpackages have their own READMEs giving a quick overview which should be quite helpful to gain understanding about implementations.
+The individual subpackages have their own READMEs giving a quick overview which should be quite helpful to gain understanding about implementations.
 
 Cheers.
-
-<!--
-### Contributions and Development
-
-This project will eventually need a community in order to survive. Particularly effective ways to contribute outside of direct development of the software are creating
-
-- tutorials
-- nodes
-- small editors
-- documentation
-- tests
-- etc
-
-If you have any questions, suggestions, or want to show something you've built with this project notice the *discussions* area which is the perfect place for that.
-
-To give a quick overview over the most important class relations, see the below class diagram. The DrawIO diagram file is in the repository.
-
-![](./docs/img/ryvencore-drawio_.png)
--->

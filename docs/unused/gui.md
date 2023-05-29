@@ -40,11 +40,11 @@ import ryvencore_qt as rc
 from PySide2.QtWidgets import QPushButton
 
 
-class MyMainWidget(rc.MWB, QPushButton):
+class MyMainWidget(rc.NodeMainWidget, QPushButton):
     def __init__(self, params):
-        rc.MWB.__init__(self, params)
+        rc.NodeMainWidget.__init__(self, params)
         QPushButton.__init__(self)
-        
+
         # then do your stuff like
         self.setEnabled(False)
         self.clicked.connect(self.node.update)

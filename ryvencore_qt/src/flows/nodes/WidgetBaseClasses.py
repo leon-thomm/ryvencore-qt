@@ -1,24 +1,39 @@
 """The base classes for node custom widgets for nodes."""
+from ryvencore import Data
 
 
-class MWB:
-    """MainWidgetBase"""
+class NodeMainWidget:
+    """Base class for the main widget of a node."""
 
     def __init__(self, params):
-        self.node, self.node_item = params
+        self.node, self.node_item, self.node_gui = params
 
     # OVERRIDE
     def get_state(self) -> dict:
+        """
+        *VIRTUAL*
+
+        Return the state of the widget, in a (pickle) serializable format.
+        """
         data = {}
         return data
 
-    # OVERRIDE
     def set_state(self, data: dict):
+        """
+        *VIRTUAL*
+
+        Set the state of the widget, where data corresponds to the dict
+        returned by get_state().
+        """
         pass
 
-    # OVERRIDE
-    def remove_event(self):
-        pass
+    # def remove_event(self):
+    #     """
+    #     *VIRTUAL*
+    #
+    #     Called when the input is removed.
+    #     """
+    #     pass
 
     def update_node(self):
         self.node.update()
@@ -27,43 +42,62 @@ class MWB:
         self.node_item.update_shape()
 
 
-class IWB:
-    """InputWidgetBase"""
+class NodeInputWidget:
+    """Base class for the input widget of a node."""
 
     def __init__(self, params):
-        self.input, self.input_item, self.node, self.node_item = params
+        self.input, self.input_item, self.node, self.node_gui, self.position = \
+            params
 
-    # OVERRIDE
-    def get_val(self):
-        """
-        Returns the value that the widget represents for the data input.
-        It has to be (pickle) serializable!
-        """
-
-        return None
-
-    # OVERRIDE
     def get_state(self) -> dict:
+        """
+        *VIRTUAL*
+
+        Return the state of the widget, in a (pickle) serializable format.
+        """
         data = {}
         return data
 
     # OVERRIDE
     def set_state(self, data: dict):
+        """
+        *VIRTUAL*
+
+        Set the state of the widget, where data corresponds to the dict
+        returned by get_state().
+        """
         pass
 
     # OVERRIDE
-    def remove_event(self):
+    # def remove_event(self):
+    #     pass
+
+    def val_update_event(self, val: Data):
+        """
+        *VIRTUAL*
+
+        Called when the input's value is updated through a connection.
+        This can be used to represent the value in the widget.
+        The widget is disabled when the port is connected.
+        """
         pass
 
-    # OVERRIDE
-    def val_update_event(self, val):
-        pass
+    """
+    
+    API methods
+    
+    """
 
-    def update_node_input(self, val):
-        self.input.update(val)
+    def update_node_input(self, val: Data, silent=False):
+        """
+        Update the input's value and update the node.
+        """
+        self.input.default = val
+        if not silent:
+            self.input.node.update(self.node.inputs.index(self.input))
 
     def update_node(self):
         self.node.update(self.node.inputs.index(self.input))
 
     def update_node_shape(self):
-        self.node_item.update_shape()
+        self.node_gui.update_shape()

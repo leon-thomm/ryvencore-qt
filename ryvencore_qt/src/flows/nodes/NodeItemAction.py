@@ -14,25 +14,20 @@ class NodeItemAction(QAction):
     triggered_with_data = Signal(object, object)
     triggered_without_data = Signal(object)
 
-    def __init__(self, node, text, method, menu, data=None):
+    def __init__(self, node_gui, text, method, menu, data=None):
         super(NodeItemAction, self).__init__(text=text, parent=menu)
 
-        self.node = node
+        self.node_gui = node_gui
         self.data = data
         self.method = method
-        self.triggered.connect(self.triggered_)  # yeah, I think that's ugly but I didn't find a nicer way; it works
+        self.triggered.connect(self.triggered_)
 
     def triggered_(self):
         if self.data is not None:
-            self.triggered_with_data.emit(self.grab_method(), self.data)
+            self.grab_method()(self.data)
         else:
-            self.triggered_without_data.emit(self.grab_method())
+            self.grab_method()()
 
     def grab_method(self):
-        """
-        Replacement for the retain mechanism. Because some editors (like Ryven) might add source code editing features,
-        before calling a method here
-        :return:
-        """
-        updated_method = getattr(self.node, self.method.__name__)
-        return updated_method
+        # the method object could have changed since the action was created
+        return getattr(self.node_gui, self.method.__name__)

@@ -1,13 +1,14 @@
 import bisect
 import enum
 import json
-import os
+import pathlib
 from math import sqrt
-from waiting import wait
 from typing import List, Dict
 
+from qtpy.QtCore import QPointF, QByteArray
+
 from ryvencore.utils import serialize, deserialize
-from qtpy.QtCore import QPointF
+from .GlobalAttributes import *
 
 
 class Container:
@@ -23,10 +24,6 @@ class Container:
 
     def is_set(self):
         return self.has_been_set
-
-
-def wait_until(func):
-    return wait(func, sleep_seconds=0.001)
 
 
 def pythagoras(a, b):
@@ -78,8 +75,14 @@ class MovementEnum(enum.Enum):
     mouse_released = 3
 
 
+def get_resource(filepath: str):
+    return pathlib.Path(Location.PACKAGE_PATH, 'resources', filepath)
+
+
 def change_svg_color(filepath: str, color_hex: str):
-    # doesnt seem to work properly yet :(
+    """Loads an SVG, changes all '#xxxxxx' occurrences to color_hex, renders it into and a pixmap and returns it"""
+
+    # https://stackoverflow.com/questions/15123544/change-the-color-of-an-svg-in-qt
 
     from qtpy.QtSvg import QSvgRenderer
     from qtpy.QtGui import QPixmap, QPainter
@@ -87,11 +90,10 @@ def change_svg_color(filepath: str, color_hex: str):
 
     with open(filepath) as f:
         data = f.read()
-    data = data.replace('fill:#000000', 'fill:'+color_hex)
-    with open(filepath, 'w') as f:
-        f.write(data)
+    data = data.replace('fill:#xxxxxx', 'fill:'+color_hex)
 
-    svg_renderer = QSvgRenderer(filepath)
+    svg_renderer = QSvgRenderer(QByteArray(bytes(data, 'ascii')))
+
     pix = QPixmap(svg_renderer.defaultSize())
     pix.fill(Qt.transparent)
     pix_painter = QPainter(pix)
@@ -101,60 +103,12 @@ def change_svg_color(filepath: str, color_hex: str):
 
 
 
-    # """
-    # Changes the color of an SVG image and returns a QPixmap
-    #
-    # https://stackoverflow.com/questions/15123544/change-the-color-of-an-svg-in-qt
-    # """
-    #
-    # from qtpy.QtGui import Qt, QPainter
-    # from qtpy.QtXml import QDomDocument, QDomElement
-    # from qtpy.QtSvg import QSvgRenderer
-    # from qtpy.QtGui import QPixmap
-    #
-    #
-    # def change_svg_color__set_attr_recur(elem: QDomElement, strtagname: str, strattr: str, strattrval: str):
-    #
-    #     # if it has the tag name then overwrite desired attribute
-    #     if elem.tagName() == strtagname:
-    #         elem.setAttribute(strattr, strattrval)
-    #
-    #     # loop all children
-    #     for i in range(elem.childNodes().count()):
-    #         if not elem.childNodes().at(i).isElement():
-    #             continue
-    #
-    #         change_svg_color__set_attr_recur(elem.childNodes().at(i).toElement(), strtagname, strattr, strattrval)
-    #
-    #
-    # # open svg resource load contents to qbytearray
-    # f = open(filepath)
-    # data = f.read()
-    # f.close()
-    # # load svg contents to xml document and edit contents
-    # doc = QDomDocument()
-    # doc.setContent(data)
-    # # recursively change color
-    # change_svg_color__set_attr_recur(doc.documentElement(), 'path', 'fill', color_hex)
-    # # create svg renderer with edited contents
-    # svg_renderer = QSvgRenderer(doc.toByteArray())
-    # # create pixmap target (could be a QImage)
-    # pix = QPixmap(svg_renderer.defaultSize())
-    # pix.fill(Qt.transparent)
-    # # create painter to act over pixmap
-    # pix_painter = QPainter(pix)
-    # # use renderer to render over painter which paints on pixmap
-    # svg_renderer.render(pix_painter)
-    #
-    # return pix
-
-
 def translate_project(project: Dict) -> Dict:
     """
     Transforms a v3.0 project file into something that can be loaded in v3.1,
     i.e. turns macros into scripts and removes macro nodes from the flows.
     """
-
+    # TODO: this needs to be changed to match ryvencore 0.4 structure
     new_project = project.copy()
 
     # turn macros into scripts

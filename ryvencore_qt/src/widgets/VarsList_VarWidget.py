@@ -8,15 +8,17 @@ from ..GlobalAttributes import Location
 from .ListWidget_NameLineEdit import ListWidget_NameLineEdit
 from ..utils import shorten
 from .EditVal_Dialog import EditVal_Dialog
+from ryvencore.addons.Variables import VarsAddon
 
 
 class VarsList_VarWidget(QWidget):
     """A QWidget representing a single script variable for the VariablesListWidget."""
 
-    def __init__(self, vars_list_widget, vars_manager, var):
+    def __init__(self, vars_list_widget, vars_addon: VarsAddon, flow, var):
         super().__init__()
 
-        self.vars_manager = vars_manager
+        self.vars_addon = vars_addon
+        self.flow = flow
         self.var = var
         self.vars_list_widget = vars_list_widget
         self.previous_var_name = ''  # for editing
@@ -41,7 +43,7 @@ class VarsList_VarWidget(QWidget):
 
         #   name line edit
 
-        self.name_line_edit = ListWidget_NameLineEdit(var.name, self)
+        self.name_line_edit = ListWidget_NameLineEdit(self.var.name, self)
         self.name_line_edit.setPlaceholderText('name')
         self.name_line_edit.setEnabled(False)
         self.name_line_edit.editingFinished.connect(self.name_line_edit_editing_finished)
@@ -75,10 +77,10 @@ class VarsList_VarWidget(QWidget):
         if event.type() == QEvent.ToolTip:
             val_str = ''
             try:
-                val_str = str(self.var.val)
+                val_str = str(self.var.get())
             except Exception as e:
                 val_str = "couldn't stringify value"
-            self.setToolTip('val type: '+str(type(self.var.val))+'\nval: '+shorten(val_str, 3000, line_break=True))
+            self.setToolTip('val type: '+str(type(self.var.get()))+'\nval: '+shorten(val_str, 3000, line_break=True))
 
         return QWidget.event(self, event)
 
@@ -100,14 +102,15 @@ class VarsList_VarWidget(QWidget):
 
 
     def action_delete_triggered(self):
-        self.vars_list_widget.del_variable(self.var, self)
+        self.vars_list_widget.del_var(self.var)
 
 
     def action_edit_val_triggered(self):
-        edit_var_val_dialog = EditVal_Dialog(self, self.var.val)
+        edit_var_val_dialog = EditVal_Dialog(self, self.var.get())
         accepted = edit_var_val_dialog.exec_()
         if accepted:
-            self.vars_manager.set_var(self.var.name, edit_var_val_dialog.get_val())
+            self.var.set(edit_var_val_dialog.get_val())
+            # self.vars_addon.create_var(self.flow, self.var.name, edit_var_val_dialog.get_val())
 
 
     def name_line_edit_double_clicked(self):
@@ -121,7 +124,7 @@ class VarsList_VarWidget(QWidget):
     def get_drag_data(self):
         data = {'type': 'variable',
                 'name': self.var.name,
-                'value': self.var.val}  # value is probably unnecessary
+                'value': self.var.get()}  # value is probably unnecessary
         data_text = json.dumps(data)
         return data_text
 
@@ -134,7 +137,7 @@ class VarsList_VarWidget(QWidget):
 
         self.ignore_name_line_edit_signal = True
 
-        if self.vars_manager.var_name_valid(name):
+        if self.vars_addon.var_name_valid(self.flow, name):
             self.var.name = name
         else:
             self.name_line_edit.setText(self.previous_var_name)

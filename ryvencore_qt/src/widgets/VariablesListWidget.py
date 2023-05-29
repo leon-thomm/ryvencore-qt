@@ -7,11 +7,13 @@ from .VarsList_VarWidget import VarsList_VarWidget
 class VariablesListWidget(QWidget):
     """Convenience class for a QWidget to easily manage script variables of a script."""
 
-    def __init__(self, vars_manager):
+    def __init__(self, vars_addon, flow):
         super(VariablesListWidget, self).__init__()
 
-        self.vars_manager = vars_manager
-        self.vars_manager.new_var_created.connect(self.add_new_var)
+        self.vars_addon = vars_addon
+        self.flow = flow
+        self.vars_addon.var_created.sub(self.on_var_created)
+        self.vars_addon.var_deleted.sub(self.on_var_deleted)
         self.widgets = []
         self.currently_edited_var = ''
         self.ignore_name_line_edit_signal = False  # because disabling causes firing twice otherwise
@@ -58,6 +60,20 @@ class VariablesListWidget(QWidget):
         self.recreate_list()
 
 
+    def on_var_created(self, flow, name, var):
+        if flow == self.flow:
+            self.widgets.append(
+                VarsList_VarWidget(self, self.vars_addon, self.flow, var)
+            )
+            self.rebuild_list()
+
+
+    def on_var_deleted(self, flow, name):
+        # because Qt is weird, I cannot remove widgets the same way
+        # I add them, so I have to do this
+        self.recreate_list()
+
+
     def recreate_list(self):
         for w in self.widgets:
             w.hide()
@@ -66,8 +82,8 @@ class VariablesListWidget(QWidget):
         self.widgets.clear()
         # self.data_type_line_edits.clear()
 
-        for v in self.vars_manager.variables:
-            new_widget = VarsList_VarWidget(self, self.vars_manager, v)
+        for var_name, var_info in self.vars_addon.flow_variables[self.flow].items():
+            new_widget = VarsList_VarWidget(self, self.vars_addon, self.flow, var_info['var'])
             # new_widget.name_LE_editing_finished.connect(self.name_line_edit_editing_finished)
             self.widgets.append(new_widget)
 
@@ -84,15 +100,9 @@ class VariablesListWidget(QWidget):
 
     def new_var_LE_return_pressed(self):
         name = self.new_var_name_lineedit.text()
-
-        if not self.vars_manager.var_name_valid(name=name):
+        if not self.vars_addon.var_name_valid(self.flow, name=name):
             return
-
-        self.vars_manager.create_new_var(name=name)
-
-
-    def add_new_var(self, var):
-        self.recreate_list()
+        v = self.vars_addon.create_var(self.flow, name=name)
 
 
     # def name_line_edit_editing_finished(self):
@@ -109,9 +119,5 @@ class VariablesListWidget(QWidget):
     #     var_widget.var.name = new_var_name
 
 
-    def del_variable(self, var, var_widget):
-        self.widgets.remove(var_widget)
-        var_widget.setParent(None)
-        self.vars_manager.delete_var(var)
-        # del self.vars_manager.variables[self.vars_manager.variables.index(var)]
-        self.recreate_list()
+    def del_var(self, var):
+        self.vars_addon.delete_var(self.flow, var.name)

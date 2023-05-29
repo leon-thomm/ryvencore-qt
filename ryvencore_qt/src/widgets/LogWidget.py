@@ -2,7 +2,7 @@ from qtpy.QtGui import QFont
 from qtpy.QtWidgets import QWidget, QHBoxLayout, QVBoxLayout, QLabel, QPushButton, QPlainTextEdit
 
 # from ..core_wrapper.WRAPPERS import Logger
-from ryvencore import Logger
+from ryvencore.addons.Logging import Logger
 import logging
 
 
@@ -14,8 +14,8 @@ class LogWidget(QWidget):
 
         self.logger = logger
         self.logger.addHandler(logging.StreamHandler(self))
-        self.logger.sig_disabled.connect(self.disable)
-        self.logger.sig_enabled.connect(self.enable)
+        self.logger.sig_disabled.sub(self.disable)
+        self.logger.sig_enabled.sub(self.enable)
 
         self.main_layout = QVBoxLayout()
         self.header_layout = QHBoxLayout()
