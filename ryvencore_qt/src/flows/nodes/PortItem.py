@@ -112,7 +112,13 @@ class InputPortItem(PortItem):
 
         if self.port.type_ == 'data' and self.port.load_data is not None and self.port.load_data['has widget']:
             c_d = self.port.load_data['widget data']
-            self.widget.set_state(deserialize(c_d))
+            if c_d is not None:
+                self.widget.set_state(deserialize(c_d))
+            else:
+                # this is a little feature that lets us prevent loading of input widgets
+                # which is occasionally useful, e.g. when changing an input widget class:
+                # to prevent loading of the input widget, 'widget data' must be None
+                pass
 
         self.setup_ui()
 
