@@ -1,8 +1,9 @@
 name: Publish package distribution to TestPyPi and PyPi
+# only run when a new tag is created
 on:
-  push:
-    branches:
-      - main
+  create:
+    tags:
+      - '*'
 jobs:
   Build-and-Publish:
     runs-on: ubuntu-latest
