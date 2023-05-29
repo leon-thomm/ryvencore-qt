@@ -40,15 +40,14 @@ class NodeGUI(QObject):
         self.session_gui = session_gui
         setattr(node, 'gui', self)
 
-        # TODO: move actions to ryvencore
         self.actions = self._init_default_actions()
 
         if self.display_title is None:
             self.display_title = self.node.title
 
         self.input_widgets = {}     # {input: widget name}
-        for i, name in self.init_input_widgets.items():
-            self.input_widgets[self.node.inputs[i]] = name
+        for i, widget_data in self.init_input_widgets.items():
+            self.input_widgets[self.node.inputs[i]] = widget_data
         # using attach_input_widgets() one can buffer input widget
         # names for inputs that are about to get created
         self._next_input_widgets = Queue()
@@ -146,7 +145,10 @@ class NodeGUI(QObject):
             new_actions = {}
             for key, value in actions_data.items():
                 if key == 'method':
-                    value = getattr(self, value)
+                    try:
+                        value = getattr(self, value)
+                    except AttributeError:
+                        print(f'Warning: action method "{value}" not found in node "{self.node.title}", skipping.')
                 elif isinstance(value, dict):
                     value = _transform(value)
                 new_actions[key] = value
@@ -184,8 +186,10 @@ class NodeGUI(QObject):
         }
 
     def load(self, data):
-        self.actions = self._deserialize_actions(data['actions'])
-        self.display_title = data['display title']
+        if 'actions' in data:   # otherwise keep default
+            self.actions = self._deserialize_actions(data['actions'])
+        if 'display title' in data:
+            self.display_title = data['display title']
 
         if 'special actions' in data:   # backward compatibility
             self.actions = self._deserialize_actions(data['special actions'])
