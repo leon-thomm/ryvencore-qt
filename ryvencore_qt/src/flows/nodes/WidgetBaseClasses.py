@@ -88,12 +88,13 @@ class NodeInputWidget:
     
     """
 
-    def update_node_input(self, val: Data):
+    def update_node_input(self, val: Data, silent=False):
         """
         Update the input's value and update the node.
         """
         self.input.default = val
-        self.input.node.update(self.node.inputs.index(self.input))
+        if not silent:
+            self.input.node.update(self.node.inputs.index(self.input))
 
     def update_node(self):
         self.node.update(self.node.inputs.index(self.input))
