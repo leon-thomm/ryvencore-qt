@@ -8,7 +8,7 @@ from ..GlobalAttributes import Location
 from .ListWidget_NameLineEdit import ListWidget_NameLineEdit
 from ..utils import shorten
 from .EditVal_Dialog import EditVal_Dialog
-from ryvencore.addons.default.Variables import VarsAddon
+from ryvencore.addons.Variables import VarsAddon
 
 
 class VarsList_VarWidget(QWidget):
